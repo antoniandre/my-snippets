@@ -1,0 +1,15 @@
+{
+    "name": "Jenkins Cleanup",
+    "h1": "Jenkins Cleanup",
+    "icon": "i-wand",
+    "dependencies":
+    {
+        "js":
+        [
+            "jquery"
+        ]
+    },
+    "js":"$(document).ready(function()\n{\n    //\n});",
+    "css":"",
+    "html":""
+}

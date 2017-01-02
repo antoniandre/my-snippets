@@ -1,0 +1,4 @@
+RewriteEngine On
+
+RewriteRule \.js$ - [L]
+RewriteRule ^snippet/([^/?]+)/?$ snippets/index.php?snippet=$1 [L]

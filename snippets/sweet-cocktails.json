@@ -1,0 +1,15 @@
+{
+    "name": "Sweet Cocktails",
+    "h1": "Sweet Cocktails",
+    "icon": "i-cocktail",
+    "dependencies":
+    {
+        "js":
+        [
+            "jquery"
+        ]
+    },
+    "js":"$(document).ready(function()\n{\n    //\n});",
+    "css":"",
+    "html":""
+}

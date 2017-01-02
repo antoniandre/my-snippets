@@ -1,0 +1,16 @@
+{
+    "name": "Slideshow Gallery",
+    "h1": "Slideshow Gallery",
+    "icon": "i-images",
+    "url": "http://soneva.com",
+    "dependencies":
+    {
+        "js":
+        [
+            "jquery"
+        ]
+    },
+    "js":"$(document).ready(function()\n{\n    //\n});",
+    "css":"",
+    "html":""
+}

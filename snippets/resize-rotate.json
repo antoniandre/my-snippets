@@ -1,0 +1,15 @@
+{
+    "name": "Resize & rotate",
+    "h1": "Resize & rotate",
+    "icon": "i-arr-resize",
+    "dependencies":
+    {
+        "js":
+        [
+            "jquery"
+        ]
+    },
+    "js":"$(document).ready(function()\n{\n    //\n});",
+    "css":"",
+    "html":""
+}

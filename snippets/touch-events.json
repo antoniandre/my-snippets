@@ -1,0 +1,15 @@
+{
+    "name": "Touch Events",
+    "h1": "Touch Events",
+    "icon": "i-pointer",
+    "dependencies":
+    {
+        "js":
+        [
+            "jquery"
+        ]
+    },
+    "js":"$(document).ready(function()\n{\n    //\n});",
+    "css":"",
+    "html":""
+}

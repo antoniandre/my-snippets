@@ -1,0 +1,20 @@
+{
+    "name": "Range Selector",
+    "h1": "Range Selector",
+    "icon": "i-settings2",
+    "dependencies":
+    {
+        "js":
+        [
+            "jquery",
+            "jquery.easing"
+        ],
+        "css":
+        [
+            "https://fonts.googleapis.com/css?family=Roboto"
+        ]
+    },
+    "js":"$(document).ready(function()\n{\n    //\n});",
+    "css":"",
+    "html":""
+}

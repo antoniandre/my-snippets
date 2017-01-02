@@ -1,0 +1,15 @@
+{
+    "name": "Todo lists",
+    "h1": "Todo lists",
+    "icon": "i-edit",
+    "dependencies":
+    {
+        "js":
+        [
+            "jquery"
+        ]
+    },
+    "js":"$(document).ready(function()\n{\n    //\n});",
+    "css":"",
+    "html":""
+}

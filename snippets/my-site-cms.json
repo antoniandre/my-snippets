@@ -1,0 +1,16 @@
+{
+    "name": "My Site CMS",
+    "h1": "My Site CMS",
+    "icon": "i-pulse",
+    "url": "http://soneva.com",
+    "dependencies":
+    {
+        "js":
+        [
+            "jquery"
+        ]
+    },
+    "js":"$(document).ready(function()\n{\n    //\n});",
+    "css":"",
+    "html":""
+}
