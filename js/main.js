@@ -1,6 +1,6 @@
 $(document).ready(function()
 {
-    $('.thegrid').grid(
+    if ($.fn.grid) $('.thegrid').grid(
     {
         cellHeight: 200,
         cellsPerRow: 7,
@@ -35,6 +35,7 @@ $(document).ready(function()
     });
 
     if ($('pre').length) syntaxHighlighter();
+    // if ($('pre[contenteditable="true"]').length) $('pre[contenteditable="true"]').each(function(){new codeEditor();});
 });
 
 
@@ -97,88 +98,91 @@ var syntaxHighlighter = function()
             radioId = i + '-' + type,
             checked = pre.data('default') !== undefined ? '  checked' : '';
 
-        switch (type)
+
+        if (this.innerHTML)
         {
-            case 'html':
-                html = this.innerHTML.replace(/&lt;(\/?)(\w+) ?(.*?)&gt;/mg, function()
-                {
-                    var attributes = '';
-
-                    if (arguments[3])
+            switch (type)
+            {
+                case 'html':
+                    html = this.innerHTML.replace(/&lt;(\/?)(\w+) ?(.*?)&gt;/mg, function()
                     {
-                        var attrs = arguments[3].split(' ');
-                        for (var i = 0, l = attrs.length; i < l; i++)
+                        var attributes = '';
+
+                        if (arguments[3])
                         {
-                            attributes += ' ' + attrs[i].replace(
-                                /((?:\w|-)+)=('|"|)(.*?)\2/,
-                                '<span class="attribute">$1</span>'
-                                + '<span class="ponctuation">=</span>'
-                                + '<span class="quote">"$3"</span>');
-                        }
-                    }
-
-                    return '<span class="ponctuation">&lt;' + arguments[1] + '</span>'
-                           + '<span class="tag">' + arguments[2] + '</span>'
-                           + attributes + '<span class="ponctuation">&gt;</span>';
-                });
-            break;
-            case 'css':
-                html = this.innerHTML
-                .replace(/((?:\/\*\s*))*([^{]+)\s*{\s*([^}]+)\s*}\s*(?:\*\/)*\s*/mg, function()
-                {
-                    // If commented don't parse inner.
-                    if ((arguments[1]||'').indexOf('/*') > -1)
-                        return '\n<span class="comment">/* '+ arguments[2] + '{\n    ' + arguments[3] + '\n} */</span>';
-
-                    if (arguments[3])
-                    {
-                        var properties = '', props = arguments[3].replace(/^;+?(.*).+?$/, '$1').split(';');
-
-                        for (var i = 0, l = props.length; i < l; i++)
-                        {
-                            var prop = props[i].trim();
-                            if (prop)
+                            var attrs = arguments[3].split(' ');
+                            for (var i = 0, l = attrs.length; i < l; i++)
                             {
-                                properties += '\n    ' + prop.replace(
-                                    /\s*([^:]+)\s*:\s*([^;]+)\s*;?\s*/, function()
-                                    {
-                                        return '<span class="attribute">'
-                                                + arguments[1]
-                                                + '</span>'
-                                                + '<span class="ponctuation">: </span>'
-                                                + '<span class="value">'
-                                                + arguments[2]
-                                                    .replace(/([(),])/g, '<span class="ponctuation">$1</span>')
-                                                + '</span><span class="ponctuation">;</span>';
-                                    });
+                                attributes += ' ' + attrs[i].replace(
+                                    /((?:\w|-)+)=('|"|)(.*?)\2/,
+                                    '<span class="attribute">$1</span>'
+                                    + '<span class="ponctuation">=</span>'
+                                    + '<span class="quote">"$3"</span>');
                             }
                         }
-                    }
 
-                    return '\n<span class="selector">' + arguments[2].trim().replace(/(:(?:before|after))/, '<span class="keyword">$1</span>') + '</span>'
-                        +' <span class="ponctuation">{</span>' + properties + '\n<span class="ponctuation">}</span>';
-                })
-                // Wrap extra comments.
-                .replace(/(\/\*\s*(?:.(?!<[^>]+>))*?\s*\*\/\s*)/mg, '\n<span class="comment">$1</span>').trim();
-            break;
-            case 'javascript':
-                html = this.innerHTML
-                        .replace(/([<>])/g, '<span class="ponctuation">$1</span>')
-                        .replace(/(\/\/.*)/g, '<span class="comment">$1</span>')
-                        .replace(/(\/\*[\s\S]*\*\/)/mg, '<span class="comment">$1</span>')
-                        .replace(/(\b\d+|null\b)/g, '<span class="number">$1</span>')
-                        .replace(/(\btrue|false\b)/g, '<span class="bool">$1</span>')
-                        .replace(/('[\s\S]*?')/mg, '<span class="quote">$1</span>')
-                        .replace(/(new|$|function|document|window|var|(?:clear|set)(?:Timeout|Interval))/g, '<span class="keyword">$1</span>')
-                        .replace(/\$/g, '<span class="dollar">$</span>')
-                        .replace(/([\[\](){}.:,+\-?;])/g, '<span class="ponctuation">$1</span>')
-                        // Following will wrap '=' THAT ARE NOT INSIDE HTML TAG (e.g. <span class="ponctuation">).
-                        // Javascript regex does not support lookbehinds. (T_T)
-                        .replace(/(?!(?:.(?=[^<]))*>)=/g, '<span class="ponctuation">=</span>')
-            break;
+                        return '<span class="ponctuation">&lt;' + arguments[1] + '</span>'
+                               + '<span class="tag">' + arguments[2] + '</span>'
+                               + attributes + '<span class="ponctuation">&gt;</span>';
+                    });
+                break;
+                case 'css':
+                    html = this.innerHTML
+                    .replace(/((?:\/\*\s*))*([^{]+)\s*{\s*([^}]+)\s*}\s*(?:\*\/)*\s*/mg, function()
+                    {
+                        // If commented don't parse inner.
+                        if ((arguments[1]||'').indexOf('/*') > -1)
+                            return '\n<span class="comment">/* '+ arguments[2] + '{\n    ' + arguments[3] + '\n} */</span>';
+
+                        if (arguments[3])
+                        {
+                            var properties = '', props = arguments[3].replace(/^;+?(.*).+?$/, '$1').split(';');
+
+                            for (var i = 0, l = props.length; i < l; i++)
+                            {
+                                var prop = props[i].trim();
+                                if (prop)
+                                {
+                                    properties += '\n    ' + prop.replace(
+                                        /\s*([^:]+)\s*:\s*([^;]+)\s*;?\s*/, function()
+                                        {
+                                            return '<span class="attribute">'
+                                                    + arguments[1]
+                                                    + '</span>'
+                                                    + '<span class="ponctuation">: </span>'
+                                                    + '<span class="value">'
+                                                    + arguments[2]
+                                                        .replace(/([(),])/g, '<span class="ponctuation">$1</span>')
+                                                    + '</span><span class="ponctuation">;</span>';
+                                        });
+                                }
+                            }
+                        }
+
+                        return '\n<span class="selector">' + arguments[2].trim().replace(/(:(?:before|after))/, '<span class="keyword">$1</span>') + '</span>'
+                            +' <span class="ponctuation">{</span>' + properties + '\n<span class="ponctuation">}</span>';
+                    })
+                    // Wrap extra comments.
+                    .replace(/(\/\*\s*(?:.(?!<[^>]+>))*?\s*\*\/\s*)/mg, '\n<span class="comment">$1</span>').trim();
+                break;
+                case 'javascript':
+                    html = this.innerHTML
+                            .replace(/([<>])/g, '<span class="ponctuation">$1</span>')
+                            .replace(/(\/\/.*)/g, '<span class="comment">$1</span>')
+                            .replace(/(\/\*[\s\S]*\*\/)/mg, '<span class="comment">$1</span>')
+                            .replace(/(\b\d+|null\b)/g, '<span class="number">$1</span>')
+                            .replace(/(\btrue|false\b)/g, '<span class="bool">$1</span>')
+                            .replace(/('[\s\S]*?')/mg, '<span class="quote">$1</span>')
+                            .replace(/(new|$|function|document|window|var|(?:clear|set)(?:Timeout|Interval))/g, '<span class="keyword">$1</span>')
+                            .replace(/\$/g, '<span class="dollar">$</span>')
+                            .replace(/([\[\](){}.:,+\-?;])/g, '<span class="ponctuation">$1</span>')
+                            // Following will wrap '=' THAT ARE NOT INSIDE HTML TAG (e.g. <span class="ponctuation">).
+                            // Javascript regex does not support lookbehinds. (T_T)
+                            .replace(/(?!(?:.(?=[^<]))*>)=/g, '<span class="ponctuation">=</span>')
+                break;
+            }
+            if (html) this.innerHTML = html;
         }
-
-        if (html) this.innerHTML = html;
 
         if (wrapper.length) wrapper.prepend(
             '<input type="radio" data-type="' + type + '" name="code-wrapper' + wrapperIndex
@@ -186,3 +190,25 @@ var syntaxHighlighter = function()
         else {pre.wrap('<div class="code-wrapper no-tabs ' + pre.attr('class') + '" data-type="' + type + '"/>')}
     });
 };
+
+var codeEditor = function(editor)
+{
+    var self = this;
+    self.editor = $(editor);
+
+    var bindEvents = function()
+    {
+
+    };
+
+    var init = function()
+    {
+        $(window).on('keyup', function(e)
+        {
+            /*var char = String.fromCharCode((96 <= e.which && e.which <= 105) ? e.which-48 : e.which);
+            self.editor.append(char);
+            console.log(e.which, String.fromCharCode(e.which), char, e);*/
+        });
+    }();
+}
+;

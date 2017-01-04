@@ -1,15 +1,20 @@
 <?php
+//=======================================================================================================//
 $self = $_SERVER['PHP_SELF'];
 define('SNIPPETS_JSON', __DIR__ . '/snippets.json');
-define('SNIPPETS_DIR', __DIR__ . '/snippets/');
+define('SNIPPETS_DIR',  __DIR__ . '/snippets/');
 
 $snippets = getSnippets();
+//=======================================================================================================//
 
 
 
+//=======================================================================================================//
 function getSnippets()
 {
-    return is_file(SNIPPETS_JSON) ? json_decode(file_get_contents(SNIPPETS_JSON)) : createSnippetsJson();
+    $data = is_file(SNIPPETS_JSON) ? json_decode(file_get_contents(SNIPPETS_JSON)) : null;
+
+    return $data ? $data : createSnippetsJson();
 }
 
 
@@ -33,6 +38,8 @@ function createSnippetsJson()
     file_put_contents(SNIPPETS_JSON, json_encode($snippets));
     return $snippets;
 }
+//=======================================================================================================//
+
 ?><html>
 <head>
     <title>My snippets</title>
