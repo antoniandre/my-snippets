@@ -78,6 +78,7 @@ function render($snippet)
                 </div>
             </div>
             <div class="content">$snippet->html</div>
+            <div id="caretPos"></div>
         </div>
         <a href="../../" class="i-arr-l"> Go back home</a>
     </body>

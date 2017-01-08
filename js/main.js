@@ -35,7 +35,7 @@ $(document).ready(function()
     });
 
     if ($('pre').length) syntaxHighlighter();
-    // if ($('pre[contenteditable="true"]').length) $('pre[contenteditable="true"]').each(function(){new codeEditor();});
+    if ($('pre[contenteditable="true"]').length) $('pre[contenteditable="true"]').each(function(){new codeEditor(this);});
 });
 
 
@@ -101,87 +101,7 @@ var syntaxHighlighter = function()
 
         if (this.innerHTML)
         {
-            switch (type)
-            {
-                case 'html':
-                    html = this.innerHTML.replace(/&lt;(\/?)(\w+) ?(.*?)&gt;/mg, function()
-                    {
-                        var attributes = '';
-
-                        if (arguments[3])
-                        {
-                            var attrs = arguments[3].split(' ');
-                            for (var i = 0, l = attrs.length; i < l; i++)
-                            {
-                                attributes += ' ' + attrs[i].replace(
-                                    /((?:\w|-)+)=('|"|)(.*?)\2/,
-                                    '<span class="attribute">$1</span>'
-                                    + '<span class="ponctuation">=</span>'
-                                    + '<span class="quote">"$3"</span>');
-                            }
-                        }
-
-                        return '<span class="ponctuation">&lt;' + arguments[1] + '</span>'
-                               + '<span class="tag">' + arguments[2] + '</span>'
-                               + attributes + '<span class="ponctuation">&gt;</span>';
-                    });
-                break;
-                case 'css':
-                    html = this.innerHTML
-                    .replace(/((?:\/\*\s*))*([^{]+)\s*{\s*([^}]+)\s*}\s*(?:\*\/)*\s*/mg, function()
-                    {
-                        // If commented don't parse inner.
-                        if ((arguments[1]||'').indexOf('/*') > -1)
-                            return '\n<span class="comment">/* '+ arguments[2] + '{\n    ' + arguments[3] + '\n} */</span>';
-
-                        if (arguments[3])
-                        {
-                            var properties = '', props = arguments[3].replace(/^;+?(.*).+?$/, '$1').split(';');
-
-                            for (var i = 0, l = props.length; i < l; i++)
-                            {
-                                var prop = props[i].trim();
-                                if (prop)
-                                {
-                                    properties += '\n    ' + prop.replace(
-                                        /\s*([^:]+)\s*:\s*([^;]+)\s*;?\s*/, function()
-                                        {
-                                            return '<span class="attribute">'
-                                                    + arguments[1]
-                                                    + '</span>'
-                                                    + '<span class="ponctuation">: </span>'
-                                                    + '<span class="value">'
-                                                    + arguments[2]
-                                                        .replace(/([(),])/g, '<span class="ponctuation">$1</span>')
-                                                    + '</span><span class="ponctuation">;</span>';
-                                        });
-                                }
-                            }
-                        }
-
-                        return '\n<span class="selector">' + arguments[2].trim().replace(/(:(?:before|after))/, '<span class="keyword">$1</span>') + '</span>'
-                            +' <span class="ponctuation">{</span>' + properties + '\n<span class="ponctuation">}</span>';
-                    })
-                    // Wrap extra comments.
-                    .replace(/(\/\*\s*(?:.(?!<[^>]+>))*?\s*\*\/\s*)/mg, '\n<span class="comment">$1</span>').trim();
-                break;
-                case 'javascript':
-                    html = this.innerHTML
-                            .replace(/([<>])/g, '<span class="ponctuation">$1</span>')
-                            .replace(/(\/\/.*)/g, '<span class="comment">$1</span>')
-                            .replace(/(\/\*[\s\S]*\*\/)/mg, '<span class="comment">$1</span>')
-                            .replace(/(\b\d+|null\b)/g, '<span class="number">$1</span>')
-                            .replace(/(\btrue|false\b)/g, '<span class="bool">$1</span>')
-                            .replace(/('[\s\S]*?')/mg, '<span class="quote">$1</span>')
-                            .replace(/(new|$|function|document|window|var|(?:clear|set)(?:Timeout|Interval))/g, '<span class="keyword">$1</span>')
-                            .replace(/\$/g, '<span class="dollar">$</span>')
-                            .replace(/([\[\](){}.:,+\-?;])/g, '<span class="ponctuation">$1</span>')
-                            // Following will wrap '=' THAT ARE NOT INSIDE HTML TAG (e.g. <span class="ponctuation">).
-                            // Javascript regex does not support lookbehinds. (T_T)
-                            .replace(/(?!(?:.(?=[^<]))*>)=/g, '<span class="ponctuation">=</span>')
-                break;
-            }
-            if (html) this.innerHTML = html;
+            if (html = colorizeText(this.innerHTML, type)) this.innerHTML = html;
         }
 
         if (wrapper.length) wrapper.prepend(
@@ -191,24 +111,149 @@ var syntaxHighlighter = function()
     });
 };
 
+var colorizeText = function(string, language)
+{
+    switch (language)
+    {
+        case 'html':
+            string = string.replace(/&lt;(\/?)(\w+) ?(.*?)&gt;/mg, function()
+            {
+                var attributes = '';
+
+                if (arguments[3])
+                {
+                    var attrs = arguments[3].split(' ');
+                    for (var i = 0, l = attrs.length; i < l; i++)
+                    {
+                        attributes += ' ' + attrs[i].replace(
+                            /((?:\w|-)+)=('|"|)(.*?)\2/,
+                            '<span class="attribute">$1</span>'
+                            + '<span class="ponctuation">=</span>'
+                            + '<span class="quote">"$3"</span>');
+                    }
+                }
+
+                return '<span class="ponctuation">&lt;' + arguments[1] + '</span>'
+                       + '<span class="tag">' + arguments[2] + '</span>'
+                       + attributes + '<span class="ponctuation">&gt;</span>';
+            });
+        break;
+        case 'css':
+            string = string
+            .replace(/((?:\/\*\s*))*([^{]+)\s*{\s*([^}]+)\s*}\s*(?:\*\/)*\s*/mg, function()
+            {
+                // If commented don't parse inner.
+                if ((arguments[1]||'').indexOf('/*') > -1)
+                    return '\n<span class="comment">/* '+ arguments[2] + '{\n    ' + arguments[3] + '\n} */</span>';
+
+                if (arguments[3])
+                {
+                    var properties = '', props = arguments[3].replace(/^;+?(.*).+?$/, '$1').split(';');
+
+                    for (var i = 0, l = props.length; i < l; i++)
+                    {
+                        var prop = props[i].trim();
+                        if (prop)
+                        {
+                            properties += '\n    ' + prop.replace(
+                                /\s*([^:]+)\s*:\s*([^;]+)\s*;?\s*/, function()
+                                {
+                                    return '<span class="attribute">'
+                                            + arguments[1]
+                                            + '</span>'
+                                            + '<span class="ponctuation">: </span>'
+                                            + '<span class="value">'
+                                            + arguments[2]
+                                                .replace(/([(),])/g, '<span class="ponctuation">$1</span>')
+                                            + '</span><span class="ponctuation">;</span>';
+                                });
+                        }
+                    }
+                }
+
+                return '\n<span class="selector">' + arguments[2].trim().replace(/(:(?:before|after))/, '<span class="keyword">$1</span>') + '</span>'
+                    +' <span class="ponctuation">{</span>' + properties + '\n<span class="ponctuation">}</span>';
+            })
+            // Wrap extra comments.
+            .replace(/(\/\*\s*(?:.(?!<[^>]+>))*?\s*\*\/\s*)/mg, '\n<span class="comment">$1</span>').trim();
+        break;
+        case 'javascript':
+            string = string
+                    .replace(/([<>])/g, '<span class="ponctuation">$1</span>')
+                    .replace(/(\/\/.*)/g, '<span class="comment">$1</span>')
+                    .replace(/(\/\*[\s\S]*\*\/)/mg, '<span class="comment">$1</span>')
+                    .replace(/(\b\d+|null\b)/g, '<span class="number">$1</span>')
+                    .replace(/(\btrue|false\b)/g, '<span class="bool">$1</span>')
+                    // Following will wrap any ' or " THAT ARE NOT INSIDE HTML TAG (e.g. <span class="ponctuation">).
+                    // Javascript regex does not support lookbehinds. (T_T)
+                    .replace(/(?!(?:.(?=[^<]))*>)("|')([^\1]*?)\1/g, '<span class="quote">"$2"</span>')
+                    .replace(/(new|$|function|document|window|var|(?:clear|set)(?:Timeout|Interval))/g, '<span class="keyword">$1</span>')
+                    .replace(/\$/g, '<span class="dollar">$</span>')
+                    .replace(/([\[\](){}.:,+\-?;])/g, '<span class="ponctuation">$1</span>')
+                    // Following will wrap '=' THAT ARE NOT INSIDE HTML TAG (e.g. <span class="ponctuation">).
+                    // Javascript regex does not support lookbehinds. (T_T)
+                    .replace(/(?!(?:.(?=[^<]))*>)=/g, '<span class="ponctuation">=</span>')
+        break;
+    }
+    return string;
+};
+
 var codeEditor = function(editor)
 {
     var self = this;
     self.editor = $(editor);
+    self.language = self.editor.data('type');
 
     var bindEvents = function()
     {
-
+        self.editor.on('mouseup', function(e)
+        {
+            showCaretPos(self.editor[0]);
+        });
+        self.editor.on('keyup', function(e)
+        {
+            showCaretPos(self.editor[0]);
+            console.log(e.which)
+            var ignoreKeys = [16,17,18,27,37,38,39,40,91,93];
+            /*var char = String.fromCharCode((96 <= e.which && e.which <= 105) ? e.which-48 : e.which);
+            self.editor.append(char);*/
+            // console.log(this.innerHTML.replace(/<\/?[^>]+\/?>/g, ''));
+            if (ignoreKeys.indexOf(e.which) === -1) this.innerHTML = colorizeText(this.innerHTML.replace(/<\/?[^>]+\/?>/g, ''), self.language);
+        });
     };
 
     var init = function()
     {
-        $(window).on('keyup', function(e)
-        {
-            /*var char = String.fromCharCode((96 <= e.which && e.which <= 105) ? e.which-48 : e.which);
-            self.editor.append(char);
-            console.log(e.which, String.fromCharCode(e.which), char, e);*/
-        });
+        bindEvents();
     }();
+};
+
+
+function getCaretCharacterOffsetWithin(element) {
+    var caretOffset = 0;
+    var doc = element.ownerDocument || element.document;
+    var win = doc.defaultView || doc.parentWindow;
+    var sel;
+    if (typeof win.getSelection != "undefined") {
+        sel = win.getSelection();
+        if (sel.rangeCount > 0) {
+            var range = win.getSelection().getRangeAt(0);
+            var preCaretRange = range.cloneRange();
+            preCaretRange.selectNodeContents(element);
+            preCaretRange.setEnd(range.endContainer, range.endOffset);
+            caretOffset = preCaretRange.toString().length;
+        }
+    } else if ( (sel = doc.selection) && sel.type != "Control") {
+        var textRange = sel.createRange();
+        var preCaretTextRange = doc.body.createTextRange();
+        preCaretTextRange.moveToElementText(element);
+        preCaretTextRange.setEndPoint("EndToEnd", textRange);
+        caretOffset = preCaretTextRange.text.length;
+    }
+    return caretOffset;
 }
-;
+
+function showCaretPos(el) {
+    var caretPosEl = document.getElementById("caretPos");
+    caretPosEl.innerHTML = "Caret position: " + getCaretCharacterOffsetWithin(el);
+}
