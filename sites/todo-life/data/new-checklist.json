@@ -1,0 +1,7 @@
+{"name":"New checklist","id":"23",
+				  "headers":[{"text":"Column 1","class":"col1","width":"33%","type":"textarea","icon":"Q"},
+							 {"text":"Tasks","class":"tasks","width":"33%","type":"textarea","icon":"Q"},
+							 {"text":"Column 3","class":"col3","width":"33%","type":"textarea","icon":"Q"}],
+				  "rows":[],
+				  "archivedRows":[],
+				  "settings":[]}

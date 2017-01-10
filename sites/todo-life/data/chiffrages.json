@@ -1,0 +1,443 @@
+{
+  "name": "Chiffrages",
+  "id": "2",
+  "headers": [
+    {
+      "text": "PROJET",
+      "width": "20px",
+      "type": "select",
+      "select": {
+        "options": {
+          "0": "Mapigroup",
+          "1": "Mapi Proqolid",
+          "2": "Mapi Prolabels",
+          "3": "INA",
+          "4": "IPSEN"
+        }
+      },
+      "icon": "i-vcard"
+    },
+    {
+      "text": "MANTIS",
+      "width": "20px",
+      "type": "text",
+      "icon": "i-bug"
+    },
+    {
+      "text": "PRIORITÉ",
+      "width": "20px",
+      "type": "range",
+      "range": {
+        "min": 1,
+        "max": 3,
+        "step": 1
+      },
+      "icon": "i-flag"
+    },
+    {
+      "text": "DIFFICULTÉ",
+      "width": "20px",
+      "type": "range",
+      "range": {
+        "min": 1,
+        "max": 5,
+        "step": 1
+      },
+      "icon": "i-electric"
+    },
+    {
+      "text": "DATE CHIFFRAGE",
+      "width": "25px",
+      "type": "date",
+      "default": "today",
+      "icon": "i-date"
+    },
+    {
+      "text": "TEMPS CHIFFRAGE",
+      "width": "30px",
+      "type": "number",
+      "number": {
+        "min": 0,
+        "step": 0.1
+      },
+      "icon": "i-stopwatch"
+    },
+    {
+      "text": "DEV/TU<br/><span>Estimé | Effectif</span>",
+      "width": "50px",
+      "class": "devtu",
+      "type": "number",
+      "number": {
+        "min": 0,
+        "step": 0.1
+      },
+      "colspan": 2,
+      "icon": "i-code"
+    },
+    {
+      "text": "DEV/TU (Effectif)",
+      "width": "50px",
+      "class": "devtu_f",
+      "type": "number",
+      "number": {
+        "min": 0,
+        "step": 0.1
+      },
+      "icon": "i-code"
+    },
+    {
+      "text": "LIVRAISON<br/><span>Estimé | Effectif</span>",
+      "width": "50px",
+      "type": "number",
+      "number": {
+        "min": 0,
+        "step": 0.1
+      },
+      "colspan": 2,
+      "icon": "i-delivery"
+    },
+    {
+      "text": "LIVRAISON (Effectif)",
+      "width": "50px",
+      "type": "number",
+      "number": {
+        "min": 0,
+        "step": 0.1
+      },
+      "icon": "i-delivery"
+    },
+    {
+      "text": "LOTS",
+      "width": "20px",
+      "type": "number",
+      "number": {
+        "min": 1,
+        "max": 10,
+        "step": 1
+      },
+      "icon": "i-hashtag"
+    },
+    {
+      "text": "RÉALISÉ",
+      "class": "completion",
+      "width": "60px",
+      "type": "range",
+      "range": {
+        "min": 0,
+        "max": 100,
+        "step": 1
+      },
+      "icon": "i-valid"
+    },
+    {
+      "text": "TÂCHES",
+      "width": "35%",
+      "type": "textarea",
+      "class": "tasks",
+      "icon": "i-check-clipboard"
+    },
+    {
+      "text": "COMMENTAIRE",
+      "width": "14%",
+      "type": "textarea",
+      "class": "comment",
+      "icon": "i-comment"
+    }
+  ],
+  "rows": [
+    {
+      "cells": [
+        "1",
+        "",
+        "-",
+        "-",
+        "2014-12-18",
+        "0.6",
+        "4.1",
+        "4.1",
+        "0.6",
+        "0.6",
+        "",
+        "100",
+        [
+          {
+            "subject": "Module E-versions"
+          },
+          {
+            "text": "Front office Questionnaire"
+          },
+          {
+            "done": "2",
+            "text": "Modification template questionnaire FO et affichage conditionnel"
+          },
+          {
+            "done": "2",
+            "text": "Modification questionnaire JS"
+          },
+          {
+            "done": "2",
+            "text": "Modification Export"
+          },
+          {
+            "text": "Front office Advanced Search"
+          },
+          {
+            "done": "2",
+            "text": "Modification template"
+          },
+          {
+            "done": "2",
+            "text": "Modification JS"
+          },
+          {
+            "done": "2",
+            "text": "Modification des requêtes"
+          },
+          {
+            "text": "Back office "
+          },
+          {
+            "done": "2",
+            "text": "Modification template Preview et affichage conditionnel"
+          },
+          {
+            "done": "2",
+            "text": "Export CSV"
+          },
+          {
+            "done": "2",
+            "text": "Export Word"
+          },
+          {
+            "done": "3",
+            "text": "Modification titre tab + modif tab size en JS"
+          },
+          {
+            "text": "Une option obligatoire parmi :"
+          },
+          {
+            "text": "Option 1 ~ NON NATIF"
+          },
+          {
+            "done": "-1",
+            "text": "- Refaire un custom datatype eZ\n- Faire une nouvelle extension eZ\n- Créer des templates BO eZ\n- Gérer un comportement spécifique : Texte riche WYSIWYG\n- Gérer la récupération des valeurs du dossier \"Type of device\""
+          },
+          {
+            "done": "-1",
+            "text": "Modification classe \"Questionnaire Conditions\""
+          },
+          {
+            "done": "-1",
+            "text": "Création et paramétrage nouvelle classe \"Type of device\""
+          },
+          {
+            "done": "-1",
+            "text": "Ajout d'un dossier \"Type of device\" et de nouvelles instances"
+          },
+          {
+            "done": "-1",
+            "text": "Validation JS et message d’erreur (Non natifs) non administrable (pour vérifier appareils différents)"
+          },
+          {
+            "text": "Option 2 ~ NATIF"
+          },
+          {
+            "done": "2",
+            "text": "Dissocier le module en deux classes :\n- \"Type of device\" permet de gérer les valeurs dans le dossier \"Type of device\"\n- \"E-version\" propose les champs \"Type of device\" (liste déroulante), \"E-version name\" (texte), et Note e-versions (texte riche)\n- Toutes les e-versions (instances de \"E-version\") sont placées dans le questionnaire basic (sub-items)"
+          },
+          {
+            "done": "2",
+            "text": "Création et paramétrage nouvelle classe \"Type of device\""
+          },
+          {
+            "done": "2",
+            "text": "Ajout d'un dossier \"Type of device\" et de nouvelles instances"
+          },
+          {
+            "done": "-1",
+            "text": "Dev supplémentaire pour interdire deux fois le même device par version"
+          },
+          {
+            "text": "Option 3 ~ SEMI NATIF"
+          },
+          {
+            "done": "-1",
+            "text": "- Refaire une copie du modèle de données du module \"Translations\" et adaptation (extension, classes, configs, templates\n- Laisser tomber le champ texte riche pour un champ texte simple\n- Laisser tomber la possibilité de pouvoir administrer les \"devices\""
+          },
+          {
+            "done": "-1",
+            "text": "Modification classe \"Questionnaire Conditions\""
+          },
+          {
+            "done": "-1",
+            "text": "Validation JS et message d’erreur (Non natifs) non administrable (pour vérifier appareils différents)"
+          }
+        ],
+        ""
+      ],
+      "properties": {
+        "compact": 0
+      }
+    }
+  ],
+  "archivedRows": [
+    {
+      "cells": [
+        "1",
+        "",
+        "-",
+        "-",
+        "2014-12-18",
+        "0.6",
+        "4.1",
+        "4.1",
+        "0.6",
+        "0.6",
+        "",
+        "100",
+        [
+          {
+            "subject": "Module E-versions"
+          },
+          {
+            "text": "Front office Questionnaire"
+          },
+          {
+            "done": "2",
+            "text": "Modification template questionnaire FO et affichage conditionnel",
+            "charge": "0.6"
+          },
+          {
+            "done": "2",
+            "text": "Modification questionnaire JS",
+            "charge": "0.1"
+          },
+          {
+            "done": "2",
+            "text": "Modification Export",
+            "charge": "0.3"
+          },
+          {
+            "text": "Front office Advanced Search"
+          },
+          {
+            "done": "2",
+            "text": "Modification template",
+            "charge": "0.2"
+          },
+          {
+            "done": "2",
+            "text": "Modification JS",
+            "charge": "0.2"
+          },
+          {
+            "done": "2",
+            "text": "Modification des requêtes",
+            "charge": "0.8"
+          },
+          {
+            "text": "Back office "
+          },
+          {
+            "done": "2",
+            "text": "Modification template Preview et affichage conditionnel",
+            "charge": "0.3"
+          },
+          {
+            "done": "2",
+            "text": "Export CSV",
+            "charge": "0.2"
+          },
+          {
+            "done": "2",
+            "text": "Export Word",
+            "charge": "0.3"
+          },
+          {
+            "done": "3",
+            "text": "Modification titre tab + modif tab size en JS",
+            "charge": "0.1"
+          },
+          {
+            "text": "Une option obligatoire parmi :"
+          },
+          {
+            "text": "Option 1 ~ NON NATIF"
+          },
+          {
+            "done": "-1",
+            "text": "- Refaire un custom datatype eZ\n- Faire une nouvelle extension eZ\n- Créer des templates BO eZ\n- Gérer un comportement spécifique : Texte riche WYSIWYG\n- Gérer la récupération des valeurs du dossier \"Type of device\"",
+            "charge": "3.1"
+          },
+          {
+            "done": "-1",
+            "text": "Modification classe \"Questionnaire Conditions\"",
+            "charge": "0.2"
+          },
+          {
+            "done": "-1",
+            "text": "Création et paramétrage nouvelle classe \"Type of device\"",
+            "charge": "0.2"
+          },
+          {
+            "done": "-1",
+            "text": "Ajout d'un dossier \"Type of device\" et de nouvelles instances",
+            "charge": "0.2"
+          },
+          {
+            "done": "-1",
+            "text": "Validation JS et message d’erreur (Non natifs) non administrable (pour vérifier appareils différents)",
+            "charge": "0.5"
+          },
+          {
+            "text": "Option 2 ~ NATIF"
+          },
+          {
+            "done": "2",
+            "text": "Dissocier le module en deux classes :\n- \"Type of device\" permet de gérer les valeurs dans le dossier \"Type of device\"\n- \"E-version\" propose les champs \"Type of device\" (liste déroulante), \"E-version name\" (texte), et Note e-versions (texte riche)\n- Toutes les e-versions (instances de \"E-version\") sont placées dans le questionnaire basic (sub-items)",
+            "charge": "0.7"
+          },
+          {
+            "done": "2",
+            "text": "Création et paramétrage nouvelle classe \"Type of device\"",
+            "charge": "0.2"
+          },
+          {
+            "done": "2",
+            "text": "Ajout d'un dossier \"Type of device\" et de nouvelles instances",
+            "charge": "0.2"
+          },
+          {
+            "done": "-1",
+            "text": "Dev supplémentaire pour interdire deux fois le même device par version",
+            "charge": "0.8"
+          },
+          {
+            "text": "Option 3 ~ SEMI NATIF"
+          },
+          {
+            "done": "-1",
+            "text": "- Refaire une copie du modèle de données du module \"Translations\" et adaptation (extension, classes, configs, templates\n- Laisser tomber le champ texte riche pour un champ texte simple\n- Laisser tomber la possibilité de pouvoir administrer les \"devices\"",
+            "charge": "2"
+          },
+          {
+            "done": "-1",
+            "text": "Modification classe \"Questionnaire Conditions\"",
+            "charge": "0.2"
+          },
+          {
+            "done": "-1",
+            "text": "Validation JS et message d’erreur (Non natifs) non administrable (pour vérifier appareils différents)",
+            "charge": "0.5"
+          }
+        ],
+        ""
+      ]
+    }
+  ],
+  "settings": {
+    "addTaskLabel": "Add task",
+    "addTitleLabel": "Add title",
+    "showTaskCharge": 1
+  }
+}
