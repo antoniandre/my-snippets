@@ -187,7 +187,7 @@ var colorizeText = function(string, language)
                     // Following will wrap any ' or " THAT ARE NOT INSIDE HTML TAG (e.g. <span class="ponctuation">).
                     // Javascript regex does not support lookbehinds. (T_T)
                     .replace(/(?!(?:.(?=[^<]))*>)("|')([^\1]*?)\1/g, '<span class="quote">"$2"</span>')
-                    .replace(/(new|$|function|document|window|var|(?:clear|set)(?:Timeout|Interval))/g, '<span class="keyword">$1</span>')
+                    .replace(/\b(new|if|else|do|$|function|document|window|while|for|switch|in|break|continue|var|(?:clear|set)(?:Timeout|Interval))(?=[^\w])/g, '<span class="keyword">$1</span>')
                     .replace(/\$/g, '<span class="dollar">$</span>')
                     .replace(/([\[\](){}.:,+\-?;])/g, '<span class="ponctuation">$1</span>')
                     // Following will wrap '=' THAT ARE NOT INSIDE HTML TAG (e.g. <span class="ponctuation">).
@@ -219,6 +219,7 @@ var codeEditor = function(editor)
             self.editor.append(char);*/
             // console.log(this.innerHTML.replace(/<\/?[^>]+\/?>/g, ''));
             if (ignoreKeys.indexOf(e.which) === -1) this.innerHTML = colorizeText(this.innerHTML.replace(/<\/?[^>]+\/?>/g, ''), self.language);
+            getCaretCharacterOffsetWithin(e);
         });
     };
 
@@ -229,7 +230,8 @@ var codeEditor = function(editor)
 };
 
 
-function getCaretCharacterOffsetWithin(element) {
+function getCaretCharacterOffsetWithin(element)
+{
     var caretOffset = 0;
     var doc = element.ownerDocument || element.document;
     var win = doc.defaultView || doc.parentWindow;
@@ -253,7 +255,29 @@ function getCaretCharacterOffsetWithin(element) {
     return caretOffset;
 }
 
-function showCaretPos(el) {
+function showCaretPos(el)
+{
     var caretPosEl = document.getElementById("caretPos");
     caretPosEl.innerHTML = "Caret position: " + getCaretCharacterOffsetWithin(el);
+}
+
+function moveCaret(win, charCount)
+{
+    var sel, range;
+    if (win.getSelection) {
+        // IE9+ and other browsers
+        sel = win.getSelection();
+        if (sel.rangeCount > 0) {
+            var textNode = sel.focusNode;
+            var newOffset = sel.focusOffset + charCount;
+            sel.collapse(textNode, Math.min(textNode.length, newOffset));
+        }
+    } else if ( (sel = win.document.selection) ) {
+        // IE <= 8
+        if (sel.type != "Control") {
+            range = sel.createRange();
+            range.move("character", charCount);
+            range.select();
+        }
+    }
 }
