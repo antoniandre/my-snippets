@@ -48,7 +48,7 @@ $(document).ready(function()
  */
 String.prototype.htmlize = function()
 {
-    return this.replace(/&(l|g)t;/g, function(){return {l: '<', g: '>'}[arguments[1]]});
+    return this.replace(/&(l|g)t;/g, function(a){return {l: '<', g: '>'}[a]});
 };
 
 
@@ -77,7 +77,7 @@ var syntaxHighlighter = function()
             if (wrapper.data('result'))
             {
                 var html = wrapper.find('pre[data-type="html"]').html().htmlize(),
-                    js = wrapper.find('pre[data-type="javascript"]').html(),
+                    js = wrapper.find('pre[data-type="js"]').html(),
                     css = wrapper.find('pre[data-type="css"]').html().htmlize(),
                     contents = '<html><head><link rel="stylesheet" type="text/css" href="../css/grid.css">'
                     + '<script src="../bower_components/jquery/dist/jquery.min.js"></script>'
@@ -96,7 +96,7 @@ var syntaxHighlighter = function()
 
         var html = '',
             radioId = i + '-' + type,
-            checked = pre.data('default') !== undefined ? '  checked' : '';
+            checked = pre.data('active') !== undefined ? '  checked' : '';
 
 
         if (this.innerHTML)
@@ -177,6 +177,17 @@ var colorizeText = function(string, language)
             // Wrap extra comments.
             .replace(/(\/\*\s*(?:.(?!<[^>]+>))*?\s*\*\/\s*)/mg, '\n<span class="comment">$1</span>').trim();
         break;
+        case 'sql':
+            string = string.replace(
+                     /\b(\*|CREATE|ALL|DATABASE|TABLE|GRANT|PRIVILEGES|IDENTIFIED|FLUSH|SELECT|UPDATE|DELETE|INSERT|FROM|WHERE|(?:ORDER|GROUP) BY|LIMIT|(?:(?:LEFT|RIGHT|INNER|OUTER) |)JOIN|AS|ON|COUNT|CASE|TO|IF|WHEN|BETWEEN|AND|OR|CONCAT)(?=\W)/ig, function()
+                     {
+                        return '<span class="keyword">' + arguments[1].toUpperCase() + '</span>';
+                     });
+        break;
+        case 'php':
+            string = string.replace(/\b(define|echo|print_r|var_dump)(?=\W)/ig, '<span class="keyword">$1</span>');
+        break;
+        case 'js':
         case 'javascript':
             string = string
                     .replace(/([<>])/g, '<span class="ponctuation">$1</span>')
@@ -187,7 +198,7 @@ var colorizeText = function(string, language)
                     // Following will wrap any ' or " THAT ARE NOT INSIDE HTML TAG (e.g. <span class="ponctuation">).
                     // Javascript regex does not support lookbehinds. (T_T)
                     .replace(/(?!(?:.(?=[^<]))*>)("|')([^\1]*?)\1/g, '<span class="quote">"$2"</span>')
-                    .replace(/\b(new|if|else|do|$|function|document|window|while|for|switch|in|break|continue|var|(?:clear|set)(?:Timeout|Interval))(?=[^\w])/g, '<span class="keyword">$1</span>')
+                    .replace(/\b(new|getElementsBy(?:Tag|Class|)Name|arguments|getElementById|if|else|do|null|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|var|(?:clear|set)(?:Timeout|Interval))(?=\W)/g, '<span class="keyword">$1</span>')
                     .replace(/\$/g, '<span class="dollar">$</span>')
                     .replace(/([\[\](){}.:,+\-?;])/g, '<span class="ponctuation">$1</span>')
                     // Following will wrap '=' THAT ARE NOT INSIDE HTML TAG (e.g. <span class="ponctuation">).
@@ -212,14 +223,20 @@ var codeEditor = function(editor)
         });
         self.editor.on('keyup', function(e)
         {
-            showCaretPos(self.editor[0]);
-            console.log(e.which)
+            var rawText = this.innerHTML.replace(/<\/?[^>]+\/?>/g, ''),
+                caretPosition = getCaretCharacterOffsetWithin(self.editor[0]);
+                // textWithCaret = [rawText.slice(0, caretPosition), '__CARET__', rawText.slice(caretPosition)].join('')
+
+            // console.log(textWithCaret);
+
+            // console.log(e.which)
             var ignoreKeys = [16,17,18,27,37,38,39,40,91,93];
             /*var char = String.fromCharCode((96 <= e.which && e.which <= 105) ? e.which-48 : e.which);
             self.editor.append(char);*/
             // console.log(this.innerHTML.replace(/<\/?[^>]+\/?>/g, ''));
-            if (ignoreKeys.indexOf(e.which) === -1) this.innerHTML = colorizeText(this.innerHTML.replace(/<\/?[^>]+\/?>/g, ''), self.language);
-            getCaretCharacterOffsetWithin(e);
+            if (ignoreKeys.indexOf(e.which) === -1) this.innerHTML = colorizeText(rawText, self.language);
+
+            setTimeout(function(){moveCaret(caretPosition, self.editor[0]);}, 1500);
         });
     };
 
@@ -261,15 +278,18 @@ function showCaretPos(el)
     caretPosEl.innerHTML = "Caret position: " + getCaretCharacterOffsetWithin(el);
 }
 
-function moveCaret(win, charCount)
+function moveCaret(charCount, element)
 {
     var sel, range;
+    var doc = element.ownerDocument || element.document;
+    var win = doc.defaultView || doc.parentWindow;
+
     if (win.getSelection) {
         // IE9+ and other browsers
         sel = win.getSelection();
         if (sel.rangeCount > 0) {
             var textNode = sel.focusNode;
-            var newOffset = sel.focusOffset + charCount;
+            var newOffset = charCount;
             sel.collapse(textNode, Math.min(textNode.length, newOffset));
         }
     } else if ( (sel = win.document.selection) ) {
@@ -280,4 +300,5 @@ function moveCaret(win, charCount)
             range.select();
         }
     }
+    console.log('setting caret at '+newOffset, sel);
 }

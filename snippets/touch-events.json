@@ -9,8 +9,14 @@
             "jquery"
         ]
     },
-    "js":"$(document).ready(function()\n{\n    // Some code commment.\n    var i = \"able\";\n});",
-    "css":"",
-    "html":"",
-    "activeTab":"js"
+    "languages":
+    {
+        "js":
+        {
+            "code":"$(document).ready(function()\n{\n    // Some code commment.\n    var i = \"able\";\n});",
+            "active": true
+        },
+        "css": {"code": ""},
+        "html": {"code": ""}
+    }
 }

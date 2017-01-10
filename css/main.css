@@ -361,7 +361,7 @@ li:hover .topbar-submenu {
 }
 .code-wrapper input[data-type="html"]:checked ~ pre[data-type="html"],
 .code-wrapper input[data-type="css"]:checked ~ pre[data-type="css"],
-.code-wrapper input[data-type="javascript"]:checked ~ pre[data-type="javascript"],
+.code-wrapper input[data-type="js"]:checked ~ pre[data-type="js"],
 .code-wrapper input[data-type="result"]:checked ~ pre[data-type="result"] {z-index: 2;}
 
 .code-wrapper pre,

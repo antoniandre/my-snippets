@@ -32,21 +32,36 @@ function render($snippet)
     $scripts = '';
     $styles  = '';
     $root = ROOT;
-    $htmlCode = htmlentities($snippet->html);
+    $languages = '';
+    $activeTab = null;
 
     foreach ((array)$snippet->dependencies as $type => $array)
     {
         foreach ($array as $resource)
         {
-            if ($type === 'css') $styles .= ($styles ? "\n\t\t" : '') . "<link rel='stylesheet' href='$resource'>";
+            if ($type === 'css') $styles .= ($styles ? "\n        " : '') . "<link rel='stylesheet' href='$resource'>";
             if ($type === 'js')
             {
                 if (array_key_exists($resource, $knownJs)) $resource = ROOT . "/{$knownJs[$resource]}";
 
-                $scripts .= ($scripts ? "\n\t\t" : '') . "<script src='$resource'></script>";
+                $scripts .= ($scripts ? "\n        " : '') . "<script src='$resource'></script>";
             }
         }
     }
+
+    foreach ((array)$snippet->languages as $id => $language)
+    {
+        if (isset($language->active) && $language->active) {$activeTab = $id;break;}
+    }
+    foreach ((array)$snippet->languages as $id => $language)
+    {
+        if ($id === 'html') $language->code = htmlentities($language->code);
+
+        $active     = $id === $activeTab || (!$activeTab && !$languages) ? " data-active" : '';
+        $languages .= ($languages ? "\n                    " : '')
+                    . "<pre class='i-code' contenteditable='true' data-type='$id'$active>$language->code</pre>";
+    }
+
 
     echo <<<HTML
 <html id="snippet">
@@ -54,7 +69,7 @@ function render($snippet)
         <title>$snippet->name</title>
         $styles
         <style>
-            $snippet->css
+            {$snippet->languages->css->code}
         </style>
         <link rel="stylesheet" type="text/css" href="$root/css/main.css">
         <link href="https://file.myfontastic.com/3HQaS5Npxv3BKokeRYZ2T3/icons.css" rel="stylesheet">
@@ -62,7 +77,7 @@ function render($snippet)
         $scripts
         <script src="$root/js/main.js"></script>
         <script>
-            $snippet->js
+            {$snippet->languages->js->code}
         </script>
     </head>
     <body>
@@ -72,12 +87,10 @@ function render($snippet)
             <label for="see-the-code" class="i-plus">Check the code</label>
             <div class="code-section">
                 <div class="code-wrapper" style="height: 500px;">
-                    <pre class="i-code" contenteditable="true" data-type="javascript">$snippet->js</pre>
-                    <pre class="i-code" contenteditable="true" data-type="css">$snippet->css</pre>
-                    <pre class="i-code" contenteditable="true" data-type="html">$htmlCode</pre>
+                    $languages
                 </div>
             </div>
-            <div class="content">$snippet->html</div>
+            <div class="content">{$snippet->languages->html->code}</div>
             <div id="caretPos"></div>
         </div>
         <a href="../../" class="i-arr-l"> Go back home</a>
