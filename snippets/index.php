@@ -55,12 +55,16 @@ function render($snippet)
     }
     foreach ((array)$snippet->languages as $id => $language)
     {
-        if ($id === 'html') $language->code = htmlentities($language->code);
+        $lang = $id === 'html' ? htmlentities($language->code) : $language->code;
 
         $active     = $id === $activeTab || (!$activeTab && !$languages) ? " data-active" : '';
         $languages .= ($languages ? "\n                    " : '')
-                    . "<pre class='i-code' contenteditable='true' data-type='$id'$active>$language->code</pre>";
+                    . "<pre class='i-code' contenteditable='true' data-type='$id'$active>$lang</pre>";
     }
+
+    $script = isset($snippet->languages->js->code) ? "<script>\n        {$snippet->languages->js->code}\n    </script>" : '';
+    $style  = isset($snippet->languages->css->code) ? "<style>\n        {$snippet->languages->css->code}\n    </style>" : '';
+    $html   = isset($snippet->languages->html->code) ? "<div class='content'>\n        {$snippet->languages->html->code}\n    </div>" : '';
 
 
     echo <<<HTML
@@ -68,29 +72,28 @@ function render($snippet)
     <head>
         <title>$snippet->name</title>
         $styles
-        <style>
-            {$snippet->languages->css->code}
-        </style>
+        $style
         <link rel="stylesheet" type="text/css" href="$root/css/main.css">
         <link href="https://file.myfontastic.com/3HQaS5Npxv3BKokeRYZ2T3/icons.css" rel="stylesheet">
         <script src="$root/bower_components/jquery/dist/jquery.min.js"></script>
         $scripts
         <script src="$root/js/main.js"></script>
-        <script>
-            {$snippet->languages->js->code}
-        </script>
+        $script
     </head>
     <body>
+HTML;
+    include('../templates/top-bar.php');
+    echo <<<HTML
         <div id="all">
             <h1>$snippet->h1</h1>
             <input type="checkbox" class="toggle" id="see-the-code">
             <label for="see-the-code" class="i-plus">Check the code</label>
             <div class="code-section">
-                <div class="code-wrapper" style="height: 500px;">
+                <div class="code-wrapper" style="height: 400px;">
                     $languages
                 </div>
             </div>
-            <div class="content">{$snippet->languages->html->code}</div>
+            $html
             <div id="caretPos"></div>
         </div>
         <a href="../../" class="i-arr-l"> Go back home</a>

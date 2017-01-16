@@ -1,0 +1,19 @@
+{
+    "name": "Close on Escape Key",
+    "h1": "close on escape key",
+    "icon": "i-pointer",
+    "dependencies":
+    {
+        "js":
+        [
+            "jquery"
+        ]
+    },
+    "languages":
+    {
+        "js":
+        {
+            "code":"// Close an open code-section on escape key press.\n$(window).on('keyup', function(e)\n{\n    // Pressed escape key.\n    if (e.which === 27 && $('#see-the-code').is(':checked'))\n    {\n        $('#see-the-code').prop('checked', false);\n        return false;\n    }\n});"
+        }
+    }
+}

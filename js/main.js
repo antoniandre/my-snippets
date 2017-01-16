@@ -20,6 +20,11 @@ $(document).ready(function()
                 cellsPerRow: 2,
                 cellHeight: 160
             },
+            330:
+            {
+                cellsPerRow: 1,
+                cellHeight: 160
+            },
         }
     });
 

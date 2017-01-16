@@ -2,15 +2,5 @@
     "name": "traveling is Awesome",
     "h1": "traveling is Awesome",
     "icon": "i-plane",
-    "url": "http://travelingisawesome.com",
-    "dependencies":
-    {
-        "js":
-        [
-            "jquery"
-        ]
-    },
-    "js":"$(document).ready(function()\n{\n    //\n});",
-    "css":"",
-    "html":""
+    "url": "http://travelingisawesome.com"
 }

@@ -1,15 +1,29 @@
 <?php
 //=======================================================================================================//
 $self = $_SERVER['PHP_SELF'];
+define('ROOT', dirname($self));
 define('SNIPPETS_JSON', __DIR__ . '/snippets.json');
 define('SNIPPETS_DIR',  __DIR__ . '/snippets/');
 
-$snippets = getSnippets();
-//=======================================================================================================//
-
-
+$snippets = checkPost('refresh') ? createSnippetsJson() : getSnippets();
 
 //=======================================================================================================//
+
+
+
+//=======================================================================================================//
+function getFromPost($var, $default = null)
+{
+    return isset($_POST[$var]) && $_POST[$var] ? $_POST[$var] : $default;
+}
+
+
+function checkPost($var)
+{
+    return isset($_POST[$var]);
+}
+
+
 function getSnippets()
 {
     $data = is_file(SNIPPETS_JSON) ? json_decode(file_get_contents(SNIPPETS_JSON)) : null;
@@ -53,26 +67,14 @@ function createSnippetsJson()
     <script src="js/main.js"></script>
 </head>
 <body>
-    <div class="topbar-wrapper">
-        <div class="topbar clearfix">
-            <div class="topbar-inner">
-                <div class="topbar-logo i-chef"><a href="$self">My snippets</a></div>
-                <div class="topbar-menu">
-                    <ul>
-                        <li><a href="index.html" class="i-home"><span>home</span></a></li>
-                        <li>
-                            <span class="i-examples"><span>Examples &nbsp; <i class="i-arr-d"></i></span></span>
-                            <ul class="topbar-submenu">
-                                <li><a href="examples/basic.html" class="i-arr-l">Basic</a></li>
-                            </ul>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
+    <?php include('templates/top-bar.php'); ?>
     <h1>This is my snippets.</h1>
-    <p class="intro">This is where I store all my started projects and usefull snippets :)</p>
+    <form action="<?php echo $self ?>" method="post">
+        <p class="intro">
+            This is where I store all my started projects and usefull snippets :)<br>
+            <button type="submit" name="refresh" class="i-sync"> Refresh</button>
+        </p>
+    </form>
 
     <div class="thegrid">
         <div class="loading"></div>

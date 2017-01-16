@@ -16,15 +16,24 @@ h2 {color: #666;margin: 30px 0 10px;}
 p.intro {margin: 0;padding: 20px 0 30px;text-align: center;}
 
 a {
-    color: #f33;
+    color: #3c3;
     text-decoration: none;
     -webkit-transition: .4s ease-out;
     -o-transition: .4s ease-out;
     transition: .4s ease-out;
 }
-a:hover {color: #c11;}
+a:hover {color: #1c1;}
 :before {vertical-align: middle;}
 input.toggle {position: fixed;top: -1em;left: -1em;z-index: -1;}
+
+#all {
+    border: 1px solid #f2f2f2;
+    background-color: #f8f8f8;
+    border-radius: 4px;
+    margin: 50px auto;
+    max-width: 1200px;
+}
+
 
 @media screen and (max-width: 560px) {
     body {padding-left: 10px;padding-right: 10px;}
@@ -68,8 +77,8 @@ input.toggle {position: fixed;top: -1em;left: -1em;z-index: -1;}
     list-style-type: none;
     position: relative;
 }
-.topbar-menu li a, .topbar-menu li > span {margin-left: 20px;color: #f33;}
-.topbar-menu li a:hover, .topbar-menu li > span:hover {color: #c11;}
+.topbar-menu li a, .topbar-menu li > span {margin-left: 20px;color: #3c3;}
+.topbar-menu li a:hover, .topbar-menu li > span:hover {color: #1c1;}
 .topbar-menu :before {font-size: 140%;padding-right: 10px;}
 .topbar-menu .i-arr-d:before {font-size: 100%;padding-right: 0;color: #ccc;}
 
@@ -103,11 +112,11 @@ li:hover .topbar-submenu {
     display: block;
     border-right: 3px solid transparent;
 }
-.topbar-submenu li a.active {border-right-color: #f33;}
+.topbar-submenu li a.active {border-right-color: #3c3;}
 .topbar-submenu li a.active:before {opacity: .5;}
 .topbar-submenu li a:hover {
     background-color: #f8f8f8;
-    border-right-color: #f33;
+    border-right-color: #3c3;
     padding-left: 30px;
     padding-right: 25px;
 }
@@ -153,14 +162,36 @@ li:hover .topbar-submenu {
 
 
 
-/*================================== SNIPPET =================================*/
-#all {
-    border: 1px solid #f2f2f2;
-    background-color: #f8f8f8;
-    border-radius: 4px;
-    margin: 50px auto;
-    max-width: 1200px;
+/*============================== SNIPPETS LIST ===============================*/
+button {
+    margin-top: 10px;
+    border: 1px solid #ccc;
+    color: #fff;
+    border-color: #ff54a3;
+    background-image: radial-gradient(circle at top right, #ffb1cb, #ff54a3);
+    text-align: center;
+    line-height: 2;
+    font-size: 110%;
+    border-radius: 20px;
+    padding: 0 15px 0 20px;
+    text-indent: -.4em;
+    outline: none;
+    cursor: pointer;
+    text-shadow: 0 0 2px rgba(0,0,0,.2);
+    display: inline-block;
+    position: relative;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
 }
+button:before {font-size: 150%;}
+/*============================================================================*/
+
+
+
+/*=============================== SNIPPET PAGE ===============================*/
 #snippet h1 {
     margin: 20px 0 50px;
 }
@@ -169,8 +200,8 @@ li:hover .topbar-submenu {
 
 /*==================================== GRID ==================================*/
 .thegrid .cell > div {
-    border: 1px solid orange;
-    background-image: radial-gradient(circle at top right, yellow, #f06d06);
+    border: 1px solid #8d5;
+    background-image: radial-gradient(circle at top right, #cf6, #8d5);
     display: -webkit-flex;
     display: -moz-flex;
     display: -ms-flex;
@@ -178,6 +209,10 @@ li:hover .topbar-submenu {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+.thegrid .cell > div a {
+    color: #090;
+    text-shadow: -1px -1px 1px #9f9;
 }
 .thegrid .cell > div a:before {
     align-items: center;
@@ -218,10 +253,11 @@ li:hover .topbar-submenu {
     margin-bottom: 10px;
 }
 .thegrid .cell > div a:hover {
-    color: rgba(255,0,0,.2);
+    color: rgba(0,160,0,.3);
+    text-shadow: none;
 }
 .thegrid .cell > div a:hover:before {
-    color: rgba(255,0,0,1);
+    color: rgba(0,160,0,1);
 }
 /*============================================================================*/
 
@@ -274,15 +310,15 @@ li:hover .topbar-submenu {
     height: 0px;
     overflow: hidden;
     position: relative;
-    background-color: #f8f8f8;
-    margin: 40px 0px 30px;
+    background-color: #fff;
+    margin: 40px -1px 30px;
     padding: 0px 30px;
     -webkit-transition: .9s ease-in-out;
     -o-transition: .9s ease-in-out;
     transition: .9s ease-in-out;
 }
 #see-the-code:checked ~ .code-section {
-    height: 150px;
+    height: 500px;
     margin-top: 10px;
     margin-bottom: 50px;
     padding-top: 35px;

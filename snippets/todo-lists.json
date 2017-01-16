@@ -9,7 +9,11 @@
             "jquery"
         ]
     },
-    "js":"$(document).ready(function()\n{\n    //\n});",
-    "css":"",
-    "html":""
+    "languages":
+    {
+        "js":
+        {
+            "code": "$(document).ready(function()\n{\n    //\n});"
+        }
+    }
 }

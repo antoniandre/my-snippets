@@ -2,15 +2,5 @@
     "name": "antoniandre.me",
     "h1": "antoniandre.me",
     "icon": "i-user",
-    "url": "http://antoniandre.me",
-    "dependencies":
-    {
-        "js":
-        [
-            "jquery"
-        ]
-    },
-    "js":"$(document).ready(function()\n{\n    //\n});",
-    "css":"",
-    "html":""
+    "url": "http://antoniandre.me"
 }
