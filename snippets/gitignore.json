@@ -1,0 +1,14 @@
+{
+    "name": ".gitignore",
+    "h1": ".gitignore",
+    "icon": "i-settings2",
+    "dependencies":
+    {},
+    "languages":
+    {
+        ".gitignore":
+        {
+            "code": "# WINDOWS\n# -------\nThumbs.db\nehthumbs.db\nDesktop.ini\n$RECYCLE.BIN/\n*.cab\n*.msi\n*.msm\n*.msp\n# OSX\n# ---\n.DS_Store\n.AppleDouble\n.LSOverride\n._*\n.Spotlight-V100\n.Trashes\n# BOWER & NODE\n# ------------\nbower_components/\nnode_modules/\n# GITHUB\n# ------\ngh-pages/"
+        }
+    }
+}
