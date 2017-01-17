@@ -13,10 +13,7 @@
     {
         "js":
         {
-            "code":"$(document).ready(function()\n{\n    // Some code commment.\n    var i = \"able\";\n});",
-            "active": true
-        },
-        "css": {"code": ""},
-        "html": {"code": ""}
+            "code":"$(document).ready(function()\n{\n    // Some code commment.\n    var i = \"able\";\n});"
+        }
     }
 }
