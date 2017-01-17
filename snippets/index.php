@@ -66,6 +66,7 @@ function render($snippet)
     $style  = isset($snippet->languages->css->code) ? "<style>\n        {$snippet->languages->css->code}\n    </style>" : '';
     $html   = isset($snippet->languages->html->code) ? "<div class='content'>\n        {$snippet->languages->html->code}\n    </div>" : '';
 
+    $checked = !$html ? ' checked' : '';
 
     echo <<<HTML
 <html id="snippet">
@@ -86,7 +87,7 @@ HTML;
     echo <<<HTML
         <div id="all">
             <h1>$snippet->h1</h1>
-            <input type="checkbox" class="toggle" id="see-the-code">
+            <input type="checkbox" class="toggle" id="see-the-code"$checked>
             <label for="see-the-code" class="i-plus">Check the code</label>
             <div class="code-section">
                 <div class="code-wrapper" style="height: 400px;">
@@ -96,7 +97,7 @@ HTML;
             $html
             <div id="caretPos"></div>
         </div>
-        <a href="../../" class="i-arr-l"> Go back home</a>
+        <div class="center"><a href="../../" class="i-arr-l back"> Go back home</a></div>
     </body>
 </html>
 HTML;
