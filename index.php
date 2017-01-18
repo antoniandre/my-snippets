@@ -66,7 +66,7 @@ function createSnippetsJson()
     <script src="../grid/js/grid.js"></script>
     <script src="js/main.js"></script>
 </head>
-<body>
+<body class="snippets-list">
     <?php include('templates/top-bar.php'); ?>
     <h1>This is my snippets.</h1>
     <form action="<?php echo $self ?>" method="post">
@@ -97,7 +97,15 @@ HTML;
         ?>
         <div class="cell" data-width="1" data-height="1">
             <div>
-                <a href="http://" class="i-arr-dr" target="_blank"><i class="i-plus"></i> New Snippet</a>
+                <input type="checkbox" id="showForm" class="toggle">
+                <label for="showForm" class="i-arr-dr" target="_blank"><i class="i-plus"></i> New Snippet</label>
+                <div class="new-snippet">
+                    <label for="showForm"><i class="i-cross"></i></label>
+                    <form action="<?php echo ROOT . '/snippet/new' ?>" method="post">
+                        <input type="text" placeholder="Choose a nice snippet name" required>
+                        <button type="submit">ok</button>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

@@ -24,6 +24,58 @@ function get($var, $default = null)
 }
 
 
+function save()
+{
+    $snippet = new StdClass();
+    $snippet->name         = get('name');
+    $snippet->h1           = get('h1');
+    $snippet->icon         = get('icon');
+    $snippet->dependencies = new StdClass();
+    $dependencies          = get('dependencies');
+    $snippet->languages    = new StdClass();
+    $languages             = get('languages');
+    $snippet->tags         = get('tags');
+
+    $url                   = ($url = get('url')) ? ($snippet->url = $url) : null);
+    // if ($url = get('url')) $snippet->url = $url;
+
+
+    foreach ($dependencies as $language => $dependency)
+    {
+        $snippet->dependencies->$language = $dependency;
+    }
+
+    foreach ($languages as $language)
+    {
+        $lang = new StdClass();
+
+        if (isset($language['code']))   $lang->code   = $language['code'];
+        if (isset($language['active'])) $lang->active = $language['active'];
+        if (isset($language['label']))  $lang->label  = $language['label'];
+
+        $snippet->languages->$language = $lang;
+    }
+
+    $filename = generateFileName($snippet->name);
+    print_r([$filename, $snippet]);die;
+
+    return file_put_contents($filename, json_encode($snippet));
+}
+
+
+function generateFileName($snippetName)
+{
+    $snippetName = iconv('utf-8', 'UTF-8//TRANSLIT', $snippetName);
+    return $snippetName;
+}
+
+
+function get($var, $default = null)
+{
+    return isset($_GET[$var]) && $_GET[$var] ? $_GET[$var] : $default;
+}
+
+
 function render($snippet)
 {
     global $knownJs;

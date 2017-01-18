@@ -25,7 +25,7 @@ a {
 }
 a:hover {color: #1c1;}
 :before {vertical-align: middle;}
-input.toggle {position: fixed;top: -1em;left: -1em;z-index: -1;}
+input.toggle {position: fixed;top: -1em;left: -1em;z-index: -10;}
 
 #all {
     border: 1px solid #f2f2f2;
@@ -162,6 +162,27 @@ li:hover .topbar-submenu {
 /*============================================================================*/
 
 
+/*==================================== GRID ==================================*/
+.thegrid .cell > div {
+    border: 1px solid #8d5;
+    background-image: radial-gradient(circle at top right, #cf6, #8d5);
+    display: -webkit-flex;
+    display: -moz-flex;
+    display: -ms-flex;
+    display: -o-flex;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+    -webkit-transform: translateZ(0);
+    -ms-transform: translateZ(0);
+    -o-transform: translateZ(0);
+    transform: translateZ(0);
+}
+/*============================================================================*/
+
+
 
 /*============================== SNIPPETS LIST ===============================*/
 button {
@@ -188,34 +209,15 @@ button {
     user-select: none;
 }
 button:before {font-size: 150%;}
-/*============================================================================*/
 
-
-
-/*=============================== SNIPPET PAGE ===============================*/
-#snippet h1 {
-    margin: 20px 0 50px;
-}
-/*============================================================================*/
-
-
-/*==================================== GRID ==================================*/
-.thegrid .cell > div {
-    border: 1px solid #8d5;
-    background-image: radial-gradient(circle at top right, #cf6, #8d5);
-    display: -webkit-flex;
-    display: -moz-flex;
-    display: -ms-flex;
-    display: -o-flex;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.thegrid .cell > div a {
+.thegrid .cell > div a,
+.thegrid .cell > div label {
     color: #090;
     text-shadow: -1px -1px 1px #9f9;
+    cursor: pointer;
 }
-.thegrid .cell > div a:before {
+.thegrid .cell > div a:before,
+.thegrid .cell > div label:before {
     align-items: center;
     justify-content: center;
     display: -webkit-inline-flex;
@@ -259,6 +261,55 @@ button:before {font-size: 150%;}
 }
 .thegrid .cell > div a:hover:before {
     color: rgba(0,160,0,1);
+}
+
+.thegrid .cell .new-snippet {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+    z-index: -1;
+    align-items: center;
+    justify-content: center;
+    display: -webkit-inline-flex;
+    display: -moz-inline-flex;
+    display: -ms-inline-flex;
+    display: -o-inline-flex;
+    display: inline-flex;
+    vertical-align: middle;
+    background-color: rgba(255,255,255,.5);
+    -webkit-transform: translateX(100%);
+    -ms-transform: translateX(100%);
+    -o-transform: translateX(100%);
+    transform: translateX(100%);
+    -webkit-transition: .3s ease-in-out;
+    -o-transition: .3s ease-in-out;
+    transition: .3s ease-in-out;
+}
+.thegrid .cell #showForm:checked ~ .new-snippet {
+    z-index: 1;
+    opacity: 1;
+    -webkit-transform: translateX(0%);
+    -ms-transform: translateX(0%);
+    -o-transform: translateX(0%);
+    transform: translateX(0%);
+}
+
+.thegrid .cell .new-snippet .i-cross {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 220%;
+}
+/*============================================================================*/
+
+
+
+/*=============================== SNIPPET PAGE ===============================*/
+#snippet h1 {
+    margin: 20px 0 50px;
 }
 /*============================================================================*/
 
@@ -366,13 +417,16 @@ button:before {font-size: 150%;}
     -o-user-select: none;
     user-select: none;
 }
-.code-wrapper.no-tabs:after {
+.code-wrapper:after {
     content: attr(data-type);
     position: absolute;
     right: 10px;
     bottom: 100%;
     color: #ccc;
     border-bottom-color: #fbfbfb;
+}
+.code-wrapper[data-label]:after {
+    content: attr(data-label);
 }
 
 .code-wrapper label {

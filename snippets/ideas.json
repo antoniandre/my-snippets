@@ -1,0 +1,16 @@
+{
+    "name": "Ideas",
+    "h1": "Ideas",
+    "icon": "i-bulb",
+    "dependencies":
+    {
+    },
+    "languages":
+    {
+        "txt":
+        {
+            "code": "for sweetcocktails: http://codepen.io/alistairtweedie/pen/GgPBqP\ncool resume: http://techandall.com/professional-resume-cv-template/",
+            "label": "Plain Text"
+        }
+    }
+}
