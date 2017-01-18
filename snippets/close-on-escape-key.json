@@ -1,7 +1,7 @@
 {
     "name": "Close on Escape Key",
     "h1": "close on escape key",
-    "icon": "i-pointer",
+    "icon": "i-cross",
     "dependencies":
     {
         "js":
