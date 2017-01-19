@@ -1,0 +1,29 @@
+<html id="snippet">
+    <head>
+        <title>{{snippetName}} | My Snippets</title>
+        {{styles}}
+        {{style}}
+        <link rel="stylesheet" type="text/css" href="{{ROOT_URL}}css/main.css">
+        <link href="https://file.myfontastic.com/3HQaS5Npxv3BKokeRYZ2T3/icons.css" rel="stylesheet">
+        <script src="{{ROOT_URL}}bower_components/jquery/dist/jquery.min.js"></script>
+        {{scripts}}
+        <script src="{{ROOT_URL}}js/main.js"></script>
+        {{script}}
+    </head>
+    <body>
+        {{include top-bar}}
+        <div id="all">
+            <h1>{{h1}}</h1>
+            <input type="checkbox" class="toggle" id="see-the-code"{{checked}}>
+            <label for="see-the-code" class="i-plus">Check the code</label>
+            <div class="code-section">
+                <div class="code-wrapper" style="height: 400px;">
+                    {{languages}}
+                </div>
+            </div>
+            {{html}}
+            <div id="caretPos"></div>
+        </div>
+        <div class="center"><a href="../../" class="i-arr-l back"> Go back home</a></div>
+    </body>
+</html>

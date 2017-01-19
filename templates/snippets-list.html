@@ -1,0 +1,50 @@
+<html>
+    <head>
+        <title>My snippets</title>
+        <link rel="stylesheet" type="text/css" href="{{ROOT_URL}}css/main.css">
+        <link rel="stylesheet" type="text/css" href="{{ROOT_URL}}../grid/css/grid.css">
+        <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet">
+        <link href="https://file.myfontastic.com/3HQaS5Npxv3BKokeRYZ2T3/icons.css" rel="stylesheet">
+        <script src="{{ROOT_URL}}bower_components/jquery/dist/jquery.min.js"></script>
+        <script src="{{ROOT_URL}}bower_components/jquery.easing/js/jquery.easing.min.js"></script>
+        <script src="{{ROOT_URL}}../grid/js/grid.js"></script>
+        <script src="{{ROOT_URL}}js/main.js"></script>
+    </head>
+    <body class="snippets-list">
+        {{* This is a comment. }}
+        {{include top-bar}}
+        <h1>This is my snippets.</h1>
+        <form action="{{SELF}}" method="post">
+            <p class="intro">
+                This is where I store all my started projects and usefull snippets :)<br>
+                <button type="submit" name="refresh" class="i-sync"> Refresh</button>
+            </p>
+        </form>
+
+        <div class="thegrid">
+            <div class="loading"></div>
+            {{foreach snippets as jsonName => snippet}}
+            <div class="cell" data-width="1" data-height="1">
+                <div>
+                    <a href="{{snippet->url || defaultUrl}}" class="{{snippet->url ? 'i-arr-ur' : 'i-arr-dr'}}"{{snippet->url ? 'target-blank' : '-'}}>
+                        <i class="{{snippet->icon || defaultIcon}}"></i> {{snippet->name}}
+                    </a>
+                </div>
+            </div>
+            {{/foreach}}
+            <div class="cell" data-width="1" data-height="1">
+                <div>
+                    <input type="checkbox" id="showForm" class="toggle">
+                    <label for="showForm" class="i-arr-dr" target="_blank"><i class="i-plus"></i> New Snippet</label>
+                    <div class="new-snippet">
+                        <label for="showForm"><i class="i-cross"></i></label>
+                        <form action="{{ROOT_URL}}snippet/new" method="post">
+                            <input type="text" placeholder="Choose a nice snippet name" name="newSnippet" required>
+                            <button type="submit">ok</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

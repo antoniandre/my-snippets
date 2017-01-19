@@ -1,60 +1,29 @@
 <?php
-//=======================================================================================================//
-$self = $_SERVER['PHP_SELF'];
-define('ROOT', dirname($self));
-define('SNIPPETS_JSON', __DIR__ . '/snippets.json');
-define('SNIPPETS_DIR',  __DIR__ . '/snippets/');
+//===================================== VARS =====================================//
+define('SELF', $_SERVER['PHP_SELF']);
+define('ROOT_DIR', '');
+define('ROOT_URL', '');
+//================================================================================//
 
+
+//===================================== MAIN =====================================//
+include ROOT_DIR . '/functions/core.php';
 $snippets = checkPost('refresh') ? createSnippetsJson() : getSnippets();
-
-//=======================================================================================================//
-
+//================================================================================//
 
 
-//=======================================================================================================//
-function getFromPost($var, $default = null)
-{
-    return isset($_POST[$var]) && $_POST[$var] ? $_POST[$var] : $default;
-}
 
-
-function checkPost($var)
-{
-    return isset($_POST[$var]);
-}
-
-
-function getSnippets()
-{
-    $data = is_file(SNIPPETS_JSON) ? json_decode(file_get_contents(SNIPPETS_JSON)) : null;
-
-    return $data ? $data : createSnippetsJson();
-}
-
-
-function createSnippetsJson()
-{
-    $jsons = glob(SNIPPETS_DIR . '*.json');
-
-    foreach ($jsons as $json)
-    {
-        $snippetTmp  = json_decode(file_get_contents($json));
-        $jsonName = basename($json, '.json');
-
-        $snippet  = new StdClass();
-        $snippet->name = $snippetTmp->name;
-        if (isset($snippetTmp->url)) $snippet->url = $snippetTmp->url;
-        if (isset($snippetTmp->icon)) $snippet->icon = $snippetTmp->icon;
-
-        $snippets[$jsonName] = $snippet;
-    }
-
-    file_put_contents(SNIPPETS_JSON, json_encode($snippets));
-    return $snippets;
-}
-//=======================================================================================================//
-
-?><html>
+$vars = [
+    'ROOT_URL' => ROOT_URL,
+    'SELF' => SELF,
+    'snippets' => $snippets,
+    'defaultUrl' => ROOT_URL . 'snippet/yo',
+    'defaultIcon' => 'i-arr-star',
+];
+echo includeTpl('snippets-list', $vars);
+//=================================== FUNCTIONS ==================================//
+//================================================================================//
+?><!-- <html>
 <head>
     <title>My snippets</title>
     <link rel="stylesheet" type="text/css" href="css/main.css">
@@ -67,7 +36,7 @@ function createSnippetsJson()
     <script src="js/main.js"></script>
 </head>
 <body class="snippets-list">
-    <?php include('templates/top-bar.php'); ?>
+    <?php includeTpl('top-bar', ['ROOT_URL' => ROOT_URL]); ?>
     <h1>This is my snippets.</h1>
     <form action="<?php echo $self ?>" method="post">
         <p class="intro">
@@ -102,7 +71,7 @@ HTML;
                 <div class="new-snippet">
                     <label for="showForm"><i class="i-cross"></i></label>
                     <form action="<?php echo ROOT . '/snippet/new' ?>" method="post">
-                        <input type="text" placeholder="Choose a nice snippet name" required>
+                        <input type="text" placeholder="Choose a nice snippet name" name="newSnippet" required>
                         <button type="submit">ok</button>
                     </form>
                 </div>
@@ -110,4 +79,4 @@ HTML;
         </div>
     </div>
 </body>
-</html>
+</html> -->
