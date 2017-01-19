@@ -119,22 +119,7 @@ function includeTpl($name, $vars, $tpl = null)
         unset($m);// So I can securely use same var in switch.
         $return = $original;
 
-        /*switch ($task)
-        {
-            case 'include':
-                $return = includeTpl($varname, $vars);
-                break;
-
-            case '':
-                if ($name === 'foreach')
-                {
-                    list($object, $objAttr) = explode('->', $varname);
-                    $return = $vars[$object]->$objAttr;
-                }
-                else $return = $vars[$varname];
-                break;
-        }*/
-        switch (true)
+       switch (true)
         {
             // Template inclusions.
             // {{include templatename}}
@@ -147,18 +132,13 @@ function includeTpl($name, $vars, $tpl = null)
             // or {{var->sub ? var1 : var2}}
             // or {{var ? 'string1' : 'string2'}}
             case (strpos($expression, '?') !== false && strpos($expression, ':') !== false):
-                if (preg_match('~([\w]+(?:->[\w-.]+)*)\s*\?\s*(["\']?)([\w-]+)\2\s*:\s*(["\']?)([\w-_]+)\4~', $expression, $m))
+                // if (preg_match('~([\w]+(?:->[\w-.]+)*)\s*\?\s*(["\']?)([\w-]+)\2\s*:\s*(["\']?)([\w-_]+)\4~', $expression, $m))
+                if (preg_match('~^(.+?)\s*\?\s*(.+?)\s*:\s*(.+?)$~', $expression, $m))
                 {
-                    if (strpos($m[1], '->') !== false)
-                    {
-                        list($objName, $objAttr) = explode('->', $m[1], 2);
-                        $cond = isset($vars[$objName]->$objAttr) ? $vars[$objName]->$objAttr : null;
-                    }
-                    else $cond = $vars[$m[1]];
-
-                    $expression1 = $m[2] ? $m[3] : $vars[$m[3]];
-                    $expression2 = $m[4] ? $m[5] : $vars[$m[5]];
-                    $return = $cond ? $expression1 : $expression2;
+                    $expression1 = checkVar($m[1], $vars);
+                    $expression2 = checkVar($m[2], $vars);
+                    $expression3 = checkVar($m[3], $vars);
+                    $return = $expression1 ? $expression2 : $expression3;
                 }
                 break;
 
@@ -173,38 +153,18 @@ function includeTpl($name, $vars, $tpl = null)
             // or {{object->attribute || object->attribute}}
             // or {{var1 || 'string'}}
             case (strpos($expression, '||') !== false):
-                if (preg_match('~([\w-.]+(?:->[\w-.]+)*)\s*\|\|\s*(["\']?)([\w-.]+(?:->[\w-.]+)*)\2~', $expression, $m))
+                if (preg_match('~^(.+?)\s*\|\|\s*(.+?)$~', $expression, $m))
                 {
-                    list(, $leftHand, $quote, $rightHand) = $m;
-                    // Left hand var.
-                    if (strpos($leftHand, '->') !== false)
-                    {
-                        list($objName, $objAttr) = explode('->', $leftHand, 2);
-                        $value1 = isset($vars[$objName]->$objAttr) ? $vars[$objName]->$objAttr : null;
-                    }
-                    else $value1 = isset($vars[$leftHand]) ? $vars[$leftHand] : null;
-
-                    // Right hand var.
-                    if (strpos($rightHand, '->') !== false)
-                    {
-                        list($objName, $objAttr) = explode('->', $rightHand, 2);
-                        $value2 = isset($vars[$objName]->$objAttr) ? $vars[$objName]->$objAttr : null;
-                    }
-                    else $value2 = $quote ? $rightHand : (isset($vars[$rightHand]) ? $vars[$rightHand] : null);
-
-                    if ($value1 || $value2) $return = $value1 ? $value1 : $value2;
+                    $leftHand = checkVar($m[1], $vars);
+                    $rightHand = checkVar($m[2], $vars);
+                    if ($leftHand || $rightHand) $return = $leftHand ? $leftHand : $rightHand;
                 }
                 break;
 
-            // Simple object attribute / array value.
+            // Simple variables or object attribute / array value.
             // {{object->attribute}}.
-            case (preg_match('~(\w+)->(\w+)~', $expression, $m)):
-                if (isset($vars[$m[1]]->{$m[2]})) $return = $vars[$m[1]]->{$m[2]};
-                break;
-
-            // Simple variables.
-            case (preg_match('~\w+~', $expression, $m)):
-                $return = $vars[$expression];
+            default:
+                if ($val = checkVar($expression, $vars)) $return = $val;
                 break;
         }
         return $return;
@@ -212,18 +172,28 @@ function includeTpl($name, $vars, $tpl = null)
 };
 
 
-/*function checkVar($expression, $vars)
+function checkVar($expression, $vars)
 {
     $value = null;
 
-    if (strpos($expression, '->') !== false)
+    // If string.
+    if ($expression{0} === '"' || $expression{0} === "'")
+    {
+        $expression = preg_replace_callback('~\{([^}]+)\}~', function($m) use ($vars) {return $vars[$m[1]] ? $vars[$m[1]] : $m[0];}, $expression);
+        $value = substr($expression, 1, -1);
+    }
+
+    // If object attribute.
+    elseif (strpos($expression, '->') !== false)
     {
         list($objName, $objAttr) = explode('->', $expression, 2);
         $value = isset($vars[$objName]->$objAttr) ? $vars[$objName]->$objAttr : null;
     }
-    elseif $value = isset($vars[$expression]) ? $vars[$expression] : null;
+
+    // If basic var.
+    else $value = isset($vars[$expression]) ? $vars[$expression] : null;
 
     return $value;
-}*/
+}
 //================================================================================//
 ?>

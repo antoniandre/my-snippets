@@ -1,8 +1,8 @@
 <?php
 //===================================== VARS =====================================//
 define('SELF', $_SERVER['PHP_SELF']);
-define('ROOT_DIR', '');
-define('ROOT_URL', '');
+define('ROOT_DIR', realpath(__DIR__ ) . '/');
+define('ROOT_URL', dirname(SELF) . '/');
 //================================================================================//
 
 

@@ -11,7 +11,7 @@
         <script src="{{ROOT_URL}}js/main.js"></script>
     </head>
     <body class="snippets-list">
-        {{* This is a comment. }}
+        {{* This is a comment. *}}
         {{include top-bar}}
         <h1>This is my snippets.</h1>
         <form action="{{SELF}}" method="post">
@@ -26,7 +26,7 @@
             {{foreach snippets as jsonName => snippet}}
             <div class="cell" data-width="1" data-height="1">
                 <div>
-                    <a href="{{snippet->url || defaultUrl}}" class="{{snippet->url ? 'i-arr-ur' : 'i-arr-dr'}}"{{snippet->url ? 'target-blank' : '-'}}>
+                    <a href="{{snippet->url || '{ROOT_URL}snippet/{jsonName}'}}" class="{{snippet->url ? 'i-arr-ur' : 'i-arr-dr'}}"{{snippet->url ? ' target="_blank"' : ''}}>
                         <i class="{{snippet->icon || defaultIcon}}"></i> {{snippet->name}}
                     </a>
                 </div>
