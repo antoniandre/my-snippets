@@ -1,0 +1,18 @@
+{
+    "name":"Inset shadow",
+    "h1":"Inset shadow!",
+    "icon":"i-star",
+    "dependencies":{},
+    "languages":
+    {
+        "css":
+        {
+            "code": "h1.inset-shadow {\n  font-family: \"Avant Garde\", Avantgarde, \"Century Gothic\", CenturyGothic, \"AppleGothic\", sans-serif;\n  font-size: 92px;\n  padding: 80px 50px;\n  text-align: center;\n  text-transform: uppercase;\n  text-rendering: optimizeLegibility;\n    color: #202020;\n    background-color: #2d2d2d;\n    letter-spacing: .1em;\n    text-shadow: \n      -1px -1px 1px #111, \n      2px 2px 1px #363636;\n  }"
+        },
+        "html":
+        {
+            "code": "<h1 class=\"inset-shadow\">Inset Shadow</h1>"
+        }
+    },
+    "tags": ["text", "css3"]
+}
