@@ -80,7 +80,7 @@ function render($snippet)
         'checked' => $checked,
         'languages' => $languages,
     ];
-    echo Tpl::include('snippet', $vars);
+    echo Tpl::inc('snippet', $vars);
 }
 //================================================================================//
 ?>

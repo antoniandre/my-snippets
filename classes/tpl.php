@@ -29,7 +29,7 @@ class Tpl
     }
 
 
-    public static function include($name, $vars, $tpl = null)
+    public static function inc($name, $vars, $tpl = null)
     {
         $tpl = $tpl ? $tpl : file_get_contents(TEMPLATES_DIR . "$name.html");
 
@@ -52,7 +52,7 @@ class Tpl
             {
                 $vars[$key] = $k;
                 $vars[$value] = (object)$v;
-                $repeatedBlock .= self::include('foreach', $vars, $blockContent);
+                $repeatedBlock .= self::inc('foreach', $vars, $blockContent);
             }
             return $repeatedBlock;
         }, $tpl);
@@ -74,7 +74,7 @@ class Tpl
                 // Template inclusions.
                 // {{include templatename}}
                 case (strpos($expression, 'include') === 0):
-                    if (preg_match('~include\s+([\w-.]*)~', $expression, $m)) $return = self::include($m[1], $vars);
+                    if (preg_match('~include\s+([\w-.]*)~', $expression, $m)) $return = self::inc($m[1], $vars);
                     break;
 
                 // Ternary.
@@ -114,7 +114,7 @@ class Tpl
                 // Simple variables or object attribute / array value.
                 // {{object->attribute}}.
                 default:
-                    if ($val = $self->checkVar($expression, $vars)) $return = $val;
+                    if (($val = $self->checkVar($expression, $vars)) !== null) $return = $val;
                     break;
             }
             return $return;

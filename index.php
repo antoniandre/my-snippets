@@ -20,7 +20,7 @@ $vars = [
     'defaultUrl' => ROOT_URL . 'snippet/yo',
     'defaultIcon' => 'i-arr-star',
 ];
-echo Tpl::include('snippets-list', $vars);
+echo Tpl::inc('snippets-list', $vars);
 //=================================== FUNCTIONS ==================================//
 //================================================================================//
 ?>
