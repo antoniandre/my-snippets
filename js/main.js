@@ -81,7 +81,7 @@ var syntaxHighlighter = function()
     // Loop through all the <pre> tags, wrap them with a code-wrapper if not yet done and apply syntax hilighting.
     $('pre').each(function(i)
     {
-        var pre             = $(this),
+        var pre             = $(this).attr('id', 'editable'),
             wrapper         = pre.parents('.code-wrapper'),
             existingWrapper = wrapper.length,
             type            = pre.data('type'),
@@ -229,6 +229,16 @@ var colorizeText = function(string, language)
     return string;
 };
 
+
+function getIndex(node) {
+    var n = 0;
+
+    while (node = node.previousSibling)
+        n++;
+
+    return n;
+}
+
 var codeEditor = function(editor)
 {
     var self = this;
@@ -237,36 +247,97 @@ var codeEditor = function(editor)
 
     var bindEvents = function()
     {
-        self.editor.on('mouseup', function(e)
-        {
-            showCaretPos(self.editor[0]);
-        });
-        self.editor.on('keyup', function(e)
-        {
-            var rawText = this.innerHTML.replace(/<\/?[^>]+\/?>/g, ''),
-                caretPosition = getCaretCharacterOffsetWithin(self.editor[0]);
-                // caretPosWithHtml = ;
-                // textWithCaret = [rawText.slice(0, caretPosition), '__CARET__', rawText.slice(caretPosition)].join('')
+        self.editor
+            .on('mouseup', function(e)
+            {
+                var i = 0, node = e.target;
+                while (node = node.previousSibling) ++i;
 
-            // console.log(textWithCaret);
+                // console.log($(e.target).index(), i, getIndex(e.target));
+                console.log(getCaretOffset(self.editor[0]));
+            })
+            .on('keyup', function(e)
+            {
+                console.log(getCaretOffset(self.editor[0]));
+                var rawText = this.innerHTML.replace(/<\/?[^>]+\/?>/g, ''),
+                    caretPosition = getCaretCharacterOffsetWithin(self.editor[0]);
 
-            // console.log(e.which)
-            var ignoreKeys = [16,17,18,27,37,38,39,40,91,93];
-            /*var char = String.fromCharCode((96 <= e.which && e.which <= 105) ? e.which-48 : e.which);
-            self.editor.append(char);*/
-            // console.log(this.innerHTML.replace(/<\/?[^>]+\/?>/g, ''));
-            if (ignoreKeys.indexOf(e.which) === -1) this.innerHTML = colorizeText(rawText, self.language);
+                var ignoreKeys = [16,17,18,27,37,38,39,40,91,93];
 
-            // setTimeout(function(){setCaretPosition(self.editor[0], 4);}, 1500);
-            setTimeout(function(){moveCaret(4,self.editor[0]);}, 1500);
-        });
+                if (ignoreKeys.indexOf(e.which) === -1) this.innerHTML = colorizeText(rawText, self.language);
+
+                dosetCaret(self.editor[0], caretPosition);
+            });
     };
 
     var init = function()
     {
+        /*for (var i = 0, l = self.editor[0].childNodes.length; i < l; i++) {
+            var node = self.editor[0].childNodes[i];
+            if (node.nodeType === 3)
+            {
+                var txt = node;
+                console.log(node)
+                self.editor[0].childNodes[i] = document.createElement('span');
+                self.editor[0].childNodes[i].innerHTML = txt;
+            }
+        }*/
+        $.each(self.editor[0].childNodes, function(){if (this.nodeType === 3) $(this).wrap('<span/>')});
         bindEvents();
     }();
 };
+
+function dosetCaret(element, caretPos)
+{
+    var charactersLength = 0,// Plain text caret position.
+        node,
+        caretOffset;
+    // console.log(caretPos, 'given position');
+    $.each(element.childNodes, function(){if (this.nodeType === 3) $(this).wrap('<span/>')});
+
+    for (var i = 0, l = element.childNodes.length; i < l; i++)
+    {
+        node = element.childNodes[i];
+
+        charactersLength += node.innerHTML.length;
+        if (charactersLength >= caretPos) {caretOffset = charactersLength - caretPos;break;}
+    }
+
+    setTimeout(function(){setCaret(element, i, caretOffset)}, 100);
+};
+
+function getCaretOffset(element)
+{
+    var range = document.createRange(),
+        sel = window.getSelection(),
+        node = sel.baseNode.parentNode,
+        offsetInNode = sel.baseOffset,
+        nodeIndex = getIndex(node),
+        caretOffset = 0;// Plain text caret position.
+
+    for (var i = 0; i < nodeIndex; i++)
+    {
+        node = element.childNodes[i];
+        caretOffset += node.innerHTML.length;
+    }
+
+    return caretOffset + offsetInNode;
+};
+
+
+function setCaret(el, node, caretOffset)
+{
+    // console.log(el.childNodes[node], el.childNodes[node].innerHTML, el.childNodes[node].innerHTML[caretOffset], el.childNodes[node].childNodes[0]);
+    var range = document.createRange(),
+        sel = window.getSelection(),
+        textNode = el.childNodes[node].firstChild;
+    range.setStart(textNode, caretOffset);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+
+    el.focus();
+}
 
 
 function getCaretCharacterOffsetWithin(element)
@@ -294,72 +365,27 @@ function getCaretCharacterOffsetWithin(element)
     return caretOffset;
 }
 
-function showCaretPos(el)
-{
-    var caretPosEl = document.getElementById("caretPos");
-    caretPosEl.innerHTML = "Caret position: " + getCaretCharacterOffsetWithin(el);
-}
+function getCharacterOffsetWithin(range, node) {
+    var treeWalker = document.createTreeWalker(
+        node,
+        NodeFilter.SHOW_TEXT,
+        function(node) {
+            var nodeRange = document.createRange();
+            nodeRange.selectNode(node);
+            return nodeRange.compareBoundaryPoints(Range.END_TO_END, range) < 1 ?
+                NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+        },
+        false
+    );
 
-function moveCaret(charCount, element)
-{
-    var sel, range;
-    var doc = element.ownerDocument || element.document;
-    var win = doc.defaultView || doc.parentWindow;
-
-    if (win.getSelection) {
-        // IE9+ and other browsers
-        sel = win.getSelection();
-        if (sel.rangeCount > 0) {
-            var textNode = sel.focusNode;
-            var newOffset = charCount;
-            sel.collapse(textNode, Math.min(textNode.length, newOffset));
-        }
-    } else if ( (sel = win.document.selection) ) {
-        // IE <= 8
-        if (sel.type != "Control") {
-            range = sel.createRange();
-            range.move("character", charCount);
-            range.select();
-        }
+    var charCount = 0;
+    while (treeWalker.nextNode()) {
+        charCount += treeWalker.currentNode.length;
     }
-    console.log('setting caret at '+newOffset, sel);
-}
-function setCaretPosition(el, caretPos)
-{
-    /*var pattern = /(<\/?[^>]+\/?>)([^<]*(?=<|$))/g,
-        match = pattern.exec(el.innerHTML),
-        htmlLength = 0,// Before caret. With html tags.
-        charactersLength = 0;// Before caret. No html.
-
-    console.log(caretPos, 'before');
-
-    while (match != null && charactersLength <= caretPos)
-    {
-      console.log(match[1], match[2], charactersLength, htmlLength, caretPos);
-      charactersLength += match[2].length;
-      htmlLength += match[1].length + charactersLength;
-      match = pattern.exec(el.innerHTML);
+    if (range.startContainer.nodeType == 3) {
+        charCount += range.startOffset;
     }
-    caretPos = htmlLength;
-    console.log(caretPos, 'after');*/
-
-    if (el)
-    {
-        if (el.createTextRange)
-        {
-            var range = el.createTextRange();
-            range.move('character', caretPos);
-            range.select();
-        }
-        else {
-            if (el.selectionStart) {
-                el.focus();
-                el.setSelectionRange(caretPos, caretPos);
-            }
-            else
-                el.focus();
-        }
-    }
+    return charCount;
 }
 
 function removeDiacritics(str)
