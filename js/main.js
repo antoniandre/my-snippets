@@ -245,6 +245,7 @@ var codeEditor = function(editor)
         {
             var rawText = this.innerHTML.replace(/<\/?[^>]+\/?>/g, ''),
                 caretPosition = getCaretCharacterOffsetWithin(self.editor[0]);
+                // caretPosWithHtml = ;
                 // textWithCaret = [rawText.slice(0, caretPosition), '__CARET__', rawText.slice(caretPosition)].join('')
 
             // console.log(textWithCaret);
@@ -256,7 +257,8 @@ var codeEditor = function(editor)
             // console.log(this.innerHTML.replace(/<\/?[^>]+\/?>/g, ''));
             if (ignoreKeys.indexOf(e.which) === -1) this.innerHTML = colorizeText(rawText, self.language);
 
-            setTimeout(function(){moveCaret(caretPosition, self.editor[0]);}, 1500);
+            // setTimeout(function(){setCaretPosition(self.editor[0], 4);}, 1500);
+            setTimeout(function(){moveCaret(4,self.editor[0]);}, 1500);
         });
     };
 
@@ -321,6 +323,43 @@ function moveCaret(charCount, element)
         }
     }
     console.log('setting caret at '+newOffset, sel);
+}
+function setCaretPosition(el, caretPos)
+{
+    /*var pattern = /(<\/?[^>]+\/?>)([^<]*(?=<|$))/g,
+        match = pattern.exec(el.innerHTML),
+        htmlLength = 0,// Before caret. With html tags.
+        charactersLength = 0;// Before caret. No html.
+
+    console.log(caretPos, 'before');
+
+    while (match != null && charactersLength <= caretPos)
+    {
+      console.log(match[1], match[2], charactersLength, htmlLength, caretPos);
+      charactersLength += match[2].length;
+      htmlLength += match[1].length + charactersLength;
+      match = pattern.exec(el.innerHTML);
+    }
+    caretPos = htmlLength;
+    console.log(caretPos, 'after');*/
+
+    if (el)
+    {
+        if (el.createTextRange)
+        {
+            var range = el.createTextRange();
+            range.move('character', caretPos);
+            range.select();
+        }
+        else {
+            if (el.selectionStart) {
+                el.focus();
+                el.setSelectionRange(caretPos, caretPos);
+            }
+            else
+                el.focus();
+        }
+    }
 }
 
 function removeDiacritics(str)
