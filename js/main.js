@@ -256,15 +256,35 @@ var codeEditor = function(editor)
                 // console.log($(e.target).index(), i, getIndex(e.target));
                 console.log(getCaretOffset(self.editor[0]));
             })
-            .on('keyup', function(e)
+            /*.on('keyup', function(e)
             {
+                console.log(e.which);
                 console.log(getCaretOffset(self.editor[0]));
                 var rawText = this.innerHTML.replace(/<\/?[^>]+\/?>/g, ''),
                     caretPosition = getCaretCharacterOffsetWithin(self.editor[0]);
 
-                var ignoreKeys = [16,17,18,27,37,38,39,40,91,93];
+                var ignoreKeys = [16,17,18,20,27,37,38,39,40,41,91,93];
 
                 if (ignoreKeys.indexOf(e.which) === -1) this.innerHTML = colorizeText(rawText, self.language);
+
+                dosetCaret(self.editor[0], caretPosition);
+            });*/
+            .on('keyup', function(e)
+            {
+                var rawText = this.innerHTML.replace(/<\/?[^>]+\/?>/g, ''),
+                    caretPosition = getCaretCharacterOffsetWithin(self.editor[0]);
+
+                if (e.which === 8) this.innerHTML = colorizeText(rawText, self.language);
+            })
+            .on('keypress', function(e)
+            {
+                // console.log(e.which);
+                // console.log(getCaretOffset(self.editor[0]));
+                var rawText = this.innerHTML.replace(/<\/?[^>]+\/?>/g, ''),
+                    caretPosition = getCaretCharacterOffsetWithin(self.editor[0]);
+
+                // Only trigger recolorizing if the key prints or delete something with backspace (8).
+                if (String.fromCharCode(e.charCode)/* || e.which === 8*/) this.innerHTML = colorizeText(rawText, self.language);
 
                 dosetCaret(self.editor[0], caretPosition);
             });
@@ -300,10 +320,10 @@ function dosetCaret(element, caretPos)
         node = element.childNodes[i];
 
         charactersLength += node.innerHTML.length;
-        if (charactersLength >= caretPos) {caretOffset = charactersLength - caretPos;break;}
+        if (charactersLength >= caretPos) {caretOffset = node.innerHTML.length - (charactersLength - caretPos);break;}
     }
 
-    setTimeout(function(){setCaret(element, i, caretOffset)}, 100);
+    setCaret(element, i, caretOffset);
 };
 
 function getCaretOffset(element)
