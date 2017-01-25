@@ -133,6 +133,9 @@ var syntaxHighlighter = function()
 
 var colorizeText = function(string, language)
 {
+    console.group('Colorizing');
+    console.count('colorize');
+    console.log(string)
     switch (language)
     {
         case 'html':
@@ -226,6 +229,8 @@ var colorizeText = function(string, language)
                     .replace(/(?!(?:.(?=[^<]))*>)=/g, '<span class="ponctuation">=</span>')
         break;
     }
+    console.log(string)
+    console.groupEnd();
     return string;
 };
 
@@ -241,7 +246,9 @@ function getIndex(node) {
 
 var codeEditor = function(editor)
 {
-    var self = this;
+    var self = this,
+        colorizing = false,// Debounce.
+        debounceTimerId = null;
     self.editor = $(editor);
     self.language = self.editor.data('type');
 
@@ -256,38 +263,39 @@ var codeEditor = function(editor)
                 // console.log($(e.target).index(), i, getIndex(e.target));
                 console.log(getCaretOffset(self.editor[0]));
             })
-            /*.on('keyup', function(e)
+            // IE9-
+            /*.on('keyup keypress', function(e)
             {
-                console.log(e.which);
-                console.log(getCaretOffset(self.editor[0]));
-                var rawText = this.innerHTML.replace(/<\/?[^>]+\/?>/g, ''),
-                    caretPosition = getCaretCharacterOffsetWithin(self.editor[0]);
+                var cond = e.type === 'keyup' ?
+                           (e.which === 8 || e.which === 13)// 8 = <backspace>, 13 = <enter>.
+                         : (String.fromCharCode(e.charCode));// Only trigger recolorizing if the key prints something.
+                console.log(e.type, e.which);
 
-                var ignoreKeys = [16,17,18,20,27,37,38,39,40,41,91,93];
-
-                if (ignoreKeys.indexOf(e.which) === -1) this.innerHTML = colorizeText(rawText, self.language);
-
-                dosetCaret(self.editor[0], caretPosition);
+                if (cond) debounceColorizing();
             });*/
-            .on('keyup', function(e)
+            // IE 10+
+            .on('input', function(e)
             {
-                var rawText = this.innerHTML.replace(/<\/?[^>]+\/?>/g, ''),
-                    caretPosition = getCaretCharacterOffsetWithin(self.editor[0]);
-
-                if (e.which === 8) this.innerHTML = colorizeText(rawText, self.language);
-            })
-            .on('keypress', function(e)
-            {
-                // console.log(e.which);
-                // console.log(getCaretOffset(self.editor[0]));
-                var rawText = this.innerHTML.replace(/<\/?[^>]+\/?>/g, ''),
-                    caretPosition = getCaretCharacterOffsetWithin(self.editor[0]);
-
-                // Only trigger recolorizing if the key prints or delete something with backspace (8).
-                if (String.fromCharCode(e.charCode)/* || e.which === 8*/) this.innerHTML = colorizeText(rawText, self.language);
-
-                dosetCaret(self.editor[0], caretPosition);
+                debounceColorizing();
             });
+    };
+
+    var debounceColorizing = function()
+    {
+        clearTimeout(debounceTimerId);
+        debounceTimerId = null;
+
+        if (!colorizing)
+        {
+            colorizing = true;
+            var rawText = self.editor[0].innerHTML.replace(/<\/?[^>]+\/?>/g, ''),
+                caretPosition = getCaretCharacterOffsetWithin(self.editor[0]);
+            console.info(rawText)
+            self.editor[0].innerHTML = colorizeText(rawText, self.language);
+            dosetCaret(self.editor[0], caretPosition);
+            setTimeout(function(){colorizing = false;}, 100);
+        }
+        else debounceTimerId = setTimeout(function(){debounceColorizing()}, 200);
     };
 
     var init = function()
@@ -319,7 +327,8 @@ function dosetCaret(element, caretPos)
     {
         node = element.childNodes[i];
 
-        charactersLength += node.innerHTML.length;
+        // Node can be a text node, if so there is no innerHtml.
+        charactersLength += node.innerHTML ? node.innerHTML.length : node.length;
         if (charactersLength >= caretPos) {caretOffset = node.innerHTML.length - (charactersLength - caretPos);break;}
     }
 
@@ -347,11 +356,10 @@ function getCaretOffset(element)
 
 function setCaret(el, node, caretOffset)
 {
-    // console.log(el.childNodes[node], el.childNodes[node].innerHTML, el.childNodes[node].innerHTML[caretOffset], el.childNodes[node].childNodes[0]);
     var range = document.createRange(),
         sel = window.getSelection(),
         textNode = el.childNodes[node].firstChild;
-    range.setStart(textNode, caretOffset);
+    range.setStart(textNode, Math.min(caretOffset, textNode.length));
     range.collapse(true);
     sel.removeAllRanges();
     sel.addRange(range);
