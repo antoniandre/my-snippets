@@ -213,18 +213,23 @@ var colorizeText = function(string, language)
         case 'js':
         case 'javascript':
             string = string
-                    .replace(/([<>])/g, '<span class="ponctuation">$1</span>')
+                    .replace(/([<])/g, '<span class="ponctuation">&lt;</span>')
+                    .replace(/([>])/g, '<span class="ponctuation">&gt;</span>')
                     .replace(/(\/\/.*)/g, '<span class="comment">$1</span>')
-                    .replace(/(\/\*[\s\S]*\*\/)/mg, '<span class="comment">$1</span>')
+                    .replace(/(\/\*[\s\S]*\*\/)/g, '<span class="comment">$1</span>')
                     .replace(/(\b\d+|null\b)/g, '<span class="number">$1</span>')
                     .replace(/(\btrue|false\b)/g, '<span class="bool">$1</span>')
-                    // Following will wrap any ' or " THAT ARE NOT INSIDE HTML TAG (e.g. <span class="ponctuation">).
+                    // Following will wrap any ' or " THAT ARE NOT PART OF HTML TAGS (e.g. <span class="ponctuation">).
                     // Javascript regex does not support lookbehinds. (T_T)
                     .replace(/(?!(?:.(?=[^<]))*>)("|')([^\1]*?)\1/g, '<span class="quote">"$2"</span>')
                     .replace(/\b(new|getElementsBy(?:Tag|Class|)Name|arguments|getElementById|if|else|do|null|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|var|(?:clear|set)(?:Timeout|Interval))(?=\W)/g, '<span class="keyword">$1</span>')
                     .replace(/\$/g, '<span class="dollar">$</span>')
-                    .replace(/([\[\](){}.:,+\-?;])/g, '<span class="ponctuation">$1</span>')
-                    // Following will wrap '=' THAT ARE NOT INSIDE HTML TAG (e.g. <span class="ponctuation">).
+                    .replace(/([\[\](){}.:,+\-?])/g, '<span class="ponctuation">$1</span>')
+
+                    // TODO: replace with a lookbehind to unmatch &\w+;
+                    .replace(/;/g, '<span class="ponctuation">;</span>')
+
+                    // Following will wrap '=' THAT ARE NOT PART OF HTML TAGS (e.g. <span class="ponctuation">).
                     // Javascript regex does not support lookbehinds. (T_T)
                     .replace(/(?!(?:.(?=[^<]))*>)=/g, '<span class="ponctuation">=</span>')
         break;
@@ -261,7 +266,7 @@ var codeEditor = function(editor)
                 while (node = node.previousSibling) ++i;
 
                 // console.log($(e.target).index(), i, getIndex(e.target));
-                console.log(getCaretOffset(self.editor[0]));
+                console.log(getCaretOffset(self.editor[0]), getCaretCharacterOffsetWithin(self.editor[0]));
             })
             // IE9-
             /*.on('keyup keypress', function(e)
