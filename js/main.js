@@ -212,35 +212,88 @@ var colorizeText = function(string, language)
         break;
         case 'js':
         case 'javascript':
+            var regexParts =
+                [
+                    /\b(\d+|null)\b/,// Some comments.
+                    /\b(true|false)\b/,
+                    /\b(new|getElementsBy(?:Tag|Class|)Name|arguments|getElementById|if|else|do|null|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval))(?=\W)/,
+                    /(\$|jQuery)/
+                ],
+                regexString  = regexParts.map(function(x){return x.source}).join('|'),
+                regexPattern = new RegExp(regexString, 'g');
+
             string = string
-                    .replace(/("(?:\\"|[^"])*")|('(?:\\'|[^'])*')|(\/\/.*|\/\*[\s\S]*?\*\/)/g, function(m0, m1, m2, m3)
+                    .replace(/[<>]/g, function(m){return {'<': '&lt;', '>': '&gt;'}[m]})
+
+                    // .replace(/(\b\d+|null\b)|(\btrue|false\b)|\b(new|getElementsBy(?:Tag|Class|)Name|arguments|getElementById|if|else|do|null|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval))(?=\W)|(\$|jQuery)/g, function()
+                    .replace(regexPattern, function()
                     {
-                        return m1 || m2 ? '<span class="quote">' + stripTags(m1 || m2) + '</span>' : ('<span class="comment">'+stripTags(m3)+'</span>');
+                        var m = arguments,
+                            Class = '';
+
+                        switch(true)
+                        {
+                            // Numbers and 'null'.
+                            case (Boolean)(m[1]):
+                                m = m[1];
+                                Class = 'number';
+                                break;
+
+                            // True or False.
+                            case (Boolean)(m[2]):
+                                m = m[2];
+                                Class = 'bool';
+                                break;
+
+                            // True or False.
+                            case (Boolean)(m[3]):
+                                m = m[3];
+                                Class = 'keyword';
+                                break;
+
+                            // $ or 'jQuery'.
+                            case (Boolean)(m[4]):
+                                m = m[4];
+                                Class = 'dollar';
+                                break;
+                        }
+
+                        return '<span class="' + Class + '">' + m + '</span>';
                     })
-                    // .replace(/([<])/g, '<span class="ponctuation">&lt;</span>')
-                    // .replace(/([>])/g, '<span class="ponctuation">&gt;</span>')
 
-                    // .replace(/(\b\d+|null\b)/g, '<span class="number">$1</span>')
-                    // .replace(/(\btrue|false\b)/g, '<span class="bool">$1</span>')
+                    // http://stackoverflow.com/a/41867753/2012407
+                    .replace(/("(?:\\"|[^"])*")|('(?:\\'|[^'])*')|(\/\/.*|\/\*[\s\S]*?\*\/)|(<[^>]*>)|((?:[\[\](){}.:;,+\-?=]|&lt;|&gt;)+)/g, function()
+                    // .replace(pattern, function(m0, m1, m2, m3)
+                    {
+                        var m = arguments,
+                            Return = '';
 
-                    // .replace(/\b(new|getElementsBy(?:Tag|Class|)Name|arguments|getElementById|if|else|do|null|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|var|(?:clear|set)(?:Timeout|Interval))(?=\W)/g, '<span class="keyword">$1</span>')
-                    // .replace(/\$/g, '<span class="dollar">$</span>')
-                    // .replace(/([\[\](){}.:,+\-?])/g, '<span class="ponctuation">$1</span>')
+                        switch(true)
+                        {
+                            // Quotes.
+                            case (Boolean)(m[1] || m[2]):
+                                Return = '<span class="quote">' + stripTags(m[1] || m[2]) + '</span>';
+                                break;
 
-                    // // TODO: replace with a lookbehind to unmatch &\w+;
-                    // // .replace(/;/g, '<span class="ponctuation">;</span>')
+                            // Comments.
+                            case (Boolean)(m[3]):
+                                Return = '<span class="comment">' + stripTags(m[3]) + '</span>';
+                                break;
 
-                    // // Following will wrap '=' THAT ARE NOT PART OF HTML TAGS (e.g. <span class="ponctuation">).
-                    // // Javascript regex does not support lookbehinds. (T_T)
-                    // .replace(/(?!(?:.(?=[^<]))*>)=/g, '<span class="ponctuation">=</span>')
+                            // Html tags.
+                            case (Boolean)(m[4]):
+                                Return = m[4];
+                                break;
 
-                    // Replace comments and clear any inner html tag.
-                    /*.replace(/(\/\*[\s\S]*\*\/)/g, function(m0, m1){return '<span class="comment">'+stripTags(m1)+'</span>'})
-                    .replace(/(\/\/.*)/g, function(m0, m1){return '<span class="comment">'+stripTags(m1)+'</span>'})
+                            // Ponctuation.
+                            case (Boolean)(m[5] && !m[4]):
+                                Return = '<span class="ponctuation">' + m[5] + '</span>';
+                                break;
+                        }
 
-                    // Following will wrap any ' or " THAT ARE NOT PART OF HTML TAGS (e.g. <span class="ponctuation">).
-                    // Javascript regex does not support lookbehinds. (T_T)
-                    .replace(/(?!(?:.(?=[^<]))*>)("|')([^\1]*?)\1/g, function(m0, m1, m2){return '<span class="quote">'+m1+stripTags(m2)+m1+'</span>'})*/
+                        return Return;
+                    })
+
         break;
     }
     console.log(string)
