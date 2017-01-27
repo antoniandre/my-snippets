@@ -216,7 +216,7 @@ var colorizeText = function(string, language)
                 [
                     /\b(\d+|null)\b/,// Some comments.
                     /\b(true|false)\b/,
-                    /\b(new|getElementsBy(?:Tag|Class|)Name|arguments|getElementById|if|else|do|null|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval))(?=\W)/,
+                    /\b(new|getElementsBy(?:Tag|Class|)Name|arguments|getElementById|if|else|do|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval))(?=\W)/,
                     /(\$|jQuery)/
                 ],
                 regexString  = regexParts.map(function(x){return x.source}).join('|'),
@@ -302,11 +302,10 @@ var colorizeText = function(string, language)
 };
 
 
-function getIndex(node) {
+function getIndex(node)
+{
     var n = 0;
-
-    while (node = node.previousSibling)
-        n++;
+    while (node = node.previousSibling) n++;
 
     return n;
 }
@@ -384,9 +383,8 @@ var codeEditor = function(editor)
 
 function stripTags(string)
 {
-    return string.replace(/<\/?[^>]+\/?>/g, '');
+    return string.replace(/<\/?[^>]+\/?>/g, '').replace(/&(?:l|g)t;/g, function(m){return {'&lt;': '<', '&gt;': '>'}[m]});
 }
-
 
 function dosetCaret(element, caretPos)
 {
