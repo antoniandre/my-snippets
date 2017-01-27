@@ -482,7 +482,7 @@ pre .number {color: #c11;}
 pre .bool {color: #c11;}
 pre .keyword {color: #11c;}
 pre .tag {color: #11c;}
-pre .ponctuation {color: #66c;}
+pre .ponctuation {color: #99f;}
 pre .dollar {color: #f63;}
 pre .attribute {color: #f63;}
 pre[data-type="css"] .attribute {color: #70d;}

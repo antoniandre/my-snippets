@@ -216,7 +216,7 @@ var colorizeText = function(string, language)
                 [
                     /\b(\d+|null)\b/,// Some comments.
                     /\b(true|false)\b/,
-                    /\b(new|getElementsBy(?:Tag|Class|)Name|arguments|getElementById|if|else|do|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval))(?=\W)/,
+                    /\b(new|getElementsBy(?:Tag|Class|)Name|getElementById|arguments|if|else|do|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval))(?=\W)/,
                     /(\$|jQuery)/
                 ],
                 regexString  = regexParts.map(function(x){return x.source}).join('|'),

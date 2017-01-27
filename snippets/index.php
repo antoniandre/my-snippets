@@ -27,25 +27,16 @@ function render($snippet)
 {
     global $knownJs;
 
-    $scripts = '';
-    $styles  = '';
-    $rootUrl = ROOT_URL;
+    $script    = '';
+    $scripts   = '';
+    $style     = '';
+    $styles    = '';
+    $html      = '';
+    $rootUrl   = ROOT_URL;
     $languages = '';
     $activeTab = null;
+    $compile   = isset($snippet->compile) && $snippet->compile;
 
-    foreach ((array)$snippet->dependencies as $type => $array)
-    {
-        foreach ($array as $resource)
-        {
-            if ($type === 'css') $styles .= ($styles ? "\n        " : '') . "<link rel='stylesheet' href='$resource'>";
-            if ($type === 'js')
-            {
-                if (array_key_exists($resource, $knownJs)) $resource = ROOT_URL . "{$knownJs[$resource]}";
-
-                $scripts .= ($scripts ? "\n        " : '') . "<script src='$resource'></script>";
-            }
-        }
-    }
 
     foreach ((array)$snippet->languages as $id => $language)
     {
@@ -61,12 +52,29 @@ function render($snippet)
                     . "<pre class='i-code' contenteditable='true' data-type='$id'$dataLabel$active>$lang</pre>";
     }
 
-    $script = isset($snippet->languages->js->code) ? "<script>\n        {$snippet->languages->js->code}\n    </script>" : '';
-    $style  = isset($snippet->languages->css->code) ? "<style>\n        {$snippet->languages->css->code}\n    </style>" : '';
-    $html   = isset($snippet->languages->html->code) ? "<div class='content'>\n        {$snippet->languages->html->code}\n    </div>" : '';
+
+    if ($compile)
+    {
+        foreach ((array)$snippet->dependencies as $type => $array)
+        {
+            foreach ($array as $resource)
+            {
+                if ($type === 'css') $styles .= ($styles ? "\n        " : '') . "<link rel='stylesheet' href='$resource'>";
+                if ($type === 'js')
+                {
+                    if (array_key_exists($resource, $knownJs)) $resource = ROOT_URL . "{$knownJs[$resource]}";
+
+                    $scripts .= ($scripts ? "\n        " : '') . "<script src='$resource'></script>";
+                }
+            }
+        }
+
+        $script = isset($snippet->languages->js->code) ? "<script>\n        {$snippet->languages->js->code}\n    </script>" : '';
+        $style  = isset($snippet->languages->css->code) ? "<style>\n        {$snippet->languages->css->code}\n    </style>" : '';
+        $html   = isset($snippet->languages->html->code) ? "<div class='content'>\n        {$snippet->languages->html->code}\n    </div>" : '';
+    }
 
     $checked = !$html ? ' checked' : '';
-
 
     $vars = [
         'ROOT_URL' => ROOT_URL,

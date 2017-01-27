@@ -2,6 +2,7 @@
     "name": "Touch Events",
     "h1": "Touch Events",
     "icon": "i-pointer",
+    "compile": false,
     "dependencies":
     {
         "js":
@@ -13,7 +14,7 @@
     {
         "js":
         {
-            "code":"$(document).ready(function()\n{\n    // Some code commment.\n    var i = \"able\";\n});"
+            "code":"$(document).ready(function()\n{\n    // Some code commment.\n    var i = \"able\";\n    QUOTES\n    str = '//\\''; // comment.'test'\n    str = \"//'\"; // comment.\n    str = '\\'//\\''; // comment.\n    str = '\"\\'//\\'\"'; // comment.\n    str = \"'// \"; // comment.\n    \n    \n    COMMENTS\n    /*'//\\'';// hjkjh.'test'\n    \"//'\";// hjkjh.\n    '\\'//\\'';// hjkjh.\n    \"'// \";// hjkjh.*/ yo; // test.\n    \n    // var i = 'able';\n});"
         }
     }
 }
