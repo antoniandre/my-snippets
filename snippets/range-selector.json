@@ -7,12 +7,7 @@
     {
         "js":
         [
-            "jquery",
-            "jquery.easing"
-        ],
-        "css":
-        [
-            "https://fonts.googleapis.com/css?family=Roboto"
+            "jquery"
         ]
     },
     "languages":
