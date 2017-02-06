@@ -14,7 +14,8 @@
     {
         "js":
         {
-            "code":"$(document).ready(function()\n{\n    // Some code commment.\n    var i = \"able\";\n    QUOTES\n    str = '//\\''; // comment.'test'\n    str = \"//'\"; // comment.\n    str = '\\'//\\''; // comment.\n    str = '\"\\'//\\'\"'; // comment.\n    str = \"'// \"; // comment.\n    \n    \n    COMMENTS\n    /*'//\\'';// hjkjh.'test'\n    \"//'\";// hjkjh.\n    '\\'//\\'';// hjkjh.\n    \"'// \";// hjkjh.*/ yo; // test.\n    \n    // var i = 'able';\n});"
+            "code":"var touchHandler = function(event)\n{\n    var touch = event.hasOwnProperty('changedTouches') ? event.changedTouches[0] : event.originalEvent.changedTouches[0];\n\n    var simulatedEvent = document.createEvent(\"MouseEvent\");\n        simulatedEvent.initMouseEvent({\n        touchstart: \"mousedown\",\n        touchmove: \"mousemove\",\n        touchend: \"mouseup\"\n    }[event.type], true, true, window, 1,\n        touch.screenX, touch.screenY,\n        touch.clientX, touch.clientY, false,\n        false, false, false, 0, null);\n\n    touch.target.dispatchEvent(simulatedEvent);\n\n    event.preventDefault();\n};",
+            "code.old":"$(document).ready(function()\n{\n    // Some code commment.\n    var i = \"able\";\n    QUOTES\n    str = '//\\''; // comment.'test'\n    str = \"//'\"; // comment.\n    str = '\\'//\\''; // comment.\n    str = '\"\\'//\\'\"'; // comment.\n    str = \"'// \"; // comment.\n    \n    \n    COMMENTS\n    /*'//\\'';// hjkjh.'test'\n    \"//'\";// hjkjh.\n    '\\'//\\'';// hjkjh.\n    \"'// \";// hjkjh.*/ yo; // test.\n    \n    // var i = 'able';\n});"
         }
     }
 }
