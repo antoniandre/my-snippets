@@ -492,6 +492,13 @@ pre .selector {color: #f0d;}
 .param span {color: #f33;}
 .param em {color: #ccc;}
 .param code {font-weight: bold;}
+
+@media screen and (max-width: 560px) {
+    .code-section {
+        padding-left: 0px;
+        padding-right: 0px;
+    }
+}
 /*============================================================================*/
 
 
