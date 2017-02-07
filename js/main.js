@@ -55,17 +55,6 @@ $(document).ready(function()
 
 
 /**
- * Re-htmlize a string. So replace every '&lt;' and '&gt;' with '<' and '>'.
- *
- * @return string: html content.
- */
-String.prototype.htmlize = function()
-{
-    return this.replace(/&(l|g)t;/g, function(a){return {l: '<', g: '>'}[a]});
-};
-
-
-/**
  * Home made simple syntax highlighter for JS, CSS and HTML.
  * Just cz it's fun to do. :)
  * Will parse content in every <pre> tag that has a known data-type (so html, css, js only)
@@ -185,10 +174,12 @@ var codeEditor = function(editor)
         if (!colorizing)
         {
             colorizing = true;
-            var rawText = stripTags(self.editor[0].innerHTML),
+            var rawText = self.editor[0].innerHTML.stripTags(),
                 caretPosition = getCaretCharacterOffsetWithin(self.editor[0]);
+
             console.info(rawText)
             editor.innerHTML = colorizeText(rawText, self.language);
+
             dosetCaret(self.editor[0], caretPosition);
             setTimeout(function(){colorizing = false;}, 100);
         }
@@ -280,18 +271,23 @@ var codeEditor = function(editor)
             case 'javascript':
                 var regexParts =
                     [
-                        /\b(\d+|null)\b/,// Some comments.
+                        /\b(\d+|null)\b/,
                         /\b(true|false)\b/,
                         /\b(new|getElementsBy(?:Tag|Class|)Name|getElementById|arguments|if|else|do|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval))(?=\W)/,
                         /(?:(?=\W))(\$|jQuery)(?=\W|$)/
                     ],
-                    regexString  = regexParts.map(function(x){return x.source}).join('|'),
-                    regexPattern = new RegExp(regexString, 'g');
+                    // http://stackoverflow.com/a/41867753/2012407
+                    regexParts2 =
+                    [
+                        /("(?:\\"|[^"])*")|('(?:\\'|[^'])*')/,// Quotes.
+                        /(\/\/.*|\/\*[\s\S]*?\*\/)/,// Comments blocks (/* ... */) or trailing comments (// ...).
+                        /(<[^>]*>)/,// Html tags.
+                        /((?:[\[\](){}.:;,+\-?=]|&lt;|&gt;)+)/// Ponctuation not in html tag.
+                    ],
+                    regexPattern  = new RegExp(regexParts.map(function(x){return x.source}).join('|'), 'g'),
+                    regexPattern2 = new RegExp(regexParts2.map(function(x){return x.source}).join('|'), 'g');
 
-                string = string
-                        .replace(/[<>]/g, function(m){return {'<': '&lt;', '>': '&gt;'}[m]})
-
-                        // .replace(/(\b\d+|null\b)|(\btrue|false\b)|\b(new|getElementsBy(?:Tag|Class|)Name|arguments|getElementById|if|else|do|null|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval))(?=\W)|(\$|jQuery)/g, function()
+                string = string.unhtmlize()
                         .replace(regexPattern, function()
                         {
                             var m = arguments,
@@ -326,10 +322,7 @@ var codeEditor = function(editor)
 
                             return '<span class="' + Class + '">' + m + '</span>';
                         })
-
-                        // http://stackoverflow.com/a/41867753/2012407
-                        .replace(/("(?:\\"|[^"])*")|('(?:\\'|[^'])*')|(\/\/.*|\/\*[\s\S]*?\*\/)|(<[^>]*>)|((?:[\[\](){}.:;,+\-?=]|&lt;|&gt;)+)/g, function()
-                        // .replace(pattern, function(m0, m1, m2, m3)
+                        .replace(regexPattern2, function()
                         {
                             var m = arguments,
                                 Return = '';
@@ -338,12 +331,12 @@ var codeEditor = function(editor)
                             {
                                 // Quotes.
                                 case (Boolean)(m[1] || m[2]):
-                                    Return = '<span class="quote">' + stripTags(m[1] || m[2]) + '</span>';
+                                    Return = '<span class="quote">' + (m[1] || m[2]).stripTags() + '</span>';
                                     break;
 
                                 // Comments.
                                 case (Boolean)(m[3]):
-                                    Return = '<span class="comment">' + stripTags(m[3]) + '</span>';
+                                    Return = '<span class="comment">' + (m[3]).stripTags() + '</span>';
                                     break;
 
                                 // Html tags.
@@ -358,8 +351,7 @@ var codeEditor = function(editor)
                             }
 
                             return Return;
-                        })
-
+                        });
             break;
         }
         console.log(string)
@@ -387,10 +379,26 @@ var codeEditor = function(editor)
     }();
 };
 
-function stripTags(string)
+String.prototype.stripTags = function()
 {
-    return string.replace(/<\/?[^>]+\/?>/g, '').replace(/&(?:l|g)t;/g, function(m){return {'&lt;': '<', '&gt;': '>'}[m]});
-}
+    return this.replace(/<\/?\w+[^>]*\/?>/g, '');
+};
+
+
+/**
+ * Re-htmlize a string. So replace every '&lt;' and '&gt;' with '<' and '>'.
+ *
+ * @return string: html content.
+ */
+String.prototype.htmlize = function()
+{
+    return this.replace(/&(l|g)t;/g, function(m0, m1){return {l: '<', g: '>'}[m1]});
+};
+String.prototype.unhtmlize = function()
+{
+    return this.replace(/[<>]/g, function(m){return {'<': '&lt;', '>': '&gt;'}[m]})
+};
+
 
 function dosetCaret(element, caretPos)
 {
