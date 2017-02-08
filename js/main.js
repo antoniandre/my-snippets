@@ -178,7 +178,7 @@ var codeEditor = function(editor)
                 caretPosition = getCaretCharacterOffsetWithin(self.editor[0]);
 
             console.info(rawText)
-            editor.innerHTML = colorizeText(rawText, self.language);
+            editor.innerHTML = colorizeText();
 
             dosetCaret(self.editor[0], caretPosition);
             setTimeout(function(){colorizing = false;}, 100);
@@ -188,7 +188,7 @@ var codeEditor = function(editor)
 
     var colorizeText = function()
     {
-        var string = editor.innerHTML;
+        var string = editor.innerHTML.stripTags();
 
         console.group('Colorizing');
         console.count('colorize');
@@ -362,7 +362,7 @@ var codeEditor = function(editor)
     var init = function()
     {
         // Apply syntax highlighting if there is content in the <pre>.
-        if (html && languageIsKnown) editor.innerHTML = colorizeText();
+        if (editor.innerHTML && languageIsKnown) editor.innerHTML = colorizeText();
 
         /*for (var i = 0, l = self.editor[0].childNodes.length; i < l; i++) {
             var node = self.editor[0].childNodes[i];
