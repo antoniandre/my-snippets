@@ -16,12 +16,12 @@
         <div id="all">
             <h1>{{h1}}</h1>
             <input type="checkbox" class="toggle" id="see-the-code"{{checked}}>
-            <label for="see-the-code" class="i-plus">Check the code</label>
+            <label for="see-the-code" class="i-plus">{{checkCode}}</label>
             <div class="code-section">
                 <div class="code-wrapper" style="height: 400px;">
                     {{languages}}
-                    <pre class='i-code' contenteditable='true' data-type='plain' data-label="+"></pre>
                 </div>
+                <button class="float-right">Save</button>
             </div>
             <div class="compiled">{{html}}</div>
         </div>
