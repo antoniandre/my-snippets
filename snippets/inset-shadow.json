@@ -2,6 +2,7 @@
     "name":"Inset shadow",
     "h1":"Inset shadow!",
     "icon":"i-star",
+    "compile": true,
     "dependencies":{},
     "languages":
     {
