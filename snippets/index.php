@@ -87,6 +87,7 @@ function render($snippet)
         'html' => $html,
         'checked' => $checked,
         'languages' => $languages,
+        'checkCode' => $html ? 'Check the code' : ($languages ? 'Edit the code' : 'Write some code'),
     ];
     echo Tpl::inc('snippet', $vars);
 }

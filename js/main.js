@@ -64,26 +64,45 @@ $(document).ready(function()
  */
 var syntaxHighlighter = function()
 {
-    var lastTreatedWrapper = 0, wrapperIndex = -1;
+    var wrapperIndex = -1;
 
     // Loop through all the <pre> tags, wrap them with a code-wrapper if not yet done and apply syntax hilighting.
     $('pre').each(function(i)
     {
-        var pre             = $(this).attr('id', 'editable'),
+        var pre             = $(this),
             wrapper         = pre.parents('.code-wrapper'),
             existingWrapper = wrapper.length,
+            preIndex        = pre.prevAll('pre').length,
+            numberOfPre     = wrapper.find('pre').length,// Number of code editors in the same code-wrapper.
             type            = pre.data('type'),
             label           = pre.data('label'),
             dataLabel       = label ? ' data-label="' + label + '"' : '',
             html            = this.innerHTML || '',
-            radioId         = i + '-' + type,
+            tabIndex         = i + '-' + type,
             checked         = pre.data('active') !== undefined || !existingWrapper ? '  checked' : '';
 
-        if (wrapper.length && wrapperIndex !== lastTreatedWrapper)
+        // Wrap any <pre> if no existing code-wrapper.
+        if (!existingWrapper)
         {
-            wrapperIndex++;
-            lastTreatedWrapper = wrapperIndex;
+            wrapper = pre.wrap('<div class="code-wrapper ' + pre.attr('class') + '"/>').parent();
+            numberOfPre = wrapper.find('pre').length;
+            preIndex = pre.prevAll('pre').length;
+        }
 
+
+        // If first pre of code-wrapper.
+        if (preIndex === 0) wrapperIndex++;
+
+
+        // Create the tab system.
+        wrapper.find('pre').eq(0).before(
+            '<input type="radio" data-type="' + type + '" name="code-wrapper' + wrapperIndex
+            + '" id="pre' + tabIndex + '"' + checked + '><label for="pre' + tabIndex + '">' + (label ? label : type) + '</label>');
+
+
+        // If last pre of code-wrapper.
+        if (preIndex === numberOfPre - 1)
+        {
             // If the attribute 'data-result' is present on .code-wrapper then run the given html + css + js in an iframe.
             if (wrapper.data('result'))
             {
@@ -91,31 +110,36 @@ var syntaxHighlighter = function()
                     js = wrapper.find('pre[data-type="js"]').html(),
                     css = wrapper.find('pre[data-type="css"]').html().htmlize(),
                     contents = '<html><head><link rel="stylesheet" type="text/css" href="../css/grid.css">'
-                    + '<script src="../bower_components/jquery/dist/jquery.min.js"></script>'
-                    + '<script src="../bower_components/jquery.easing/js/jquery.easing.min.js"></script>'
-                    + '<script src="../js/grid.js"></script>'
-                    + '<style>' + css + '</style></head><body>'
-                    + html
-                    + '<script>' + js + '</script>'
-                    + '</body></html>';
+                             + '<script src="../bower_components/jquery/dist/jquery.min.js"></script>'
+                             + '<script src="../bower_components/jquery.easing/js/jquery.easing.min.js"></script>'
+                             + '<script src="../js/grid.js"></script>'
+                             + '<style>' + css + '</style></head><body>'
+                             + html
+                             + '<script>' + js + '</script>'
+                             + '</body></html>';
                 wrapper
-                    .prepend('<input type="radio" data-type="result" name="code-wrapper' + wrapperIndex + '" id="result' + i + '" /><label for="result' + i + '">result</label>')
+                    .prepend('<input type="radio" data-type="result" name="code-wrapper' + wrapperIndex + '" id="result' + i + '" />'
+                           + '<label for="result' + i + '">result</label>')
                     .append('<iframe data-type="result"></iframe>')
                     .find('iframe')[0].contentDocument.write(contents);
             }
+
+            // Add a new code editor.
+            wrapper.find('pre').eq(0).before(
+                '<input type="radio" name="code-wrapper' + wrapperIndex + '" id="addCode' + i + '" data-increment="" />'
+              + '<label class="add" for="addCode' + i + '">+</label>');
         }
-
-        // Wrap any <pre> if no existing code-wrapper.
-        if (!existingWrapper) wrapper = pre.wrap('<div class="code-wrapper ' + pre.attr('class') + '"/>').parent();
-
-        // Create the tab system usefull if multiple pre in one code-wrapper.
-        // Do the same for one <pre> only, to keep same layout and same style.
-        wrapper.prepend(
-            '<input type="radio" data-type="' + type + '" name="code-wrapper' + wrapperIndex
-            + '" id="pre' + radioId + '"' + checked + '><label for="pre' + radioId + '">' + (label ? label : type) + '</label>');
 
         if (pre.is('[contenteditable="true"]')) new codeEditor(this);
     });
+
+    $('.code-wrapper .add').on('click', function()
+    {
+        tabIndex++;
+        $(this).before('<input type="radio" name="code-wrapper' + wrapperIndex + '" id="addCode' + tabIndex + '" />'
+                     + '<label for="addCode' + tabIndex + '" contenteditable="true">Label</label>');
+        $(this).siblings('pre:last').after('<pre class="i-code" contenteditable="true" data-type=""/>');
+    })
 };
 
 
