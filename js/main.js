@@ -53,6 +53,26 @@ $(document).ready(function()
 
 
 
+// Wrap any <pre> if no existing code-wrapper.
+var wrapPre = function($pre)
+{
+    return $pre.wrap('<div class="code-wrapper ' + $pre.attr('class') + '"/>').parent();
+};
+
+var addTab = function($target, targetIndex, $wrapper)
+{
+    var targetTag    = $target[0].tagName.toLowerCase(),
+        type         = $target.data('type'),
+        label        = $target.data('label'),
+        checked      = $target.data('active') !== undefined ? '  checked' : '',
+        $wrapper     = $wrapper || $target.parent(),
+        wrapperIndex = $wrapper.data('index');
+
+    $wrapper.find('label.add')
+        .before(
+            '<input type="radio" data-type="' + type + '" id="' + targetTag + targetIndex + '"' + checked + ' name="codeWrapper' + wrapperIndex + '">'
+            + '<label for="' + targetTag + targetIndex + '">' + (label ? label : type) + '</label>');
+};
 
 /**
  * Home made simple syntax highlighter for JS, CSS and HTML.
@@ -66,79 +86,66 @@ var syntaxHighlighter = function()
 {
     var wrapperIndex = -1;
 
-    // Loop through all the <pre> tags, wrap them with a code-wrapper if not yet done and apply syntax hilighting.
+    // Loop through all the <pre> tags, wrap them with a code-wrapper if not yet done and apply syntax highlighting.
     $('pre').each(function(i)
     {
-        var pre             = $(this),
-            wrapper         = pre.parents('.code-wrapper'),
-            existingWrapper = wrapper.length,
-            preIndex        = pre.prevAll('pre').length,
-            numberOfPre     = wrapper.find('pre').length,// Number of code editors in the same code-wrapper.
-            type            = pre.data('type'),
-            label           = pre.data('label'),
-            dataLabel       = label ? ' data-label="' + label + '"' : '',
-            html            = this.innerHTML || '',
-            tabIndex         = i + '-' + type,
-            checked         = pre.data('active') !== undefined || !existingWrapper ? '  checked' : '';
-
-        // Wrap any <pre> if no existing code-wrapper.
-        if (!existingWrapper)
-        {
-            wrapper = pre.wrap('<div class="code-wrapper ' + pre.attr('class') + '"/>').parent();
-            numberOfPre = wrapper.find('pre').length;
-            preIndex = pre.prevAll('pre').length;
-        }
-
+        var $pre            = $(this),
+            $wrapper        = $pre.parents('.code-wrapper').length ? $pre.parents('.code-wrapper') : wrapPre($pre),
+            preIndex        = $pre.prevAll('pre').length,
+            numberOfPre     = $wrapper.find('pre').length,// Number of code editors in the same code-wrapper.
+            html            = this.innerHTML || '';
 
         // If first pre of code-wrapper.
-        if (preIndex === 0) wrapperIndex++;
-
+        if (preIndex === 0)
+        {
+            $wrapper.data('index', wrapperIndex++);
+            // Add a button to add a new code editor.
+            $wrapper.find('pre').eq(0).before('<label class="add" data-increment="' + numberOfPre + '">+</label>');
+        }
 
         // Create the tab system.
-        wrapper.find('pre').eq(0).before(
-            '<input type="radio" data-type="' + type + '" name="code-wrapper' + wrapperIndex
-            + '" id="pre' + tabIndex + '"' + checked + '><label for="pre' + tabIndex + '">' + (label ? label : type) + '</label>');
-
+        addTab($pre, preIndex, $wrapper);
 
         // If last pre of code-wrapper.
         if (preIndex === numberOfPre - 1)
         {
             // If the attribute 'data-result' is present on .code-wrapper then run the given html + css + js in an iframe.
-            if (wrapper.data('result'))
+            if ($wrapper.data('result'))
             {
-                var html = wrapper.find('pre[data-type="html"]').html().htmlize(),
-                    js = wrapper.find('pre[data-type="js"]').html(),
-                    css = wrapper.find('pre[data-type="css"]').html().htmlize(),
-                    contents = '<html><head><link rel="stylesheet" type="text/css" href="../css/grid.css">'
+                var html     = $wrapper.find('pre[data-type="html"]').html().stripTags().htmlize(),
+                    js       = $wrapper.find('pre[data-type="js"]').html().stripTags(),
+                    css      = $wrapper.find('pre[data-type="css"]').html().htmlize().stripTags(),
+                    contents = '<html><head><link rel="stylesheet" type="text/css" href="../../grid/css/grid.css">'
                              + '<script src="../bower_components/jquery/dist/jquery.min.js"></script>'
                              + '<script src="../bower_components/jquery.easing/js/jquery.easing.min.js"></script>'
-                             + '<script src="../js/grid.js"></script>'
+                             + '<script src="../../grid/js/grid.js"></script>'
                              + '<style>' + css + '</style></head><body>'
                              + html
                              + '<script>' + js + '</script>'
-                             + '</body></html>';
-                wrapper
-                    .prepend('<input type="radio" data-type="result" name="code-wrapper' + wrapperIndex + '" id="result' + i + '" />'
-                           + '<label for="result' + i + '">result</label>')
-                    .append('<iframe data-type="result"></iframe>')
-                    .find('iframe')[0].contentDocument.write(contents);
+                             + '</body></html>',
+                    $iframe  = $wrapper.append('<iframe data-type="result"></iframe>').find('iframe');
+                $iframe[0].contentDocument.write(contents);
+
+                addTab($iframe, preIndex + 'i', $wrapper);
             }
 
-            // Add a new code editor.
-            wrapper.find('pre').eq(0).before(
-                '<input type="radio" name="code-wrapper' + wrapperIndex + '" id="addCode' + i + '" data-increment="" />'
-              + '<label class="add" for="addCode' + i + '">+</label>');
         }
 
-        if (pre.is('[contenteditable="true"]')) new codeEditor(this);
+        if ($pre.is('[contenteditable="true"]')) new codeEditor(this);
     });
 
     $('.code-wrapper .add').on('click', function()
     {
-        tabIndex++;
-        $(this).before('<input type="radio" name="code-wrapper' + wrapperIndex + '" id="addCode' + tabIndex + '" />'
-                     + '<label for="addCode' + tabIndex + '" contenteditable="true">Label</label>');
-        $(this).siblings('pre:last').after('<pre class="i-code" contenteditable="true" data-type=""/>');
+        var tabIndex = $(this).data('increment'),
+            $wrapper = $(this).parent();
+
+        $(this).siblings('pre:last').after('<pre class="i-code" contenteditable="true" data-type="plain-text" data-label="Label"/>');
+
+        addTab($(this).siblings('pre:last'), tabIndex, $wrapper);
+        $(this)
+            .prev().trigger('click').trigger('focus');
+
+        $(this).data('increment', tabIndex + 1);
     })
 };
 
