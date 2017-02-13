@@ -70,8 +70,16 @@ var addTab = function($target, targetIndex, $wrapper)
 
     $wrapper.find('label.add')
         .before(
-            '<input type="radio" data-type="' + type + '" id="' + targetTag + targetIndex + '"' + checked + ' name="codeWrapper' + wrapperIndex + '">'
-            + '<label for="' + targetTag + targetIndex + '">' + (label ? label : type) + '</label>');
+            '<input type="radio" data-type="' + type + '" id="' + targetTag + targetIndex + '"' + checked
+            + ' name="codeWrapper' + wrapperIndex + '">' + '<label for="' + targetTag + targetIndex
+            + '"><span contenteditable>' + (label ? label : type) + '</span>'
+            + '<span class="language">Language: <select name="" id="">'
+            + '<option>plain-text</option>'
+            + '<option>js</option>'
+            + '<option>css</option>'
+            + '<option>html</option>'
+            + '<option>php</option>'
+            + '</select></span></label>');
 };
 
 /**
@@ -107,7 +115,7 @@ var syntaxHighlighter = function()
         addTab($pre, preIndex, $wrapper);
 
         // If last pre of code-wrapper.
-        if (preIndex === numberOfPre - 1)
+        /*if (preIndex === numberOfPre - 1)
         {
             // If the attribute 'data-result' is present on .code-wrapper then run the given html + css + js in an iframe.
             if ($wrapper.data('result'))
@@ -128,8 +136,7 @@ var syntaxHighlighter = function()
 
                 addTab($iframe, preIndex + 'i', $wrapper);
             }
-
-        }
+        }*/
 
         if ($pre.is('[contenteditable="true"]')) new codeEditor(this);
     });

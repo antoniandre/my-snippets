@@ -449,6 +449,22 @@ button:before {font-size: 150%;}
     background-color: #fbfbfb;
     color: #666;
 }
+.code-wrapper label .language {
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    display: inline-block;
+    width: 10em;
+    margin: 0 0 5px -5em;
+    color: #bbb;
+    background-color: #f2f2f2;
+    cursor: pointer;
+    display: none;
+}
+.code-wrapper label:hover .language,
+.code-wrapper label span:focus ~ .language {
+    display: block;
+}
 .code-wrapper input {
     position: absolute;
 }

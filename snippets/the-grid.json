@@ -2,6 +2,7 @@
     "name": "The Grid",
     "h1": "The Grid",
     "icon": "i-grid",
+    "compile": true,
     "dependencies":
     {
         "js":
@@ -12,16 +13,15 @@
         ],
         "css":
         [
-            "https://fonts.googleapis.com/css?family=Roboto",
-            "/grid/css/grid.css",
-            "/grid/css/demo.css"
+            "/grid/css/grid.css"
         ]
     },
     "languages":
     {
         "js":
         {
-            "code": "$('.thegrid').grid(\n    {\n        cellHeight: 200,\n        cellsPerRow: 7,\n        breakpoints:\n        {\n            1199:\n            {\n                cellsPerRow: 5,\n                cellHeight: 180\n            },\n            767:\n            {\n                cellsPerRow: 4,\n            },\n            479:\n            {\n                cellsPerRow: 2,\n                cellHeight: 160\n            },\n        }\n    });"
+            "code": "$(document).ready(function()\n{\n    $('.thegrid').grid(\n    {\n        grid: '.thegrid',\n        cells: '.cell',\n        cellHeight: 200,\n        cellsPerRow: 7,\n        breakpoints:\n        {\n            1199:\n            {\n                cellsPerRow: 5,\n                cellHeight: 180\n            },\n            767:\n            {\n                cellsPerRow: 4,\n            },\n            479:\n            {\n                cellsPerRow: 2,\n                cellHeight: 160\n            },\n        }\n    });\n});",
+            "code.old": "$('.thegrid').grid(\n    {\n        cellHeight: 200,\n        cellsPerRow: 7,\n        breakpoints:\n        {\n            1199:\n            {\n                cellsPerRow: 5,\n                cellHeight: 180\n            },\n            767:\n            {\n                cellsPerRow: 4,\n            },\n            479:\n            {\n                cellsPerRow: 2,\n                cellHeight: 160\n            },\n        }\n    });"
         },
         "css":
         {
