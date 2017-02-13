@@ -112,9 +112,9 @@ var syntaxHighlighter = function()
             // If the attribute 'data-result' is present on .code-wrapper then run the given html + css + js in an iframe.
             if ($wrapper.data('result'))
             {
-                var html     = $wrapper.find('pre[data-type="html"]').html().stripTags().htmlize(),
-                    js       = $wrapper.find('pre[data-type="js"]').html().stripTags(),
-                    css      = $wrapper.find('pre[data-type="css"]').html().htmlize().stripTags(),
+                var html     = ($wrapper.find('pre[data-type="html"]').html() ||'').stripTags().htmlize(),
+                    js       = ($wrapper.find('pre[data-type="js"]').html()   ||'').stripTags(),
+                    css      = ($wrapper.find('pre[data-type="css"]').html()  ||'').htmlize().stripTags(),
                     contents = '<html><head><link rel="stylesheet" type="text/css" href="../../grid/css/grid.css">'
                              + '<script src="../bower_components/jquery/dist/jquery.min.js"></script>'
                              + '<script src="../bower_components/jquery.easing/js/jquery.easing.min.js"></script>'
