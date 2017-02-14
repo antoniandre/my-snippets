@@ -74,11 +74,16 @@ var addTab = function($target, targetIndex, $wrapper)
             + ' name="codeWrapper' + wrapperIndex + '">' + '<label for="' + targetTag + targetIndex
             + '"><span contenteditable>' + (label ? label : type) + '</span>'
             + '<span class="language">Language: <select name="" id="">'
-            + '<option>plain-text</option>'
-            + '<option>js</option>'
-            + '<option>css</option>'
-            + '<option>html</option>'
-            + '<option>php</option>'
+            + '<input type="radio" name="language' + targetIndex + '"/> '
+            + '<label for="language' + targetIndex + '1">plain-text</label></option>'
+            + '<input type="radio" name="language' + targetIndex + '"/> '
+            + '<label for="language' + targetIndex + '2">js</label></option>'
+            + '<input type="radio" name="language' + targetIndex + '"/> '
+            + '<label for="language' + targetIndex + '3">css</label></option>'
+            + '<input type="radio" name="language' + targetIndex + '"/> '
+            + '<label for="language' + targetIndex + '4">html</label></option>'
+            + '<input type="radio" name="language' + targetIndex + '"/> '
+            + '<label for="language' + targetIndex + '5">php</label></option>'
             + '</select></span></label>');
 };
 
