@@ -7,14 +7,19 @@
     "gulp": "latest"
   },
   "devDependencies": {
+    "browser-sync": "latest",
     "gulp": "latest",
+    "gulp-autoprefixer": "latest",
+    "gulp-bower": "0.0.13",
+    "gulp-concat": "latest",
+    "gulp-cssbeautify": "latest",
+    "gulp-csso": "latest",
+    "gulp-filter": "latest",
     "gulp-load-plugins": "latest",
     "gulp-rename": "latest",
-    "gulp-csso": "latest",
     "gulp-sass": "latest",
-    "gulp-cssbeautify": "latest",
-    "gulp-notify": "latest",
-    "gulp-autoprefixer": "latest"
+    "gulp-uglify": "^2.0.1",
+    "main-bower-files": "latest"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
