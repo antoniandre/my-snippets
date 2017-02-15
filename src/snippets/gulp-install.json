@@ -1,0 +1,16 @@
+{
+    "name": "Gulp Install",
+    "h1": "Gulp Install",
+    "icon": "i-bulb",
+    "dependencies":
+    {
+    },
+    "languages":
+    {
+        "txt":
+        {
+            "code": "To install on windows Bash\n--------------------------\n\n1- Download and default install Node.Js\n2- Open Windows bash and type: sudo apt-get install -y nodejs. (which npm should give sth like /usr/bin/npm)\n3- sudo npm install -g gulp\n3- sudo npm install -g bower\n4- Go to the project folder cd my_project/ and do gulp init (only the first time)\n   (Gulp needs 2 files at the root: gulpfile.js, package.json)\n5- Do npm install fom npm to install the dependencies listed in package.json in 'devDependencies'\n6- to use css autoprefixer you may need to add 'require('es6-promise').polyfill();' at the beginning of the gulpfile",
+            "label": "Plain Text"
+        }
+    }
+}

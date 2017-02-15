@@ -29,3 +29,6 @@ node_modules/
 # GITHUB
 # ------
 gh-pages/
+
+
+dist/
