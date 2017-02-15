@@ -27,7 +27,7 @@ gulp
                    .pipe(plugins.csso())
                    .pipe(plugins.rename({suffix: '.min'}))
                    .pipe(gulp.dest(config.dest + '/css/'))
-                   .pipe(plugins.notify({message: 'Minify task complete'}));
+                   .pipe(plugins.notify('Minify task completed.'));
     })
 
 
@@ -42,6 +42,7 @@ gulp
     {
         // Work only with cygwin.
         gulp.watch(config.src + '/css/*.scss', ['build']);
+        plugins.notify('Watching files: ' + config.src + '/css/*.scss')
         // Trying things for windows bash...
         // gulp.watch('/css/main.scss', {cwd: config.src}, ['build']});
     });

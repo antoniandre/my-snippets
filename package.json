@@ -12,7 +12,6 @@
     "gulp-rename": "latest",
     "gulp-csso": "latest",
     "gulp-sass": "latest",
-    "gulp-csscomb": "latest",
     "gulp-cssbeautify": "latest",
     "gulp-notify": "latest",
     "gulp-autoprefixer": "latest"
