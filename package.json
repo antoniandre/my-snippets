@@ -13,13 +13,13 @@
     "gulp-bower": "0.0.13",
     "gulp-concat": "latest",
     "gulp-cssbeautify": "latest",
-    "gulp-csso": "latest",
+    "gulp-csso": "^2.0.0",
     "gulp-filter": "latest",
     "gulp-load-plugins": "latest",
-    "gulp-rename": "latest",
     "gulp-sass": "latest",
     "gulp-uglify": "^2.0.1",
-    "main-bower-files": "latest"
+    "main-bower-files": "latest",
+    "merge2": "^1.0.3"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
