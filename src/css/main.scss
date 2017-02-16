@@ -1,17 +1,7 @@
 /* SASS example.
- $color: pink;
-
-body {
-margin: 0;
-display: flex;
-background: red;
-z-index:1337;
-position:relative;
-}
-
-@media (min-width:640px) {
-p {color: $color; box-shadow: 0 0 0 darken($color, 30%)}
-} */
+$color: pink;
+p {color: $color;box-shadow: 0 0 0 darken($color, 30%)}
+*/
 
 
 /*================================== GENERAL =================================*/
