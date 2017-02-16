@@ -49,7 +49,7 @@ gulp
             .pipe(plugins.cssbeautify())
             .pipe(plugins.autoprefixer())
             .pipe(gulp.dest(config.dest + '/css/'))
-            .pipe(plugins.browserSync.reload({stream: true}));
+            .pipe(plugins.browserSync().reload({stream: true}));
 
         console.log('OK - CSS compiling task completed.');
     })*/
@@ -66,7 +66,7 @@ gulp
            .pipe(plugins.cssbeautify())
            .pipe(gulp.dest(config.dest + '/css/'));
 
-            console.log('OK - SCSS/CSS compiling task completed.');
+        console.log('OK - SCSS/CSS compiling task completed.');
     })
     .task('css-min', function()
     {
@@ -102,13 +102,13 @@ gulp
 
     // WATCH.
     //=======================================================================================//
-    .task('watch', ['browserSync', 'sass'], function()
+    .task('watch', ['sync', 'css'], function()
     {
         // Doesn't work on windows bash but works on cygwin or macOS.
-        gulp.watch(config.src + '/css/*.scss', ['sass']);
+        gulp.watch(config.src + '/css/*.+(css|scss)', ['css']);
         // Trying things for windows bash...
         // gulp.watch('/css/main.scss', {cwd: config.src}, ['build']});
-        console.log('Watching files: ' + config.src + '/css/*.scss');
+        console.log('Watching files: ' + config.src + '/css/*.+(css|scss)');
     })
 
 
@@ -116,7 +116,7 @@ gulp
     //=======================================================================================//
     .task('sync', function()
     {
-        plugins.browserSync.init
+        plugins.browserSync().init
         ({
             server: {baseDir: config.src}
         })
@@ -124,9 +124,8 @@ gulp
 
     // SHORTCUT TASKS: BUILD, DEV, PROD, DEFAULT.
     //=======================================================================================//
-    .task('build', ['sass', 'php', 'js'])
-    .task('dev', ['build', 'watch'])
-    .task('prod', ['build', 'minify-css', 'minify-js'])
+    .task('dev', ['php', 'css', 'js'])
+    .task('prod', ['php', 'minify-css', 'minify-js'])
     .task('default', ['dev']);// Run when typing 'gulp' (only) in console.
 
 
