@@ -20,7 +20,8 @@ var gulp    = require('gulp'),
         dest: './dist',// Distribution.
         bowerDir: './bower_components' 
     },
-    bowerFiles;
+    bowerFiles,
+    dev = true;
 
 gulp
     // INDIVIDUAL TASKS.
@@ -36,8 +37,26 @@ gulp
     // Php and html.
     .task('php', function()
     {
-        gulp.src(config.src + '/**/*.+(php|html)')
+        gulp
+            .src(
+            [
+                // All except templates as they are changed in js task.
+                config.src + '/**/*.+(php|html)', '!' + config.src + '/templates/*.html',
+                config.src + '/**/.htaccess'
+            ])
             .pipe(gulp.dest(config.dest));
+
+        gulp.src(config.src + '/templates/*.html')
+            .pipe(plugins.replaceTask(
+            {
+                patterns:
+                [{
+                    match: /\{\{gulp:min\}\}/g,
+                    replacement: dev ? '' : '.min'
+                }]
+            }))
+            .pipe(gulp.dest(config.dest + '/templates/'));
+
         console.log('OK - PHP / HTML files copied.');
     })
 
@@ -49,7 +68,7 @@ gulp
             .pipe(plugins.cssbeautify())
             .pipe(plugins.autoprefixer())
             .pipe(gulp.dest(config.dest + '/css/'))
-            .pipe(plugins.browserSync().reload({stream: true}));
+            .pipe(plugins.browserSync.reload({stream: true}));
 
         console.log('OK - CSS compiling task completed.');
     })*/
@@ -85,17 +104,56 @@ gulp
     // Js.
     .task('js', function()
     {
-        gulp.src(getFiles('js'))
-            .pipe(gulp.dest(config.dest + '/js/'));
+        gulp.src([config.src + '/js/*.js', '!' + config.src + '/js/main.js'])
+        .pipe(
+            plugins.include(
+            {
+                extensions: "js",
+                includePaths: [
+                    config.bowerDir,
+                    config.src + "/js"
+                ]
+            })
+        )
+        .pipe(gulp.dest(config.dest + '/js'));
+
+        gulp.src(config.src + '/templates/*.html')
+            .pipe(plugins.replaceTask(
+            {
+                patterns:
+                [{
+                    match: /\{\{gulp:min\}\}/g,
+                    replacement: ''
+                }]
+            }))
+            .pipe(gulp.dest(config.dest + '/templates/'));
+
         console.log('OK - JS files copied.');
     })
     // Concatenates all the JS and the bower js libs.
     .task('js-min', function()
     {
-        gulp.src(getFiles('js'))
-            .pipe(plugins.concat('main.min.js'))
-            .pipe(plugins.uglify())
-            .pipe(gulp.dest(config.dest + '/js/'));
+        gulp.src([config.src + '/js/*.js', '!' + config.src + '/js/main.js'])
+        .pipe(
+            plugins.include(
+            {
+                extensions: "js",
+                includePaths: [
+                    config.bowerDir,
+                    config.src + "/js"
+                ]
+            })
+        )
+        .on('error', console.log)
+        .pipe(plugins.uglify())
+        .pipe(plugins.rename({suffix: '.min'}))
+        .pipe(gulp.dest(config.dest + '/js'));
+
+        // gulp.src(getFiles('js'))
+        //     .pipe(plugins.concat('main.min.js'))
+        //     .pipe(plugins.uglify())
+        //     .pipe(gulp.dest(config.dest + '/js/'));
+
         console.log('OK - JS minifying task completed.');
     })
 
@@ -116,7 +174,7 @@ gulp
     //=======================================================================================//
     .task('sync', function()
     {
-        plugins.browserSync().init
+        plugins.browserSync.init
         ({
             server: {baseDir: config.src}
         })
@@ -124,9 +182,22 @@ gulp
 
     // SHORTCUT TASKS: BUILD, DEV, PROD, DEFAULT.
     //=======================================================================================//
-    .task('dev', ['php', 'css', 'js'])
-    .task('prod', ['php', 'minify-css', 'minify-js'])
-    .task('default', ['dev']);// Run when typing 'gulp' (only) in console.
+    .task('dev', function()
+    {
+        dev = true;
+        gulp.start(['php', 'css', 'js']);
+    })
+    .task('prod', function()
+    {
+        dev = false;
+        gulp.start(['php', 'css-min', 'js-min']);
+    })
+    // Run when typing 'gulp' (only) in console.
+    .task('default', function()
+    {
+        dev = true;
+        gulp.start(['dev']);
+    });
 
 
 
@@ -160,4 +231,12 @@ function getBowerFiles()
 
     bowerFiles = files;
     return files;
+}
+
+function browserSyncInit(baseDir, files)
+{
+    plugins.browserSync.instance = plugins.browserSync.init(files,
+    {
+        startPath: '/', server: { baseDir: baseDir }
+    });
 }
