@@ -3,12 +3,9 @@
         <title>{{snippetName}} | My Snippets</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         {{styles}}
-        <link rel="stylesheet" type="text/css" href="{{ROOT_URL}}css/main.css">
+        <link rel="stylesheet" type="text/css" href="{{ROOT_URL}}css/snippet{{gulp:min}}.css">
         {{style}}
         <link href="https://file.myfontastic.com/3HQaS5Npxv3BKokeRYZ2T3/icons.css" rel="stylesheet">
-        <script src="{{ROOT_URL}}js/snippet{{gulp:min}}.js"></script>
-        {{scripts}}
-        {{script}}
     </head>
     <body>
         {{include top-bar}}
@@ -25,5 +22,8 @@
             <div class="compiled">{{html}}</div>
         </div>
         <div class="center"><a href="../../" class="i-arr-l back"> Go back home</a></div>
+        <script src="{{ROOT_URL}}js/snippet{{gulp:min}}.js"></script>
+        {{scripts}}
+        {{script}}
     </body>
 </html>
