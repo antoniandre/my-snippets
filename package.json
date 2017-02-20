@@ -10,21 +10,16 @@
     "browser-sync": "latest",
     "gulp": "latest",
     "gulp-autoprefixer": "latest",
-    "gulp-bower": "0.0.13",
-    "gulp-concat": "latest",
+    "gulp-bower": "latest",
     "gulp-cssbeautify": "latest",
-    "gulp-csso": "^2.0.0",
-    "gulp-filter": "latest",
-    "gulp-html-replace": "latest",
-    "gulp-if": "latest",
-    "gulp-include": "^2.3.1",
+    "gulp-csso": "latest",
+    "gulp-include": "latest",
     "gulp-load-plugins": "latest",
     "gulp-rename": "latest",
-    "gulp-replace-task": "^0.11.0",
+    "gulp-replace-task": "latest",
     "gulp-sass": "latest",
-    "gulp-uglify": "^2.0.1",
-    "main-bower-files": "latest",
-    "merge2": "^1.0.3"
+    "gulp-uglify": "latest",
+    "main-bower-files": "latest"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
