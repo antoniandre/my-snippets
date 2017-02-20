@@ -2,15 +2,34 @@
  * Use in terminal
  * ---------------
  *
- * gulp bower
+ * gulp create-bower
  * gulp dev
  */
+
+// useful plugins:
+// gulp-load-plugins: just avoiding requiring all plugins 1 by 1.
+// browser-sync: watch files and reinject up to date content in browser.
+// gulp-autoprefixer: add the vendor browsers prefixes in css.
+// gulp-bower: create the bower dir populated with all deps writen in bower.json
+// gulp-concat: concat multiple streams into one file.
+// gulp-cssbeautify
+// gulp-csso: minify css.
+// gulp-filter: start from a large set of files then filter the stream to apply some specific actions on specific files.
+// gulp-replace-task: modify html content with search/replace patterns.
+// gulp-if: like gulp filter, perform an action if a file name from the current stream matches a sub pattern.
+// gulp-include: include a file within another in just one directive. Very good.
+// gulp-rename: rename a file after outputing. E.g. main.js -> main.min.js.
+// gulp-sass
+// gulp-uglify: minify js only.
+// main-bower-files: get the main file of each dep present in bower.json. Then create an array of main bower files paths to give to gulp.src().
+// merge2: merge 2 streams.
+
 
 var gulp    = require('gulp'),
     // All the devDependencies from package.json.
     plugins = require('gulp-load-plugins')(
     {
-        pattern: ['gulp-*', 'main-bower-files', 'browser-sync', 'merge2'],
+        pattern: ['*'],
         replaceString: /\bgulp[\-.]/
     }),
     config  =
@@ -21,7 +40,8 @@ var gulp    = require('gulp'),
         bowerDir: './bower_components' 
     },
     bowerFiles,
-    dev = true;
+    dev = true,
+    bs = plugins.browserSync.create();
 
 gulp
     // INDIVIDUAL TASKS.
@@ -40,8 +60,8 @@ gulp
         gulp
             .src(
             [
-                // All except templates as they are changed in js task.
-                config.src + '/**/*.+(php|html)', '!' + config.src + '/templates/*.html',
+                // All except templates as they are changed just bellow.
+                config.src + '/**/*.+(php|html|json)', '!' + config.src + '/templates/*.html',
                 config.src + '/**/.htaccess'
             ])
             .pipe(gulp.dest(config.dest));
@@ -55,104 +75,82 @@ gulp
                     replacement: dev ? '' : '.min'
                 }]
             }))
-            .pipe(gulp.dest(config.dest + '/templates/'));
+            .pipe(gulp.dest(config.dest + '/templates/'))
+            .pipe(bs.reload({stream: true}));
 
         console.log('OK - PHP / HTML files copied.');
     })
 
-    // Css.
-    /*.task('sass', function()
+   .task('css', function()
     {
-        gulp.src(config.src + '/css/*.scss')
-            .pipe(plugins.sass())
-            .pipe(plugins.cssbeautify())
-            .pipe(plugins.autoprefixer())
-            .pipe(gulp.dest(config.dest + '/css/'))
-            .pipe(plugins.browserSync.reload({stream: true}));
-
-        console.log('OK - CSS compiling task completed.');
-    })*/
-    .task('css', function()
-    {
-        gulp.src(getFiles('scss'))
-           .pipe(plugins.sass())
-           .pipe(plugins.autoprefixer())
-           .pipe(plugins.cssbeautify())
-           .pipe(gulp.dest(config.dest + '/css/'));
-
-        gulp.src(getFiles('css'))
-           .pipe(plugins.autoprefixer())
-           .pipe(plugins.cssbeautify())
-           .pipe(gulp.dest(config.dest + '/css/'));
+        gulp.src([config.src + '/css/*.+(scss|css)', '!' + config.src + '/css/inc.*.+(scss|css)'])
+        .pipe(
+            plugins.include(
+            {
+                extensions: "css",
+                includePaths: [config.src + "/css", config.bowerDir]
+            })
+        )
+        .pipe(plugins.sass())
+        .pipe(plugins.autoprefixer())
+        .pipe(plugins.cssbeautify())
+        .pipe(gulp.dest(config.dest + '/css/'))
+        .pipe(bs.reload({stream: true}));
 
         console.log('OK - SCSS/CSS compiling task completed.');
     })
     .task('css-min', function()
     {
-        var scss = gulp.src(getFiles('scss'))
-                       .pipe(plugins.sass()),
-            css  = gulp.src(getFiles('css'));
+        gulp.src([config.src + '/css/*.+(scss|css)', '!' + config.src + '/css/inc.*.+(scss|css)'])
+        .pipe(
+            plugins.include(
+            {
+                extensions: "css",
+                includePaths: [config.src + "/css", config.bowerDir]
+            })
+        )
+        .pipe(plugins.sass())
+        .pipe(plugins.autoprefixer())
+        .pipe(plugins.csso())
+        .pipe(plugins.rename({suffix: '.min'}))
+        .pipe(gulp.dest(config.dest + '/css/'))
+        .pipe(bs.reload({stream: true}));
 
-            plugins.merge2(scss, css)
-            .pipe(plugins.autoprefixer())
-            .pipe(plugins.csso())
-            .pipe(plugins.concat('main.min.css'))
-            .pipe(gulp.dest(config.dest + '/css/'));
         console.log('OK - CSS minifying task completed.');
     })
 
     // Js.
     .task('js', function()
     {
-        gulp.src([config.src + '/js/*.js', '!' + config.src + '/js/main.js'])
+        gulp.src([config.src + '/js/*.js', '!' + config.src + '/js/inc.*.js'])
         .pipe(
             plugins.include(
             {
                 extensions: "js",
-                includePaths: [
-                    config.bowerDir,
-                    config.src + "/js"
-                ]
+                includePaths: [config.bowerDir, config.src + "/js"]
             })
         )
-        .pipe(gulp.dest(config.dest + '/js'));
-
-        gulp.src(config.src + '/templates/*.html')
-            .pipe(plugins.replaceTask(
-            {
-                patterns:
-                [{
-                    match: /\{\{gulp:min\}\}/g,
-                    replacement: ''
-                }]
-            }))
-            .pipe(gulp.dest(config.dest + '/templates/'));
+        .pipe(gulp.dest(config.dest + '/js'))
+        .pipe(bs.reload({stream: true}));
 
         console.log('OK - JS files copied.');
     })
     // Concatenates all the JS and the bower js libs.
     .task('js-min', function()
     {
-        gulp.src([config.src + '/js/*.js', '!' + config.src + '/js/main.js'])
+        gulp.src([config.src + '/js/*.js', '!' + config.src + '/js/inc.*.js'])
         .pipe(
             plugins.include(
             {
                 extensions: "js",
-                includePaths: [
-                    config.bowerDir,
-                    config.src + "/js"
-                ]
+                includePaths: [config.bowerDir, config.src + "/js"]
             })
         )
         .on('error', console.log)
         .pipe(plugins.uglify())
         .pipe(plugins.rename({suffix: '.min'}))
-        .pipe(gulp.dest(config.dest + '/js'));
-
-        // gulp.src(getFiles('js'))
-        //     .pipe(plugins.concat('main.min.js'))
-        //     .pipe(plugins.uglify())
-        //     .pipe(gulp.dest(config.dest + '/js/'));
+        .pipe(gulp.dest(config.dest + '/js'))
+        .pipe(bs.reload({stream: true}));
 
         console.log('OK - JS minifying task completed.');
     })
@@ -160,10 +158,12 @@ gulp
 
     // WATCH.
     //=======================================================================================//
-    .task('watch', ['sync', 'css'], function()
+    .task('watch', ['sync'], function()
     {
         // Doesn't work on windows bash but works on cygwin or macOS.
         gulp.watch(config.src + '/css/*.+(css|scss)', ['css']);
+        gulp.watch(config.src + '/js/*.js', ['js']);
+        gulp.watch(config.src + '/templates/*.html', ['php']);
         // Trying things for windows bash...
         // gulp.watch('/css/main.scss', {cwd: config.src}, ['build']});
         console.log('Watching files: ' + config.src + '/css/*.+(css|scss)');
@@ -174,9 +174,13 @@ gulp
     //=======================================================================================//
     .task('sync', function()
     {
-        plugins.browserSync.init
+        bs.init
         ({
-            server: {baseDir: config.src}
+            open: false, // Set to false if you don't like the browser window opening automatically
+            port: 3000, // Port number for the live version of the site; default: 3000
+            proxy: 'localhost:80', // We need to use a proxy instead of the built-in server because WordPress has to do some server-side rendering for the theme to work
+            // server: {baseDir: config.dest},
+            startPath: 'my-snippets/dist/index.php'
         })
     })
 
@@ -185,12 +189,12 @@ gulp
     .task('dev', function()
     {
         dev = true;
-        gulp.start(['php', 'css', 'js']);
+        gulp.start(['php', 'css', 'js', 'watch']);
     })
     .task('prod', function()
     {
         dev = false;
-        gulp.start(['php', 'css-min', 'js-min']);
+        gulp.start(['php', 'css-min', 'js-min', 'watch']);
     })
     // Run when typing 'gulp' (only) in console.
     .task('default', function()
@@ -198,45 +202,3 @@ gulp
         dev = true;
         gulp.start(['dev']);
     });
-
-
-
-/**
- * Get CSS or JS Files.
- *
- * @param  string type: CSS, SCSS or JS.
- * @return array: the array of matched files paths.
- */
-function getFiles(type)
-{
-    // Type files mask CSS or JS.
-    var dir        = type === 'scss' ? 'css' : type,
-        files      = [config.src + '/' + dir + '/*.+' + '(' + type + ')'],
-        filter     = new RegExp('\.' + type + '$'),
-        bowerFiles = getBowerFiles();
-
-    if (bowerFiles) files = bowerFiles.filter(function(path){return filter.test(path)}).concat(files);
-
-    return files;
-}
-
-function getBowerFiles()
-{
-    var files = null;
-
-    if (bowerFiles) return bowerFiles;
-
-    try {files = plugins.mainBowerFiles()}
-    catch(e) {console.log('============= /!\\ =============\n' + e + '\n===============================\nIgnoring bower files...')}
-
-    bowerFiles = files;
-    return files;
-}
-
-function browserSyncInit(baseDir, files)
-{
-    plugins.browserSync.instance = plugins.browserSync.init(files,
-    {
-        startPath: '/', server: { baseDir: baseDir }
-    });
-}
