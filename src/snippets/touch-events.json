@@ -14,7 +14,7 @@
     {
         "js":
         {
-            "code":"var touchHandler = function(event)\n{\n    var touch = event.hasOwnProperty('changedTouches') ? event.changedTouches[0] : event.originalEvent.changedTouches[0];\n\n    var simulatedEvent = document.createEvent(\"MouseEvent\");\n        simulatedEvent.initMouseEvent({\n        touchstart: \"mousedown\",\n        touchmove: \"mousemove\",\n        touchend: \"mouseup\"\n    }[event.type], true, true, window, 1,\n        touch.screenX, touch.screenY,\n        touch.clientX, touch.clientY, false,\n        false, false, false, 0, null);\n\n    touch.target.dispatchEvent(simulatedEvent);\n\n    event.preventDefault();\n};"
+            "code":"var touchHandler = function(event)\n{\n    var touch = event.hasOwnProperty('changedTouches') ? event.changedTouches[0] : event.originalEvent.changedTouches[0];\n\n    var simulatedEvent = document.createEvent(\"MouseEvent\");\n        simulatedEvent.initMouseEvent({\n        touchstart: \"mousedown\",\n        touchmove: \"mousemove\",\n        touchend: \"mouseup\"\n    }[event.type], true, true, window, 1,\n        touch.screenX, touch.screenY,\n        touch.clientX, touch.clientY, false,\n        false, false, false, 0, null);\n\n    touch.target.dispatchEvent(simulatedEvent);\n\n    event.preventDefault();\n};\n\n\nThen use:\n$('.jslider').on(\"touchstart touchmove touchend touchcancel\", touchHandler);"
         }
     }
 }
