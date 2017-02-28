@@ -23,7 +23,12 @@
 // gulp-uglify: minify js only.
 // main-bower-files: get the main file of each dep present in bower.json. Then create an array of main bower files paths to give to gulp.src().
 // merge2: merge 2 streams.
-
+// Hack for Ubuntu on Windows: interface enumeration fails with EINVAL, so return empty.
+try {
+  require('os').networkInterfaces();
+} catch (e) {
+  require('os').networkInterfaces = () => ({});
+}
 
 var gulp    = require('gulp'),
     // All the devDependencies from package.json.
@@ -37,7 +42,7 @@ var gulp    = require('gulp'),
         // Paths variables.
         src : './src',// Dev.
         dest: './dist',// Distribution.
-        bowerDir: './bower_components' 
+        bowerDir: './bower_components'
     },
     bowerFiles,
     dev = true,
@@ -49,8 +54,8 @@ gulp
 
     // Create bower directory and populate with bower.json dependencies.
     .task('create-bower', function()
-    { 
-        return plugins.bower().pipe(gulp.dest(config.bowerDir)) ;
+    {
+        return plugins.bower().pipe(gulp.dest(config.bowerDir));
         console.log('OK - Bower folder generated.');
     })
 
@@ -189,7 +194,7 @@ gulp
     .task('dev', function()
     {
         dev = true;
-        gulp.start(['php', 'css', 'js', 'watch']);
+        gulp.start(['php', 'css', 'js'/*, 'watch'*/]);
     })
     .task('prod', function()
     {
