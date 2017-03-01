@@ -1,0 +1,23 @@
+{
+    "name":"Animated SVG - Valid",
+    "h1":"Animated SVG - Valid",
+    "icon":"i-star",
+    "compile": true,
+    "dependencies":{
+        "js":
+        [
+            "jquery"
+        ]
+    },
+    "languages":
+    {
+        "css":
+        {
+            "code": ".thanks {\n    text-align: center;\n    padding: 30px 0;\n}\n.thanks svg {\n    width: 120px;\n}\n.thanks path, .thanks polyline {\n    stroke: #666 !important;\n}\n.thanks.show svg .path {\n    opacity: 1;\n    stroke-dashoffset: 0;\n}\n.thanks .circ {\n    opacity: 0;\n    stroke-dasharray: 130;\n    stroke-dashoffset: 130;\n    -webkit-transition: all 1s;\n    -moz-transition: all 1s;\n    -ms-transition: all 1s;\n    -o-transition: all 1s;\n    transition: all 1s;\n}\n.thanks .tick {\n    stroke-dasharray: 50;\n    stroke-dashoffset: 50;\n    -webkit-transition: stroke-dashoffset 1s 0.5s ease-out;\n    -moz-transition: stroke-dashoffset 1s 0.5s ease-out;\n    -ms-transition: stroke-dashoffset 1s 0.5s ease-out;\n    -o-transition: stroke-dashoffset 1s 0.5s ease-out;\n    transition: stroke-dashoffset 1s 0.5s ease-out;\n}\n.thanks p {\n    opacity: 0;\n    padding: 10px;\n}\n.thanks.show p {\n    opacity: 1;\n}"
+        },
+        "html":
+        {
+            "code": "\n<div class=\"thanks\">\n    <svg version=\"1.1\" id=\"tick\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" viewBox=\"0 0 37 37\" style=\"enable-background:new 0 0 37 37;\" xml:space=\"preserve\">\n        <path class=\"circ path\" style=\"fill:none;stroke:#000;stroke-width:3;stroke-linejoin:round;stroke-miterlimit:10;\" d=\"M30.5,6.5L30.5,6.5c6.6,6.6,6.6,17.4,0,24l0,0c-6.6,6.6-17.4,6.6-24,0l0,0c-6.6-6.6-6.6-17.4,0-24l0,0C13.1-0.2,23.9-0.2,30.5,6.5z\"/>\n        <polyline class=\"tick path\" style=\"fill:none;stroke:#000;stroke-width:3;stroke-linejoin:round;stroke-miterlimit:10;\" points=\"11.6,20 15.9,24.2 26.4,13.8\"/>\n    </svg>\n    <p>Thank you!</p>\n    <button onclick=\"$('.thanks').toggleClass('show')\">show / hide</button></div>"
+        }
+    }
+}
