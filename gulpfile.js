@@ -1,6 +1,6 @@
 /**
  * Use in terminal
- * ---------------
+ * —-------------
  *
  * gulp create-bower
  * gulp dev
@@ -23,6 +23,7 @@
 // gulp-uglify: minify js only.
 // main-bower-files: get the main file of each dep present in bower.json. Then create an array of main bower files paths to give to gulp.src().
 // merge2: merge 2 streams.
+
 // Hack for Ubuntu on Windows: interface enumeration fails with EINVAL, so return empty.
 try {
   require('os').networkInterfaces();
@@ -48,162 +49,215 @@ var gulp    = require('gulp'),
     dev = true,
     bs = plugins.browserSync.create();
 
-gulp
-    // INDIVIDUAL TASKS.
-    //=======================================================================================//
 
-    // Create bower directory and populate with bower.json dependencies.
-    .task('create-bower', function()
-    {
-        return plugins.bower().pipe(gulp.dest(config.bowerDir));
-        console.log('OK - Bower folder generated.');
-    })
+// INDIVIDUAL TASKS.
+//=======================================================================================//
 
-    // Php and html.
-    .task('php', function()
-    {
-        gulp
-            .src(
-            [
-                // All except templates as they are changed just bellow.
-                config.src + '/**/*.+(php|html|json)', '!' + config.src + '/templates/*.html',
-                config.src + '/**/.htaccess'
-            ])
-            .pipe(gulp.dest(config.dest));
+// Create bower directory and populate with bower.json dependencies.
+gulp.task('create-bower', function()
+{
+    return plugins.bower().pipe(gulp.dest(config.bowerDir));
+    console.log('OK - Bower folder generated.');
+});
 
-        gulp.src(config.src + '/templates/*.html')
-            .pipe(plugins.replaceTask(
-            {
-                patterns:
-                [{
-                    match: /\{\{gulp:min\}\}/g,
-                    replacement: dev ? '' : '.min'
-                }]
-            }))
-            .pipe(gulp.dest(config.dest + '/templates/'))
-            .pipe(bs.reload({stream: true}));
+// Php and html.
+gulp.task('php', function()
+{
+    gulp
+        .src(
+        [
+            // All except templates as they are changed just bellow.
+            config.src + '/**/*.+(php|html|json)', '!' + config.src + '/templates/*.html',
+            config.src + '/**/.htaccess'
+        ])
+        .pipe(gulp.dest(config.dest));
 
-        console.log('OK - PHP / HTML files copied.');
-    })
-
-   .task('css', function()
-    {
-        gulp.src([config.src + '/css/*.+(scss|css)', '!' + config.src + '/css/inc.*.+(scss|css)'])
-        .pipe(
-            plugins.include(
-            {
-                extensions: "css",
-                includePaths: [config.src + "/css", config.bowerDir]
-            })
-        )
-        .pipe(plugins.sass())
-        .pipe(plugins.autoprefixer())
-        .pipe(plugins.cssbeautify())
-        .pipe(gulp.dest(config.dest + '/css/'))
+    var tpl = gulp.src(config.src + '/templates/*.html')
+        .pipe(plugins.replaceTask(
+        {
+            patterns:
+            [{
+                match: /\{\{gulp:min\}\}/g,
+                replacement: dev ? '' : '.min'
+            }]
+        }))
+        .pipe(gulp.dest(config.dest + '/templates/'))
         .pipe(bs.reload({stream: true}));
 
-        console.log('OK - SCSS/CSS compiling task completed.');
-    })
-    .task('css-min', function()
-    {
-        gulp.src([config.src + '/css/*.+(scss|css)', '!' + config.src + '/css/inc.*.+(scss|css)'])
-        .pipe(
-            plugins.include(
-            {
-                extensions: "css",
-                includePaths: [config.src + "/css", config.bowerDir]
-            })
-        )
-        .pipe(plugins.sass())
-        .pipe(plugins.autoprefixer())
-        .pipe(plugins.csso())
-        .pipe(plugins.rename({suffix: '.min'}))
-        .pipe(gulp.dest(config.dest + '/css/'))
-        .pipe(bs.reload({stream: true}));
+    console.log('OK - PHP / HTML files copied.');
 
-        console.log('OK - CSS minifying task completed.');
-    })
+    return tpl;
+});
 
-    // Js.
-    .task('js', function()
-    {
-        gulp.src([config.src + '/js/*.js', '!' + config.src + '/js/inc.*.js'])
-        .pipe(
-            plugins.include(
-            {
-                extensions: "js",
-                includePaths: [config.bowerDir, config.src + "/js"]
-            })
-        )
-        .pipe(gulp.dest(config.dest + '/js'))
-        .pipe(bs.reload({stream: true}));
-
-        console.log('OK - JS files copied.');
-    })
-    // Concatenates all the JS and the bower js libs.
-    .task('js-min', function()
-    {
-        gulp.src([config.src + '/js/*.js', '!' + config.src + '/js/inc.*.js'])
-        .pipe(
-            plugins.include(
-            {
-                extensions: "js",
-                includePaths: [config.bowerDir, config.src + "/js"]
-            })
-        )
-        .on('error', console.log)
-        .pipe(plugins.uglify())
-        .pipe(plugins.rename({suffix: '.min'}))
-        .pipe(gulp.dest(config.dest + '/js'))
-        .pipe(bs.reload({stream: true}));
-
-        console.log('OK - JS minifying task completed.');
-    })
-
-
-    // WATCH.
-    //=======================================================================================//
-    .task('watch', ['sync'], function()
-    {
-        // Doesn't work on windows bash but works on cygwin or macOS.
-        gulp.watch(config.src + '/css/*.+(css|scss)', ['css']);
-        gulp.watch(config.src + '/js/*.js', ['js']);
-        gulp.watch(config.src + '/templates/*.html', ['php']);
-        // Trying things for windows bash...
-        // gulp.watch('/css/main.scss', {cwd: config.src}, ['build']});
-        console.log('Watching files: ' + config.src + '/css/*.+(css|scss)');
-    })
-
-
-    // BROWSER SYNC.
-    //=======================================================================================//
-    .task('sync', function()
-    {
-        bs.init
-        ({
-            open: false, // Set to false if you don't like the browser window opening automatically
-            port: 3000, // Port number for the live version of the site; default: 3000
-            proxy: 'localhost:80', // We need to use a proxy instead of the built-in server because WordPress has to do some server-side rendering for the theme to work
-            // server: {baseDir: config.dest},
-            startPath: 'my-snippets/dist/index.php'
+gulp.task('css', function()
+{
+    var css = gulp.src([config.src + '/css/*.+(scss|css)', '!' + config.src + '/css/inc.*.+(scss|css)'])
+    .pipe(
+        plugins.include(
+        {
+            extensions: "css",
+            includePaths: [config.src + "/css", config.bowerDir]
         })
-    })
+    )
+    .pipe(plugins.sass())
+    // .pipe(plugins.autoprefixer())
+    .pipe(plugins.cssbeautify())
+    .pipe(gulp.dest(config.dest + '/css/'))
+    // .pipe(bs.reload({stream: true}));
 
-    // SHORTCUT TASKS: BUILD, DEV, PROD, DEFAULT.
-    //=======================================================================================//
-    .task('dev', function()
-    {
-        dev = true;
-        gulp.start(['php', 'css', 'js'/*, 'watch'*/]);
-    })
-    .task('prod', function()
-    {
-        dev = false;
-        gulp.start(['php', 'css-min', 'js-min', 'watch']);
-    })
-    // Run when typing 'gulp' (only) in console.
-    .task('default', function()
-    {
-        dev = true;
-        gulp.start(['dev']);
-    });
+    console.log('OK - SCSS/CSS compiling task completed.');
+
+    return css;
+});
+gulp.task('css-min', function()
+{
+    var css = gulp.src([config.src + '/css/*.+(scss|css)', '!' + config.src + '/css/inc.*.+(scss|css)'])
+    .pipe(
+        plugins.include(
+        {
+            extensions: "css",
+            includePaths: [config.src + "/css", config.bowerDir]
+        })
+    )
+    .pipe(plugins.sass())
+    .pipe(plugins.autoprefixer())
+    .pipe(plugins.csso())
+    .pipe(plugins.rename({suffix: '.min'}))
+    .pipe(gulp.dest(config.dest + '/css/'))
+    .pipe(bs.reload({stream: true}));
+
+    console.log('OK - CSS minifying task completed.');
+
+    return css;
+});
+
+// Js.
+gulp.task('js', function()
+{
+    var js = gulp.src([config.src + '/js/*.js', '!' + config.src + '/js/inc.*.js'])
+    .pipe(
+        plugins.include(
+        {
+            extensions: "js",
+            includePaths: [config.src + "/js", config.bowerDir]
+        })
+    )
+    .pipe(gulp.dest(config.dest + '/js'))
+    .pipe(bs.reload({stream: true}));
+
+    console.log('OK - JS files copied.');
+
+    return js;
+});
+// Concatenates all the JS and the bower js libs.
+gulp.task('js-min', function()
+{
+    var js = gulp.src([config.src + '/js/*.js', '!' + config.src + '/js/inc.*.js'])
+    .pipe(
+        plugins.include(
+        {
+            extensions: "js",
+            includePaths: [config.src + "/js", config.bowerDir]
+        })
+    )
+    .on('error', console.log)
+    .pipe(plugins.uglify())
+    .pipe(plugins.rename({suffix: '.min'}))
+    .pipe(gulp.dest(config.dest + '/js'))
+    .pipe(bs.reload({stream: true}));
+
+    console.log('OK - JS minifying task completed.');
+
+    return js;
+});
+
+
+// BROWSER SYNC.
+//=======================================================================================//
+gulp.task('sync', function(done)
+{
+    return bs.init
+    ({
+        open: false, // Set to false if you don't like the browser window opening automatically
+        port: 3000, // Port number for the live version of the site; default: 3000
+        proxy: 'localhost:80', // We need to use a proxy instead of the built-in server because WordPress has to do some server-side rendering for the theme to work
+        // server: {baseDir: config.dest},
+        startPath: 'my-snippets/dist/index.php'
+    }, done)
+});
+
+
+// WATCH.
+//=======================================================================================//
+var watch = function(done)
+{
+    gulp.watch(config.src + '/css/*.+(css|scss)', gulp.series('css', bs.reload));
+    console.log('Watching files: ' + config.src + '/css/*.+(css|scss)');
+
+    gulp.watch(config.src + '/js/*.js', gulp.series('js', bs.reload));
+    console.log('Watching files: ' + config.src + '/js/*.js');
+
+    gulp.watch(config.src + '/templates/*.html', gulp.series('php', bs.reload));
+    console.log('Watching files: ' + config.src + '/templates/*.html');
+
+    // gulp.watch(config.src + '/css/*.+(css|scss)')
+    //     .on('change', function(path, stats) {
+    //         console.log(path);
+    //         gulp.parallel('css');
+    //     })
+    //     .on('unlink', function(path, stats) {
+    //         console.log(path);
+    //     })
+    //     .on('add', function(path, stats) {
+    //         console.log(path);
+    //     });
+
+    // gulp.watch(config.src + '/js/*.js', gulp.parallel('js'))
+    //     .on('change', function(path, stats) {
+    //         console.log(path);
+    //     })
+    //     .on('unlink', function(path, stats) {
+    //         console.log(path);
+    //     })
+    //     .on('add', function(path, stats) {
+    //         console.log(path);
+    //     });
+
+    // gulp.watch(config.src + '/templates/*.html', gulp.parallel('php'))
+    //     .on('change', function(path, stats) {
+    //         console.log(path);
+    //     })
+    //     .on('unlink', function(path, stats) {
+    //         console.log(path);
+    //     })
+    //     .on('add', function(path, stats) {
+    //         console.log(path);
+    //     });
+
+
+    done();
+};
+
+// SHORTCUT TASKS: BUILD, DEV, PROD, DEFAULT.
+//=======================================================================================//
+gulp.task('dev', gulp.series(function(done)
+{
+    dev = true;
+    console.log('test');
+
+    done();
+}, 'php', 'css', 'js', watch));
+gulp.task('prod', function(done)
+{
+    dev = false;
+    gulp.task(gulp.series('php', 'css-min', 'js-min', watch));
+    done();
+});
+// Run when typing 'gulp' (only) in console.
+gulp.task('default', gulp.series(function(done)
+{
+    dev = true;
+    done();
+}, 'dev'));
+
+gulp.task('watch', gulp.series('sync', watch));
