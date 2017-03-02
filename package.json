@@ -3,13 +3,13 @@
   "version": "0.0.1",
   "description": "",
   "main": "gulpfile.js",
-  "dependencies": {
-    "gulp": "latest"
-  },
+  "dependencies": {},
   "devDependencies": {
     "autoprefixer": "latest",
     "browser-sync": "latest",
+    "gulp": "github:gulpjs/gulp#4.0",
     "gulp-bower": "latest",
+    "gulp-cli": "^1.2.2",
     "gulp-cssbeautify": "latest",
     "gulp-csso": "latest",
     "gulp-include": "latest",
