@@ -81,8 +81,7 @@ gulp.task('php', function()
                 replacement: dev ? '' : '.min'
             }]
         }))
-        .pipe(gulp.dest(config.dest + '/templates/'))
-        .pipe(bs.reload({stream: true}));
+        .pipe(gulp.dest(config.dest + '/templates/'));
 
     console.log('OK - PHP / HTML files copied.');
 
@@ -92,18 +91,18 @@ gulp.task('php', function()
 gulp.task('css', function()
 {
     var css = gulp.src([config.src + '/css/*.+(scss|css)', '!' + config.src + '/css/inc.*.+(scss|css)'])
-    .pipe(
-        plugins.include(
-        {
-            extensions: "css",
-            includePaths: [config.src + "/css", config.bowerDir]
-        })
-    )
-    .pipe(plugins.sass())
-    // .pipe(plugins.autoprefixer())
-    .pipe(plugins.cssbeautify())
-    .pipe(gulp.dest(config.dest + '/css/'))
-    // .pipe(bs.reload({stream: true}));
+        .pipe(
+            plugins.include(
+            {
+                extensions: "css",
+                includePaths: [config.src + "/css", config.bowerDir]
+            })
+        )
+        .pipe(plugins.sass())
+        // .pipe(plugins.autoprefixer())
+        .pipe(plugins.cssbeautify())
+        .pipe(gulp.dest(config.dest + '/css/'))
+        .pipe(bs.reload({stream:true}));
 
     console.log('OK - SCSS/CSS compiling task completed.');
 
@@ -112,19 +111,18 @@ gulp.task('css', function()
 gulp.task('css-min', function()
 {
     var css = gulp.src([config.src + '/css/*.+(scss|css)', '!' + config.src + '/css/inc.*.+(scss|css)'])
-    .pipe(
-        plugins.include(
-        {
-            extensions: "css",
-            includePaths: [config.src + "/css", config.bowerDir]
-        })
-    )
-    .pipe(plugins.sass())
-    .pipe(plugins.autoprefixer())
-    .pipe(plugins.csso())
-    .pipe(plugins.rename({suffix: '.min'}))
-    .pipe(gulp.dest(config.dest + '/css/'))
-    .pipe(bs.reload({stream: true}));
+        .pipe(
+            plugins.include(
+            {
+                extensions: "css",
+                includePaths: [config.src + "/css", config.bowerDir]
+            })
+        )
+        .pipe(plugins.sass())
+        .pipe(plugins.autoprefixer())
+        .pipe(plugins.csso())
+        .pipe(plugins.rename({suffix: '.min'}))
+        .pipe(gulp.dest(config.dest + '/css/'));
 
     console.log('OK - CSS minifying task completed.');
 
@@ -142,8 +140,7 @@ gulp.task('js', function()
             includePaths: [config.src + "/js", config.bowerDir]
         })
     )
-    .pipe(gulp.dest(config.dest + '/js'))
-    .pipe(bs.reload({stream: true}));
+    .pipe(gulp.dest(config.dest + '/js'));
 
     console.log('OK - JS files copied.');
 
@@ -163,8 +160,7 @@ gulp.task('js-min', function()
     .on('error', console.log)
     .pipe(plugins.uglify())
     .pipe(plugins.rename({suffix: '.min'}))
-    .pipe(gulp.dest(config.dest + '/js'))
-    .pipe(bs.reload({stream: true}));
+    .pipe(gulp.dest(config.dest + '/js'));
 
     console.log('OK - JS minifying task completed.');
 
@@ -174,30 +170,32 @@ gulp.task('js-min', function()
 
 // BROWSER SYNC.
 //=======================================================================================//
-gulp.task('sync', function(done)
+var sync = function(done)
 {
-    return bs.init
+    bs.init
     ({
         open: false, // Set to false if you don't like the browser window opening automatically
         port: 3000, // Port number for the live version of the site; default: 3000
         proxy: 'localhost:80', // We need to use a proxy instead of the built-in server because WordPress has to do some server-side rendering for the theme to work
         // server: {baseDir: config.dest},
-        startPath: 'my-snippets/dist/index.php'
-    }, done)
-});
+        startPath: 'my-snippets/dist/index.php',
+        // files: [config.src + "/**/*.*"],
+        // reloadDelay: 1000,
+    }, done);
+};
 
 
 // WATCH.
 //=======================================================================================//
 var watch = function(done)
 {
-    gulp.watch(config.src + '/css/*.+(css|scss)', gulp.series('css', bs.reload));
+    gulp.watch(config.src + '/css/*.+(css|scss)', gulp.series('css'));
     console.log('Watching files: ' + config.src + '/css/*.+(css|scss)');
 
-    gulp.watch(config.src + '/js/*.js', gulp.series('js', bs.reload));
+    gulp.watch(config.src + '/js/*.js', gulp.series('js'));
     console.log('Watching files: ' + config.src + '/js/*.js');
 
-    gulp.watch(config.src + '/templates/*.html', gulp.series('php', bs.reload));
+    gulp.watch(config.src + '/templates/*.html', gulp.series('php'));
     console.log('Watching files: ' + config.src + '/templates/*.html');
 
     // gulp.watch(config.src + '/css/*.+(css|scss)')
@@ -235,7 +233,7 @@ var watch = function(done)
     //     });
 
 
-    done();
+    return done;
 };
 
 // SHORTCUT TASKS: BUILD, DEV, PROD, DEFAULT.
@@ -246,11 +244,11 @@ gulp.task('dev', gulp.series(function(done)
     console.log('test');
 
     done();
-}, 'php', 'css', 'js', watch));
+}, gulp.parallel('php', 'css', 'js'), gulp.parallel(sync, watch)));
 gulp.task('prod', function(done)
 {
     dev = false;
-    gulp.task(gulp.series('php', 'css-min', 'js-min', watch));
+    gulp.task(gulp.series('php', 'css-min', 'js-min', sync, watch));
     done();
 });
 // Run when typing 'gulp' (only) in console.
@@ -260,4 +258,4 @@ gulp.task('default', gulp.series(function(done)
     done();
 }, 'dev'));
 
-gulp.task('watch', gulp.series('sync', watch));
+gulp.task('watch', gulp.series(sync, watch));
