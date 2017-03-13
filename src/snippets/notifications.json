@@ -1,0 +1,16 @@
+{
+    "name": "Notifications",
+    "h1": "Notifications",
+    "icon": "i-star",
+    "dependencies":
+    {
+    },
+    "languages":
+    {
+        "txt":
+        {
+            "code": "https://tympanus.net/Development/NotificationStyles/other-thumbslider.html"
+        }
+    },
+    "tags": ["ux", "notification", "alert", "css3"]
+}
