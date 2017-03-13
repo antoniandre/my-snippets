@@ -329,6 +329,16 @@ button {
     margin: 40px -1px 30px;
     padding: 0px 30px;
     transition: .9s ease-in-out;
+
+    &:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -2em;
+        right: -2em;
+        bottom: 0;
+        box-shadow: 0 0 5px rgba(0,0,0,.1) inset;
+    }
 }
 #see-the-code:checked ~ .code-section {
     height: 500px;
@@ -336,15 +346,6 @@ button {
     margin-bottom: 50px;
     padding-top: 35px;
     padding-bottom: 15px;
-}
-.code-section:before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -2em;
-    right: -2em;
-    bottom: 0;
-    box-shadow: 0 0 5px rgba(0,0,0,.1) inset;
 }
 .code-wrapper {
     position: relative;
@@ -388,7 +389,7 @@ button {
     content: attr(data-label);
 }
 
-.code-wrapper label {
+.code-wrapper > label {
     position: relative;
     display: inline-block;
     top: -30px;
@@ -401,12 +402,12 @@ button {
         background-color: #fbfbfb;
     }
 }
-.code-wrapper input:checked + label {
+.code-wrapper > input:checked + label {
     border-bottom-color: #fbfbfb;
     background-color: #fbfbfb;
     color: #666;
 }
-.code-wrapper label .language {
+.code-wrapper > label .language {
     position: absolute;
     left: 50%;
     bottom: 100%;
@@ -418,17 +419,17 @@ button {
     cursor: pointer;
     display: none;
 }
-.code-wrapper label:hover .language,
-.code-wrapper label span:focus ~ .language {
+.code-wrapper > label:hover .language,
+.code-wrapper > label span:focus ~ .language {
     display: block;
 }
-.code-wrapper input {
+.code-wrapper > input {
     position: absolute;
 }
-.code-wrapper input[data-type="html"]:checked ~ pre[data-type="html"],
-.code-wrapper input[data-type="css"]:checked ~ pre[data-type="css"],
-.code-wrapper input[data-type="js"]:checked ~ pre[data-type="js"],
-.code-wrapper input[data-type="result"]:checked ~ pre[data-type="result"] {z-index: 2;}
+.code-wrapper > input[data-type="html"]:checked ~ pre[data-type="html"],
+.code-wrapper > input[data-type="css"]:checked ~ pre[data-type="css"],
+.code-wrapper > input[data-type="js"]:checked ~ pre[data-type="js"],
+.code-wrapper > input[data-type="result"]:checked ~ pre[data-type="result"] {z-index: 2;}
 
 .code-wrapper pre,
 .code-wrapper iframe {
