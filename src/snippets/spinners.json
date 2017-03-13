@@ -1,0 +1,16 @@
+{
+    "name": "Spinners",
+    "h1": "Spinners",
+    "icon": "i-star",
+    "dependencies":
+    {
+    },
+    "languages":
+    {
+        "txt":
+        {
+            "code": "http://tobiasahlin.com/spinkit/"
+        }
+    },
+    "tags": ["ux", "spinner", "css3"]
+}
