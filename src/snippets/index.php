@@ -25,7 +25,7 @@ else "No existing snippet :)";
 //=================================== FUNCTIONS ==================================//
 function render($snippet)
 {
-    global $knownJs;
+    global $knownJs, $self;
 
     $script    = '';
     $scripts   = '';
@@ -77,17 +77,18 @@ function render($snippet)
     $checked = !$html ? ' checked' : '';
 
     $vars = [
-        'ROOT_URL' => ROOT_URL,
-        'h1' => $snippet->h1,
+        'SELF'        => $self,
+        'ROOT_URL'    => ROOT_URL,
+        'h1'          => $snippet->h1,
         'snippetName' => $snippet->name,
-        'scripts' => $scripts,
-        'script' => $script,
-        'styles' => $styles,
-        'style' => $style,
-        'html' => $html,
-        'checked' => $checked,
-        'languages' => $languages,
-        'checkCode' => $html ? 'Check the code' : ($languages ? 'Edit the code' : 'Write some code'),
+        'scripts'     => $scripts,
+        'script'      => $script,
+        'styles'      => $styles,
+        'style'       => $style,
+        'html'        => $html,
+        'checked'     => $checked,
+        'languages'   => $languages,
+        'checkCode'   => $html ? 'Check the code' : ($languages ? 'Edit the code' : 'Write some code'),
     ];
     echo Tpl::inc('snippet', $vars);
 }
