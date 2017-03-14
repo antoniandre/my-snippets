@@ -47,6 +47,17 @@ $(document).ready(function()
             return false;
         }
     });
+    $('.code-form').on('submit', function(e)
+    {
+        e.preventDefault();
+        var codes = [];
+
+        $('pre').each(function(i)
+        {
+            codes.push({name: $(this).attr('data-label'), language: $(this).attr('data-type'), code: this.innerHTML});
+        });
+        $.post(location, JSON.stringify(codes));
+    });
 
     if ($('pre').length) syntaxHighlighter();
 });
@@ -73,18 +84,18 @@ var addTab = function($target, targetIndex, $wrapper)
             '<input type="radio" data-type="' + type + '" id="' + targetTag + targetIndex + '"' + checked
             + ' name="codeWrapper' + wrapperIndex + '">' + '<label for="' + targetTag + targetIndex
             + '"><span contenteditable>' + (label ? label : type) + '</span>'
-            + '<span class="language">Language: <select name="" id="">'
-            + '<input type="radio" name="language' + targetIndex + '"/> '
-            + '<label for="language' + targetIndex + '1">plain-text</label></option>'
-            + '<input type="radio" name="language' + targetIndex + '"/> '
-            + '<label for="language' + targetIndex + '2">js</label></option>'
-            + '<input type="radio" name="language' + targetIndex + '"/> '
-            + '<label for="language' + targetIndex + '3">css</label></option>'
-            + '<input type="radio" name="language' + targetIndex + '"/> '
-            + '<label for="language' + targetIndex + '4">html</label></option>'
-            + '<input type="radio" name="language' + targetIndex + '"/> '
-            + '<label for="language' + targetIndex + '5">php</label></option>'
-            + '</select></span></label>');
+            + '<span class="language">Language:<br>'
+            + '<label for="language' + targetIndex + '1">plain-text</label> '
+            + '<input type="radio" name="language' + targetIndex + '" id="language' + targetIndex + '1"/><br>'
+            + '<label for="language' + targetIndex + '2">js</label> '
+            + '<input type="radio" name="language' + targetIndex + '" id="language' + targetIndex + '2"/><br>'
+            + '<label for="language' + targetIndex + '3">css</label> '
+            + '<input type="radio" name="language' + targetIndex + '" id="language' + targetIndex + '3"/><br>'
+            + '<label for="language' + targetIndex + '4">html</label> '
+            + '<input type="radio" name="language' + targetIndex + '" id="language' + targetIndex + '4"/><br>'
+            + '<label for="language' + targetIndex + '5">php</label> '
+            + '<input type="radio" name="language' + targetIndex + '" id="language' + targetIndex + '5"/>'
+            + '</span></label>');
 };
 
 /**
