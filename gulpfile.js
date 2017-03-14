@@ -60,17 +60,8 @@ var gulp    = require('gulp'),
     },
 
     // Php and html.
-    doPhp = function()
+    doTpl = function()
     {
-        gulp
-            .src(
-            [
-                // All except templates as they are changed just bellow.
-                config.src + '/**/*.+(php|html|json)', '!' + config.src + '/templates/*.html',
-                config.src + '/**/.htaccess'
-            ])
-            .pipe(gulp.dest(config.dest));
-
         var tpl = gulp.src(config.src + '/templates/*.html')
             .pipe(plugins.replaceTask(
             {
@@ -80,11 +71,27 @@ var gulp    = require('gulp'),
                     replacement: dev ? '' : '.min'
                 }]
             }))
-            .pipe(gulp.dest(config.dest + '/templates/'));
+            .pipe(gulp.dest(config.dest + '/templates/'))
+            .pipe(bs.reload({stream:true}));
+
+        console.log('OK - Template files copied.');
+
+        return tpl;
+    },
+    doPhp = function()
+    {
+        var php = gulp
+            .src(
+            [
+                // All except templates as they are changed just bellow.
+                config.src + '/**/*.+(php|html|json)', '!' + config.src + '/templates/*.html',
+                config.src + '/**/.htaccess'
+            ])
+            .pipe(gulp.dest(config.dest));
 
         console.log('OK - PHP / HTML files copied.');
 
-        return tpl;
+        return php;
     },
 
     doCss = function()
@@ -140,7 +147,8 @@ var gulp    = require('gulp'),
                 includePaths: [config.src + "/js", config.bowerDir]
             })
         )
-        .pipe(gulp.dest(config.dest + '/js'));
+        .pipe(gulp.dest(config.dest + '/js'))
+        .pipe(bs.reload({stream:true}));
 
         console.log('OK - JS files copied.');
 
@@ -204,16 +212,22 @@ var gulp    = require('gulp'),
         gulp.watch(config.src + '/js/*.js', gulp.series(doJs));
         console.log('Watching files: ' + config.src + '/js/*.js');
 
-        gulp.watch(config.src + '/templates/*.html', gulp.series(doPhp));
+        gulp.watch(config.src + '/templates/*.html', gulp.series(doTpl));
         console.log('Watching files: ' + config.src + '/templates/*.html');
+
+        gulp.watch([config.src + '/**/*.+(php|html|json|htaccess)', '!' + config.src + '/templates/*.html'],
+                   gulp.series(doPhp, function(done){bs.reload();done()}));
+        console.log('Watching files: ' + config.src + '/**/*.+(php|html|json|htaccess)');
+
+        done();
     };
 
 
 // SHORTCUT TASKS: BUILD, DEV, PROD, DEFAULT.
 //=======================================================================================//
-gulp.task('dev', gulp.series(doSetEnv, gulp.parallel(doPhp, doCss, doJs), gulp.parallel(doSync, doWatch)));
+gulp.task('dev', gulp.series(doSetEnv, gulp.parallel(doPhp, doTpl, doCss, doJs), gulp.parallel(doSync, doWatch)));
 
-gulp.task('prod', gulp.series(doSetEnv, gulp.parallel(doPhp, doCssMin, doJsMin), gulp.parallel(doSync, doWatch)));
+gulp.task('prod', gulp.series(doSetEnv, gulp.parallel(doPhp, doTpl, doCssMin, doJsMin), gulp.parallel(doSync, doWatch)));
 
 // Run when typing 'gulp' (only) in console.
 gulp.task('default', gulp.series(function(done)
