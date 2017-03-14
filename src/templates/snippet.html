@@ -1,6 +1,8 @@
-<html id="snippet">
+<!DOCTYPE html>
+<html id="snippet" lang="en">
     <head>
         <title>{{snippetName}} | My Snippets</title>
+        <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         {{styles}}
         <link rel="stylesheet" type="text/css" href="{{ROOT_URL}}css/snippet{{gulp:min}}.css">
@@ -11,15 +13,17 @@
         {{include top-bar}}
         <div id="all">
             <h1>{{h1}}</h1>
-            <input type="checkbox" class="toggle" id="see-the-code"{{checked}}>
-            <label for="see-the-code" class="i-plus">{{checkCode}}</label>
-            <div class="code-section">
-                <div class="code-wrapper" style="height: 400px;">
-                    {{languages}}
-                </div>
-                <button class="float-right">Save</button>
-            </div>
-            <div class="compiled">{{html}}</div>
+            <form class="code-form" action="{{SELF}}" method="post">
+                <input type="checkbox" class="toggle" id="see-the-code"{{checked}}>
+                <label for="see-the-code" class="i-plus">{{checkCode}}</label>
+                    <div class="code-section">
+                        <div class="code-wrapper" style="height: 400px;">
+                            {{languages}}
+                        </div>
+                        <button class="float-right save" name="save">Save</button>
+                    </div>
+                <div class="compiled">{{html}}</div>
+            </form>
         </div>
         <div class="center"><a href="../../" class="i-arr-l back"> Go back home</a></div>
         <script src="{{ROOT_URL}}js/snippet{{gulp:min}}.js"></script>
