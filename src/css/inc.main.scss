@@ -314,12 +314,12 @@ button {
         transition: all .9s ease-in-out, color .4s linear, border-color .4s linear;
         z-index: 2;
     }
+    &:hover,
+    &:hover:before {color: #999;border-color: #999;}
 }
 #see-the-code:checked + label:before {
     transform: translateY(20px) rotate(135deg);
 }
-#see-the-code + label:hover,
-#see-the-code + label:hover:before {color: #999;border-color: #999;}
 
 .code-section {
     height: 0px;
@@ -362,7 +362,7 @@ button {
     &.no-tabs {min-height: 0;}
 }
 .code-wrapper pre:before {display: none;}
-.code-wrapper label,
+.code-wrapper > label,
 .code-wrapper.no-tabs:after {
     text-transform: capitalize;
     position: absolute;
@@ -374,7 +374,7 @@ button {
     border: 1px solid #eee;
     border-radius: 3px 3px 0 0;
     font: 100% roboto, sans-serif;
-    z-index: 1;
+    // z-index: 1;
     user-select: none;
 }
 .code-wrapper:after {
@@ -410,14 +410,26 @@ button {
 .code-wrapper > label .language {
     position: absolute;
     left: 50%;
-    bottom: 100%;
-    display: inline-block;
+    top: 100%;
+    z-index: 3;
     width: 10em;
-    margin: 0 0 5px -5em;
+    margin: 15px 0 0 -5em;
+    padding: 10px;
     color: #bbb;
     background-color: #f2f2f2;
     cursor: pointer;
     display: none;
+
+    &:before {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: -15px;
+        height: 100%;
+        z-index: -1;
+        display: block;
+    }
 }
 .code-wrapper > label:hover .language,
 .code-wrapper > label span:focus ~ .language {
@@ -426,6 +438,7 @@ button {
 .code-wrapper > input {
     position: absolute;
 }
+.code-wrapper > input[data-type="txt"]:checked ~ pre[data-type="txt"],
 .code-wrapper > input[data-type="html"]:checked ~ pre[data-type="html"],
 .code-wrapper > input[data-type="css"]:checked ~ pre[data-type="css"],
 .code-wrapper > input[data-type="js"]:checked ~ pre[data-type="js"],
