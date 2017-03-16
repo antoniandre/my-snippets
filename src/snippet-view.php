@@ -1,8 +1,8 @@
 <?php
 //===================================== VARS =====================================//
-$self = $_SERVER['PHP_SELF'];
-define('ROOT_DIR', realpath(__DIR__ . '/../') . '/');
-define('ROOT_URL', dirname($self) . '/../');
+// $self = $_SERVER['PHP_SELF'];
+// define('ROOT_DIR', realpath(__DIR__ . '/../') . '/');
+// define('ROOT_URL', dirname($self) . '/../');
 
 $knownJs =
 [
@@ -13,12 +13,14 @@ $knownJs =
 
 
 //===================================== MAIN =====================================//
-include ROOT_DIR . 'functions/core.php';
-$snippetName = getFromGet('snippet');
+// include ROOT_DIR . 'functions/core.php';
+$snippetName = ROUTE_PARTS[1];
 $snippet     = ($h1 = getFromPost('newSnippet', null)) ? createSnippetJson($snippetName, $h1) : getSnippet($snippetName);
 
+if (checkPost('codes') && isAjax()) edit();
 if ($snippet) render($snippet);
-else "No existing snippet :)";
+else die("No existing snippet. :)");
+
 //================================================================================//
 
 
@@ -91,6 +93,26 @@ function render($snippet)
         'checkCode'   => $html ? 'Check the code' : ($languages ? 'Edit the code' : 'Write some code'),
     ];
     echo Tpl::inc('snippet', $vars);
+}
+
+function edit()
+{
+    global $snippet;
+
+    // get the posted snippet edited codes.
+    $codes = json_decode(getFromPost('codes'));
+
+    $snippet->languages = new stdClass();// Reinit languages.
+    // Reinject the posted code in the current snippet json.
+    foreach ($codes as $code)
+    {
+        $snippet->languages->{$code->language} = new stdClass();
+        $snippet->languages->{$code->language}->code = $code->code;
+        $snippet->languages->{$code->language}->label = $code->label;
+    }
+
+    saveSnippetJson($snippet);
+    die;
 }
 //================================================================================//
 ?>

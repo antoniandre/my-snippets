@@ -9,6 +9,11 @@ include ROOT_DIR . 'classes/tpl.php';
 
 
 //=================================== FUNCTIONS ==================================//
+function isAjax()
+{
+    return !empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) === 'xmlhttprequest';
+}
+
 function checkPost($var)
 {
     return isset($_POST[$var]);
@@ -37,7 +42,7 @@ function getSnippets()
 
 function getSnippet($name)
 {
-    $data = is_file("$name.json") ? json_decode(file_get_contents("$name.json")) : null;
+    $data = is_file(SNIPPETS_DIR . "$name.json") ? json_decode(file_get_contents(SNIPPETS_DIR . "$name.json")) : null;
 
     return $data;
 }
@@ -74,11 +79,19 @@ function createSnippetJson($name, $h1)
     $snippet->dependencies = new StdClass();
     $snippet->languages    = new StdClass();
 
-    file_put_contents("$name.json", json_encode($snippet));
+    file_put_contents(SNIPPETS_DIR . "$name.json", json_encode($snippet));
 
     createSnippetsJson();// Update snippets list.
 
     return $snippet;
+}
+
+
+function saveSnippetJson($snippet)
+{
+    file_put_contents(SNIPPETS_DIR . "$snippet->name.json", json_encode($snippet));
+
+    createSnippetsJson();// Update snippets list.
 }
 //================================================================================//
 ?>

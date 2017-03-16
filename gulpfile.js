@@ -78,13 +78,24 @@ var gulp    = require('gulp'),
 
         return tpl;
     },
+    doSnippetsSymlink = function()
+    {
+        var symlink = gulp.src(config.src + '/snippets')
+            .pipe(gulp.symlink(config.dest));
+
+        console.log('OK - snippets folder symlinked.');
+
+        return symlink;
+    },
     doPhp = function()
     {
         var php = gulp
             .src(
             [
                 // All except templates as they are changed just bellow.
-                config.src + '/**/*.+(php|html|json)', '!' + config.src + '/templates/*.html',
+                config.src + '/**/*.+(php|html|json)',
+                '!' + config.src + '/templates/*.html',
+                '!' + config.src + '/snippets/*',
                 config.src + '/**/.htaccess'
             ])
             .pipe(gulp.dest(config.dest));
@@ -225,15 +236,11 @@ var gulp    = require('gulp'),
 
 // SHORTCUT TASKS: BUILD, DEV, PROD, DEFAULT.
 //=======================================================================================//
-gulp.task('dev', gulp.series(doSetEnv, gulp.parallel(doPhp, doTpl, doCss, doJs), gulp.parallel(doSync, doWatch)));
+gulp.task('dev', gulp.series(doSetEnv, doSnippetsSymlink, gulp.parallel(doPhp, doTpl, doCss, doJs), gulp.parallel(doSync, doWatch)));
 
-gulp.task('prod', gulp.series(doSetEnv, gulp.parallel(doPhp, doTpl, doCssMin, doJsMin), gulp.parallel(doSync, doWatch)));
+gulp.task('prod', gulp.series(doSetEnv, doSnippetsSymlink, gulp.parallel(doPhp, doTpl, doCssMin, doJsMin), gulp.parallel(doSync, doWatch)));
 
 // Run when typing 'gulp' (only) in console.
-gulp.task('default', gulp.series(function(done)
-{
-    dev = true;
-    done();
-}, 'dev'));
+gulp.task('default', gulp.series('dev'));
 
 gulp.task('watch', gulp.series(doSync, doWatch));

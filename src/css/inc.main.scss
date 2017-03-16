@@ -2,7 +2,8 @@
 $color: pink;
 p {color: $color;box-shadow: 0 0 0 darken($color, 30%)}
 */
-
+// h1, .topbar, #all + .center, label[for="see-the-code"] {display: none !important;}
+// #all, button {background-image:none !important;background-color:transparent !important;}
 
 /*================================== GENERAL =================================*/
 * {margin: 0;padding: 0;}
@@ -407,7 +408,7 @@ button {
     background-color: #fbfbfb;
     color: #666;
 }
-.code-wrapper > label .language {
+.code-wrapper > label .languages {
     position: absolute;
     left: 50%;
     top: 100%;
@@ -431,8 +432,8 @@ button {
         display: block;
     }
 }
-.code-wrapper > label:hover .language,
-.code-wrapper > label span:focus ~ .language {
+.code-wrapper > label:hover .languages,
+.code-wrapper > label span:focus ~ .languages {
     display: block;
 }
 .code-wrapper > input {
