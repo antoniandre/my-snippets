@@ -111,7 +111,7 @@ function edit()
         $snippet->languages->{$code->language}->label = $code->label;
     }
 
-    saveSnippetJson($snippet);
+    saveSnippetJson($snippet, ROUTE_PARTS[1]);
     die;
 }
 //================================================================================//

@@ -7,7 +7,6 @@
   "devDependencies": {
     "autoprefixer": "latest",
     "browser-sync": "latest",
-    "gulp": "github:gulpjs/gulp#4.0",
     "gulp-bower": "latest",
     "gulp-cli": "^1.2.2",
     "gulp-cssbeautify": "latest",

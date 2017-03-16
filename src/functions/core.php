@@ -87,9 +87,9 @@ function createSnippetJson($name, $h1)
 }
 
 
-function saveSnippetJson($snippet)
+function saveSnippetJson($snippet, $name)
 {
-    file_put_contents(SNIPPETS_DIR . "$snippet->name.json", json_encode($snippet));
+    file_put_contents(SNIPPETS_DIR . "$name.json", json_encode($snippet));
 
     createSnippetsJson();// Update snippets list.
 }
