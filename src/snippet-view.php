@@ -1,9 +1,5 @@
 <?php
 //===================================== VARS =====================================//
-// $self = $_SERVER['PHP_SELF'];
-// define('ROOT_DIR', realpath(__DIR__ . '/../') . '/');
-// define('ROOT_URL', dirname($self) . '/../');
-
 $knownJs =
 [
     'jquery'        => 'bower_components/jquery/dist/jquery.min.js',
@@ -13,7 +9,6 @@ $knownJs =
 
 
 //===================================== MAIN =====================================//
-// include ROOT_DIR . 'functions/core.php';
 $snippetName = ROUTE_PARTS[1];
 $snippet     = ($h1 = getFromPost('newSnippet', null)) ? createSnippetJson($snippetName, $h1) : getSnippet($snippetName);
 
@@ -106,8 +101,8 @@ function edit()
     // Reinject the posted code in the current snippet json.
     foreach ($codes as $code)
     {
-        $snippet->languages->{$code->language} = new stdClass();
-        $snippet->languages->{$code->language}->code = $code->code;
+        $snippet->languages->{$code->language}        = new stdClass();
+        $snippet->languages->{$code->language}->code  = $code->code;
         $snippet->languages->{$code->language}->label = $code->label;
     }
 

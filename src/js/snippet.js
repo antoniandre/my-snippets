@@ -5,31 +5,7 @@
 //========================== READY ===========================//
 var onReady = function()
 {
-    $('.code-form').on('submit', function(e)
-    {
-        e.preventDefault();
-        var codes = [];
-
-        $('pre').each(function(i)
-        {
-            codes.push({label: $(this).attr('data-label'), language: $(this).attr('data-type'), code: this.innerHTML});
-        });
-        $.post(location, 'codes=' + JSON.stringify(codes));
-    })
-    .on('change', '.languages input', function(e)
-    {
-        var newLanguage = this.value,
-            tabToggler  = $('input#' + $(this).parents('label').attr('for')),
-            oldLanguage = tabToggler.attr('data-type'),
-            matchingPre = $('pre[data-type=' + oldLanguage + ']');
-
-        console.log(oldLanguage, newLanguage, $('pre[data-type=' + oldLanguage + ']'))
-
-        matchingPre.add(tabToggler).attr('data-type', newLanguage);
-    });
-
-
-    if ($('pre').length) syntaxHighlighter();
+    if ($('pre').length) initCodeEditors();
 };
 //============================================================//
 
@@ -54,7 +30,7 @@ var addTab = function($target, targetIndex, $wrapper)
         .before(
             '<input type="radio" data-type="' + type + '" id="' + targetTag + targetIndex + '"' + checked
             + ' name="codeWrapper' + wrapperIndex + '">' + '<label for="' + targetTag + targetIndex
-            + '"><span contenteditable>' + (label ? label : type) + '</span>'
+            + '"><span contenteditable class="code-label">' + (label ? label : type) + '</span>'
             + '<span class="languages">Languages:<br>'
             + '<label for="language' + targetIndex + '1">plain-text</label> '
             + '<input type="radio" name="language' + targetIndex + '" id="language' + targetIndex + '1" value="txt"><br>'
@@ -77,18 +53,18 @@ var addTab = function($target, targetIndex, $wrapper)
  *
  * @return void.
  */
-var syntaxHighlighter = function()
+var initCodeEditors = function()
 {
     var wrapperIndex = -1;
 
     // Loop through all the <pre> tags, wrap them with a code-wrapper if not yet done and apply syntax highlighting.
     $('pre').each(function(i)
     {
-        var $pre            = $(this),
-            $wrapper        = $pre.parents('.code-wrapper').length ? $pre.parents('.code-wrapper') : wrapPre($pre),
-            preIndex        = $pre.prevAll('pre').length,
-            numberOfPre     = $wrapper.find('pre').length,// Number of code editors in the same code-wrapper.
-            html            = this.innerHTML || '';
+        var $pre        = $(this),
+            $wrapper    = $pre.parents('.code-wrapper').length ? $pre.parents('.code-wrapper') : wrapPre($pre),
+            preIndex    = $pre.prevAll('pre').length,
+            numberOfPre = $wrapper.find('pre').length,// Number of code editors in the same code-wrapper.
+            html        = this.innerHTML || '';
 
         // If first pre of code-wrapper.
         if (preIndex === 0)
@@ -140,14 +116,48 @@ var syntaxHighlighter = function()
             .prev().trigger('click').trigger('focus');
 
         $(this).data('increment', tabIndex + 1);
+    });
+
+
+    // On saving edits.
+    $('.code-form').on('submit', function(e)
+    {
+        e.preventDefault();
+        var codes = [];
+
+        $('pre').each(function (i) {
+            codes.push({label: $(this).attr('data-label'), language: $(this).attr('data-type'), code: this.innerHTML.stripTags()});
+        });
+        $.post(location, 'codes=' + JSON.stringify(codes));
+
+        return false;
     })
+    .on('change', '.code-label', function(e)
+    {
+        var label        = this.value,
+            tabToggler   = $('input#' + $(this).parents('label').attr('for')),
+            codeLanguage = tabToggler.attr('data-type'),
+            matchingPre  = $('pre[data-type=' + codeLanguage + ']');
+
+        matchingPre.add(tabToggler).attr('data-label', label);
+    })
+    .on('change', '.languages input', function(e)
+    {
+        var newLanguage = this.value,
+            tabToggler  = $('input#' + $(this).parents('label').attr('for')),
+            oldLanguage = tabToggler.attr('data-type'),
+            matchingPre = $('pre[data-type=' + oldLanguage + ']');
+
+        matchingPre.add(tabToggler).attr('data-type', newLanguage);
+        matchingPre.trigger('refresh');
+    });
 };
 
 
 /**
  * Get the index of a node relative to a collection of siblings.
- * 
- * @param {object} node 
+ *
+ * @param {object} node
  * @return {integer} the node index.
  */
 function getIndex(node)
@@ -160,47 +170,53 @@ function getIndex(node)
 
 /**
  * Class.
- * 
- * @param {*} editor 
+ *
+ * @param {*} editor
  */
 var codeEditor = function(editor)
 {
     var self = this;
     self.editor = $(editor);
-    self.language = self.editor.data('type');
+    self.language = null;// Set in self.init().
 
-    var colorizing = false,// Debounce.
+    var colorizing      = false,// Debounce.
         debounceTimerId = null,
-        knownLanguages = ['js', 'javascript', 'css', 'php', 'html', 'sql'],
-        languageIsKnown = self.language && knownLanguages.indexOf(self.language) > -1;
+        knownLanguages  = ['js', 'javascript', 'css', 'php', 'html', 'sql'],
+        isLanguageKnown = function(language){return self.language && knownLanguages.indexOf(self.language) > -1;}
+        languageIsKnown = false,// Set in self.init().
+        updateLanguage  = function()
+        {
+            self.language = self.editor.attr('data-type');
+            languageIsKnown = isLanguageKnown(self.language);
+        },
+        bindEvents = function()
+        {
+            self.editor
+                .on('mouseup', function(e)
+                {
+                    var i = 0, node = e.target;
+                    while (node = node.previousSibling) ++i;
 
-    var bindEvents = function()
-    {
-        self.editor
-            .on('mouseup', function(e)
-            {
-                var i = 0, node = e.target;
-                while (node = node.previousSibling) ++i;
+                    // console.log($(e.target).index(), i, getIndex(e.target));
+                    // console.log(getCaretOffset(self.editor[0]), getCaretCharacterOffsetWithin(self.editor[0]));
+                })
+                // IE9-
+                /*.on('keyup keypress', function(e)
+                {
+                    var cond = e.type === 'keyup' ?
+                            (e.which === 8 || e.which === 13)// 8 = <backspace>, 13 = <enter>.
+                            : (String.fromCharCode(e.charCode));// Only trigger recolorizing if the key prints something.
+                    console.log(e.type, e.which);
 
-                // console.log($(e.target).index(), i, getIndex(e.target));
-                console.log(getCaretOffset(self.editor[0]), getCaretCharacterOffsetWithin(self.editor[0]));
-            })
-            // IE9-
-            /*.on('keyup keypress', function(e)
-            {
-                var cond = e.type === 'keyup' ?
-                           (e.which === 8 || e.which === 13)// 8 = <backspace>, 13 = <enter>.
-                         : (String.fromCharCode(e.charCode));// Only trigger recolorizing if the key prints something.
-                console.log(e.type, e.which);
-
-                if (cond) debounceColorizing();
-            });*/
-            // IE 10+
-            .on('input', function(e)
-            {
-                if (languageIsKnown) debounceColorizing();
-            });
-    };
+                    if (cond) debounceColorizing();
+                });*/
+                // IE 10+
+                .on('input', function(e)
+                {
+                    if (languageIsKnown) debounceColorizing();
+                })
+                .on('refresh', function(){self.refresh();});
+        };
 
     var debounceColorizing = function()
     {
@@ -213,10 +229,10 @@ var codeEditor = function(editor)
             var rawText = self.editor[0].innerHTML.stripTags(),
                 caretPosition = getCaretCharacterOffsetWithin(self.editor[0]);
 
-            console.info(rawText)
+            // console.info(rawText)
             editor.innerHTML = colorizeText();
 
-            dosetCaret(self.editor[0], caretPosition);
+            doSetCaret(self.editor[0], caretPosition);
             setTimeout(function(){colorizing = false;}, 100);
         }
         else debounceTimerId = setTimeout(function(){debounceColorizing()}, 200);
@@ -226,9 +242,9 @@ var codeEditor = function(editor)
     {
         var string = editor.innerHTML.stripTags();
 
-        console.group('Colorizing');
-        console.count('colorize');
-        console.log(string)
+        // console.group('Colorizing');
+        // console.count('colorize');
+        // console.log(string)
         switch (self.language)
         {
             case 'html':
@@ -390,13 +406,24 @@ var codeEditor = function(editor)
                         });
             break;
         }
-        console.log(string)
-        console.groupEnd();
+        // console.log(string)
+        // console.groupEnd();
         return string;
+    };
+
+    self.refresh = function()
+    {
+        // Reinit the content to default version (no syntax highlight).
+        self.editor.html(self.editor.html().stripTags());
+
+        updateLanguage();
+        if (languageIsKnown) debounceColorizing();
     };
 
     var init = function()
     {
+        updateLanguage();
+
         // Apply syntax highlighting if there is content in the <pre>.
         if (editor.innerHTML && languageIsKnown) editor.innerHTML = colorizeText();
 
@@ -436,7 +463,9 @@ String.prototype.unhtmlize = function()
 };
 
 
-function dosetCaret(element, caretPos)
+
+
+function doSetCaret(element, caretPos)
 {
     var charactersLength = 0,// Plain text caret position.
         node,
