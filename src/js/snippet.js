@@ -155,20 +155,6 @@ var initCodeEditors = function()
 
 
 /**
- * Get the index of a node relative to a collection of siblings.
- *
- * @param {object} node
- * @return {integer} the node index.
- */
-function getIndex(node)
-{
-    var n = 0;
-    while (node = node.previousSibling) n++;
-
-    return n;
-}
-
-/**
  * Class.
  *
  * @param {*} editor
@@ -227,12 +213,12 @@ var codeEditor = function(editor)
         {
             colorizing = true;
             var rawText = self.editor[0].innerHTML.stripTags(),
-                caretPosition = getCaretCharacterOffsetWithin(self.editor[0]);
+                caretPositionInNode = getCaretCharacterOffsetWithin(self.editor[0]);
 
             // console.info(rawText)
             editor.innerHTML = colorizeText();
 
-            doSetCaret(self.editor[0], caretPosition);
+            doSetCaret(self.editor[0], caretPositionInNode);
             setTimeout(function(){colorizing = false;}, 100);
         }
         else debounceTimerId = setTimeout(function(){debounceColorizing()}, 200);
@@ -465,6 +451,20 @@ String.prototype.unhtmlize = function()
 
 
 
+
+
+function doSetCaret(element, caretPosInNode)
+{
+    var caretOffset;// Relative to full string.
+    // console.log(caretPosInNode, 'given position');
+    $.each(element.childNodes, function(){if (this.nodeType === 3) $(this).wrap('<span/>')});
+
+    caretOffset = getCaretOffset(element);
+    // caretOffset += adjustStringLength(element.innerHTML.stripTags(), caretOffset);
+
+    setCaret(element, getSelectionNodeIndex(element), caretOffset);
+};
+/* OLD
 function doSetCaret(element, caretPos)
 {
     var charactersLength = 0,// Plain text caret position.
@@ -484,17 +484,54 @@ function doSetCaret(element, caretPos)
 
     setCaret(element, i, caretOffset);
 };
+*/
 
+function adjustStringLength(string, caretOffset)
+{
+    var htmlEntitiesCount = (string.substr(0, caretOffset).match(/&(l|g)t;/g) || '').length;// Detect html entity encoded '<' or '>'.
+    console.log(3*htmlEntitiesCount)
+    return 3 * htmlEntitiesCount;
+};
+
+
+
+/**
+ * Get the index of a node relative to a collection of siblings.
+ * Faster than jQuery's function.
+ *
+ * @param {object} node
+ * @return {integer} the node index.
+ */
+function getIndex(node)
+{
+    var n = 0;
+    while (node = node.previousSibling) n++;
+
+    return n;
+}
+
+
+function getSelectionNodeIndex(element)
+{
+    var range = document.createRange(),
+        sel = window.getSelection(),
+        node = sel.baseNode.parentNode;
+
+    return getIndex(node);
+};
+
+
+// Relative to full string.
 function getCaretOffset(element)
 {
     var range = document.createRange(),
         sel = window.getSelection(),
-        node = sel.baseNode.parentNode,
+        node = null,
         offsetInNode = sel.baseOffset,
-        nodeIndex = getIndex(node),
+        selectionNodeIndex = getSelectionNodeIndex(element),
         caretOffset = 0;// Plain text caret position.
 
-    for (var i = 0; i < nodeIndex; i++)
+    for (var i = 0; i < selectionNodeIndex; i++)
     {
         node = element.childNodes[i];
         caretOffset += node.innerHTML.length;
