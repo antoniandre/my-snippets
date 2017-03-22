@@ -125,7 +125,8 @@ var initCodeEditors = function()
         e.preventDefault();
         var codes = [];
 
-        $('pre').each(function (i) {
+        $('pre').each(function(i)
+        {
             codes.push({label: $(this).attr('data-label'), language: $(this).attr('data-type'), code: this.innerHTML.stripTags()});
         });
         $.post(location, 'codes=' + JSON.stringify(codes));
@@ -450,10 +451,62 @@ String.prototype.unhtmlize = function()
 
 
 
+function getSelect(element)
+{
+    var caretOffset = 0,
+        sel = window.getSelection ? window.getSelection() : document.selection;
+
+    if (!sel.baseNode) return null;
+
+    var selectionNode = sel.baseNode.parentNode,
+        nodeIndex = getIndex(selectionNode),
+        nodeText = sel.baseNode.textContent,
+        plainTextBefore = '',
+        htmlTextBefore = '';
+
+    if (window.getSelection && sel.rangeCount > 0)
+    {
+        var range = sel.getRangeAt(0);
+        var preCaretRange = range.cloneRange();
+        preCaretRange.selectNodeContents(element);
+        preCaretRange.setEnd(range.endContainer, range.endOffset);
+        caretOffset = preCaretRange.toString().length;
+    }
+    else if (sel.type != "Control")
+    {
+        var textRange = sel.createRange(),
+            preCaretTextRange = document.body.createTextRange();
+        preCaretTextRange.moveToElementText(element);
+        preCaretTextRange.setEndPoint("EndToEnd", textRange);
+        caretOffset = preCaretTextRange.text.length;
+    }
+
+    // console.log(element.childNodes);
+    for (var i = 0; i < nodeIndex; i++)
+    {
+        console.log('looping', element.childNodes[i], nodeIndex);
+        console.count()
+        htmlTextBefore += element.childNodes[i].outerHTML;
+        plainTextBefore += element.childNodes[i].innerHTML;
+        console.log('laa1', htmlTextBefore, plainTextBefore);
+    }
+
+    htmlTextBefore += element.childNodes[i].outerHTML.substr(0, sel.anchorOffset);
+    plainTextBefore += element.childNodes[i].innerHTML.substr(0, sel.anchorOffset);
+
+    return {
+        caretPosInNode: Math.min(sel.anchorOffset, sel.focusOffset),// select range from left or right.// ok
+        caretPosInFullPlainText: caretOffset,// ok
+        caretPosInFullHtmlText: htmlTextBefore.length,
+        nodeIndex: nodeIndex,// ok
+        nodeText: nodeText,// ok
+        plainTextBefore: plainTextBefore,// ok
+        htmlTextBefore: htmlTextBefore
+    };
+};
 
 
-
-function doSetCaret(element, caretPosInNode)
+/*function doSetCaret(element, caretPosInNode)
 {
     var caretOffset;// Relative to full string.
     // console.log(caretPosInNode, 'given position');
@@ -463,9 +516,9 @@ function doSetCaret(element, caretPosInNode)
     // caretOffset += adjustStringLength(element.innerHTML.stripTags(), caretOffset);
 
     setCaret(element, getSelectionNodeIndex(element), caretOffset);
-};
-/* OLD
-function doSetCaret(element, caretPos)
+};*/
+// OLD
+/*function doSetCaret(element, caretPos)
 {
     var charactersLength = 0,// Plain text caret position.
         node,
@@ -483,15 +536,15 @@ function doSetCaret(element, caretPos)
     }
 
     setCaret(element, i, caretOffset);
-};
-*/
+};*/
 
-function adjustStringLength(string, caretOffset)
+
+/*function adjustStringLength(string, caretOffset)
 {
     var htmlEntitiesCount = (string.substr(0, caretOffset).match(/&(l|g)t;/g) || '').length;// Detect html entity encoded '<' or '>'.
     console.log(3*htmlEntitiesCount)
     return 3 * htmlEntitiesCount;
-};
+};*/
 
 
 
@@ -511,7 +564,7 @@ function getIndex(node)
 }
 
 
-function getSelectionNodeIndex(element)
+/*function getSelectionNodeIndex(element)
 {
     var range = document.createRange(),
         sel = window.getSelection(),
@@ -602,7 +655,7 @@ function getCharacterOffsetWithin(range, node)
         charCount += range.startOffset;
     }
     return charCount;
-}
+}*/
 //============================================================//
 
 
