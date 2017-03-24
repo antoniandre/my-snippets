@@ -165,8 +165,9 @@ var codeEditor = function(editor)
     var self = this;
     self.editor = $(editor);
     self.language = null;// Set in self.init().
+    self.caretInfo = null;
 
-    var colorizing      = false,// Debounce.
+    var inProgress      = false,// Debounce.
         debounceTimerId = null,
         knownLanguages  = ['js', 'javascript', 'css', 'php', 'html', 'sql'],
         isLanguageKnown = function(language){return self.language && knownLanguages.indexOf(self.language) > -1;}
@@ -181,11 +182,7 @@ var codeEditor = function(editor)
             self.editor
                 .on('mouseup', function(e)
                 {
-                    var i = 0, node = e.target;
-                    while (node = node.previousSibling) ++i;
-
-                    // console.log($(e.target).index(), i, getIndex(e.target));
-                    // console.log(getCaretOffset(self.editor[0]), getCaretCharacterOffsetWithin(self.editor[0]));
+                    // console.log(getCaretInfo(self.editor[0]));
                 })
                 // IE9-
                 /*.on('keyup keypress', function(e)
@@ -200,9 +197,26 @@ var codeEditor = function(editor)
                 // IE 10+
                 .on('input', function(e)
                 {
+                    // console.log(e);
                     if (languageIsKnown) debounceColorizing();
                 })
-                .on('refresh', function(){self.refresh();});
+                .on('refresh', function(){self.refresh();})
+                .on('paste', function(e)
+                {
+                    var clipboardData, pastedData;
+
+                    // Stop data actually being pasted into div.
+                    e.stopPropagation();
+                    e.preventDefault();
+                    console.log(e)
+
+                    // Get pasted data via clipboard API.
+                    clipboardData = e.originalEvent.clipboardData || window.clipboardData;
+                    pastedData = clipboardData.getData('Text');
+
+                    // Do whatever with pasteddata.
+                    alert('Paste not developed yet :)\n\n\n' + pastedData);
+                });
         };
 
     var debounceColorizing = function()
@@ -210,17 +224,15 @@ var codeEditor = function(editor)
         clearTimeout(debounceTimerId);
         debounceTimerId = null;
 
-        if (!colorizing)
+        if (!inProgress)
         {
-            colorizing = true;
-            var rawText = self.editor[0].innerHTML.stripTags(),
-                caretPositionInNode = getCaretCharacterOffsetWithin(self.editor[0]);
+            inProgress = true;
 
-            // console.info(rawText)
+            self.caretInfo = getCaretInfo(self.editor[0]);
+            console.log(self.caretInfo);
             editor.innerHTML = colorizeText();
-
-            doSetCaret(self.editor[0], caretPositionInNode);
-            setTimeout(function(){colorizing = false;}, 100);
+            self.setCaret();
+            setTimeout(function(){inProgress = false;}, 100);
         }
         else debounceTimerId = setTimeout(function(){debounceColorizing()}, 200);
     };
@@ -407,6 +419,39 @@ var codeEditor = function(editor)
         if (languageIsKnown) debounceColorizing();
     };
 
+    self.setCaret = function()
+    {
+        // console.group('self.setCaret()')
+
+        $.each(self.editor[0].childNodes, function(){if (this.nodeType === 3) $(this).wrap('<span/>')});
+
+        var newTextBefore = '',
+            nodeIndex     = 0;
+        console.log(newTextBefore, self.caretInfo.plainTextBefore, self.caretInfo)
+        while (newTextBefore < self.caretInfo.plainTextBefore)
+        {
+            console.log(nodeIndex, newTextBefore, self.caretInfo.plainTextBefore)
+            newTextBefore += self.editor[0].childNodes[nodeIndex].innerHTML;
+            nodeIndex++;
+        }
+
+        var currentNodeText = self.editor[0].childNodes[nodeIndex-1].innerHTML,
+            newCaretOffset  = currentNodeText.length - (newTextBefore.length - self.caretInfo.plainTextBefore.length);
+
+        // Place the cursor.
+        var range = document.createRange(),
+            sel = window.getSelection(),
+            textNode = self.editor[0].childNodes[nodeIndex-1].firstChild;
+        range.setStart(textNode, Math.min(newCaretOffset, textNode.length));
+        range.collapse(true);
+        sel.removeAllRanges();
+        sel.addRange(range);
+
+        self.editor[0].focus();
+
+        // console.groupEnd();
+    };
+
     var init = function()
     {
         updateLanguage();
@@ -429,6 +474,7 @@ var codeEditor = function(editor)
     }();
 };
 
+
 String.prototype.stripTags = function()
 {
     return this.replace(/<\/?\w+[^>]*\/?>/g, '');
@@ -444,14 +490,31 @@ String.prototype.htmlize = function()
 {
     return this.replace(/&(l|g)t;/g, function(m0, m1){return {l: '<', g: '>'}[m1]});
 };
+
+
 String.prototype.unhtmlize = function()
 {
     return this.replace(/[<>]/g, function(m){return {'<': '&lt;', '>': '&gt;'}[m]})
 };
 
 
+/**
+ * Get the index of a node relative to a collection of siblings.
+ * Faster than jQuery's function.
+ *
+ * @param {object} node
+ * @return {integer} the node index.
+ */
+function getIndex(node)
+{
+    var n = 0;
+    while (node = node.previousSibling) n++;
 
-function getSelect(element)
+    return n;
+}
+
+
+function getCaretInfo(element)
 {
     var caretOffset = 0,
         sel = window.getSelection ? window.getSelection() : document.selection;
@@ -481,42 +544,34 @@ function getSelect(element)
         caretOffset = preCaretTextRange.text.length;
     }
 
-    // console.log(element.childNodes);
     for (var i = 0; i < nodeIndex; i++)
     {
-        console.log('looping', element.childNodes[i], nodeIndex);
-        console.count()
-        htmlTextBefore += element.childNodes[i].outerHTML;
         plainTextBefore += element.childNodes[i].innerHTML;
-        console.log('laa1', htmlTextBefore, plainTextBefore);
+        htmlTextBefore += element.childNodes[i].outerHTML;
     }
 
-    htmlTextBefore += element.childNodes[i].outerHTML.substr(0, sel.anchorOffset);
-    plainTextBefore += element.childNodes[i].innerHTML.substr(0, sel.anchorOffset);
+    var nodeTextBeforeCaret = element.childNodes[nodeIndex].innerHTML.substr(0, sel.anchorOffset),
+        nodeOuterHtml = element.childNodes[nodeIndex].outerHTML;
+    plainTextBefore += nodeTextBeforeCaret;
+
+    htmlTextBefore += nodeOuterHtml.substr(0, nodeOuterHtml.indexOf(nodeTextBeforeCaret)) + nodeTextBeforeCaret;
 
     return {
-        caretPosInNode: Math.min(sel.anchorOffset, sel.focusOffset),// select range from left or right.// ok
-        caretPosInFullPlainText: caretOffset,// ok
-        caretPosInFullHtmlText: htmlTextBefore.length,
-        nodeIndex: nodeIndex,// ok
-        nodeText: nodeText,// ok
-        plainTextBefore: plainTextBefore,// ok
-        htmlTextBefore: htmlTextBefore
+        posInNode: Math.max(sel.anchorOffset, sel.focusOffset),// select range from left or right keep the end of range.
+        posInFullPlainText: caretOffset,
+        // posInFullHtmlText: htmlTextBefore.length,
+        // node: selectionNode,
+        nodeIndex: nodeIndex,
+        nodeText: nodeText,
+        // nodeTextBefore: nodeText.substr(0, Math.max(sel.anchorOffset, sel.focusOffset)),
+        plainTextBefore: plainTextBefore,
+        htmlTextBefore: htmlTextBefore,
+        // selectedText: .substr(caretOffset, Math.max(sel.anchorOffset, sel.focusOffset));
     };
 };
 
 
-/*function doSetCaret(element, caretPosInNode)
-{
-    var caretOffset;// Relative to full string.
-    // console.log(caretPosInNode, 'given position');
-    $.each(element.childNodes, function(){if (this.nodeType === 3) $(this).wrap('<span/>')});
 
-    caretOffset = getCaretOffset(element);
-    // caretOffset += adjustStringLength(element.innerHTML.stripTags(), caretOffset);
-
-    setCaret(element, getSelectionNodeIndex(element), caretOffset);
-};*/
 // OLD
 /*function doSetCaret(element, caretPos)
 {
@@ -548,22 +603,6 @@ function getSelect(element)
 
 
 
-/**
- * Get the index of a node relative to a collection of siblings.
- * Faster than jQuery's function.
- *
- * @param {object} node
- * @return {integer} the node index.
- */
-function getIndex(node)
-{
-    var n = 0;
-    while (node = node.previousSibling) n++;
-
-    return n;
-}
-
-
 /*function getSelectionNodeIndex(element)
 {
     var range = document.createRange(),
@@ -591,24 +630,11 @@ function getCaretOffset(element)
     }
 
     return caretOffset + offsetInNode;
-};
+};*/
 
 
-function setCaret(el, node, caretOffset)
-{
-    var range = document.createRange(),
-        sel = window.getSelection(),
-        textNode = el.childNodes[node].firstChild;
-    range.setStart(textNode, Math.min(caretOffset, textNode.length));
-    range.collapse(true);
-    sel.removeAllRanges();
-    sel.addRange(range);
 
-    el.focus();
-}
-
-
-function getCaretCharacterOffsetWithin(element)
+/*function getCaretCharacterOffsetWithin(element)
 {
     var caretOffset = 0;
     var doc = element.ownerDocument || element.document;
