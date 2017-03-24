@@ -419,6 +419,11 @@ var codeEditor = function(editor)
         if (languageIsKnown) debounceColorizing();
     };
 
+    /**
+     * Now that the editor content has been syntax highlighted, the html changed and the caret position got lost.
+     * So find the caret by comparing the pure text strings before and after syntax highlight by looping through
+     * each tag until the caret is found.
+     */
     self.setCaret = function()
     {
         // console.group('self.setCaret()')
@@ -427,15 +432,16 @@ var codeEditor = function(editor)
 
         var newTextBefore = '',
             nodeIndex     = 0;
-        console.log(newTextBefore, self.caretInfo.plainTextBefore, self.caretInfo)
+
+        // console.log(newTextBefore, self.caretInfo.plainTextBefore, self.caretInfo)
         while (newTextBefore < self.caretInfo.plainTextBefore)
         {
-            console.log(nodeIndex, newTextBefore, self.caretInfo.plainTextBefore)
-            newTextBefore += self.editor[0].childNodes[nodeIndex].innerHTML;
+            // console.log(nodeIndex, newTextBefore, self.caretInfo.plainTextBefore)
+            newTextBefore += self.editor[0].childNodes[nodeIndex].innerHTML.htmlize();
             nodeIndex++;
         }
 
-        var currentNodeText = self.editor[0].childNodes[nodeIndex-1].innerHTML,
+        var currentNodeText = self.editor[0].childNodes[nodeIndex-1].innerHTML.htmlize(),
             newCaretOffset  = currentNodeText.length - (newTextBefore.length - self.caretInfo.plainTextBefore.length);
 
         // Place the cursor.
@@ -516,6 +522,7 @@ function getIndex(node)
 
 function getCaretInfo(element)
 {
+    //=============== Get the selection ===============//
     var caretOffset = 0,
         sel = window.getSelection ? window.getSelection() : document.selection;
 
@@ -524,8 +531,7 @@ function getCaretInfo(element)
     var selectionNode = sel.baseNode.parentNode,
         nodeIndex = getIndex(selectionNode),
         nodeText = sel.baseNode.textContent,
-        plainTextBefore = '',
-        htmlTextBefore = '';
+        plainTextBefore = '';
 
     if (window.getSelection && sel.rangeCount > 0)
     {
@@ -543,145 +549,33 @@ function getCaretInfo(element)
         preCaretTextRange.setEndPoint("EndToEnd", textRange);
         caretOffset = preCaretTextRange.text.length;
     }
+    //=================================================//
 
+    // Get all the plain text from start until the caret - no html tags: they are stripped once after the loop.
+    // First loop through all the nodes until reaching the caret selection node.
     for (var i = 0; i < nodeIndex; i++)
     {
         plainTextBefore += element.childNodes[i].innerHTML;
-        htmlTextBefore += element.childNodes[i].outerHTML;
     }
 
-    var nodeTextBeforeCaret = element.childNodes[nodeIndex].innerHTML.substr(0, sel.anchorOffset),
-        nodeOuterHtml = element.childNodes[nodeIndex].outerHTML;
-    plainTextBefore += nodeTextBeforeCaret;
+    // Once the node of the selection caret is reached, add the text before caret to the total text before caret var.
+    var nodeTextBeforeCaret = element.childNodes[nodeIndex].innerHTML.htmlize().substr(0, sel.anchorOffset);
 
-    htmlTextBefore += nodeOuterHtml.substr(0, nodeOuterHtml.indexOf(nodeTextBeforeCaret)) + nodeTextBeforeCaret;
+    // And htmlize to convert htmlentities to a single character.
+    // ! \ This is very important for placing the caret at the right position after syntax highlighting.
+    plainTextBefore = plainTextBefore.htmlize() + nodeTextBeforeCaret;
 
     return {
         posInNode: Math.max(sel.anchorOffset, sel.focusOffset),// select range from left or right keep the end of range.
         posInFullPlainText: caretOffset,
-        // posInFullHtmlText: htmlTextBefore.length,
         // node: selectionNode,
         nodeIndex: nodeIndex,
         nodeText: nodeText,
         // nodeTextBefore: nodeText.substr(0, Math.max(sel.anchorOffset, sel.focusOffset)),
         plainTextBefore: plainTextBefore,
-        htmlTextBefore: htmlTextBefore,
         // selectedText: .substr(caretOffset, Math.max(sel.anchorOffset, sel.focusOffset));
     };
 };
-
-
-
-// OLD
-/*function doSetCaret(element, caretPos)
-{
-    var charactersLength = 0,// Plain text caret position.
-        node,
-        caretOffset;
-    // console.log(caretPos, 'given position');
-    $.each(element.childNodes, function(){if (this.nodeType === 3) $(this).wrap('<span/>')});
-
-    for (var i = 0, l = element.childNodes.length; i < l; i++)
-    {
-        node = element.childNodes[i];
-
-        // Node can be a text node, if so there is no innerHtml.
-        charactersLength += node.innerHTML ? node.innerHTML.length : node.length;
-        if (charactersLength >= caretPos) {caretOffset = node.innerHTML.length - (charactersLength - caretPos);break;}
-    }
-
-    setCaret(element, i, caretOffset);
-};*/
-
-
-/*function adjustStringLength(string, caretOffset)
-{
-    var htmlEntitiesCount = (string.substr(0, caretOffset).match(/&(l|g)t;/g) || '').length;// Detect html entity encoded '<' or '>'.
-    console.log(3*htmlEntitiesCount)
-    return 3 * htmlEntitiesCount;
-};*/
-
-
-
-/*function getSelectionNodeIndex(element)
-{
-    var range = document.createRange(),
-        sel = window.getSelection(),
-        node = sel.baseNode.parentNode;
-
-    return getIndex(node);
-};
-
-
-// Relative to full string.
-function getCaretOffset(element)
-{
-    var range = document.createRange(),
-        sel = window.getSelection(),
-        node = null,
-        offsetInNode = sel.baseOffset,
-        selectionNodeIndex = getSelectionNodeIndex(element),
-        caretOffset = 0;// Plain text caret position.
-
-    for (var i = 0; i < selectionNodeIndex; i++)
-    {
-        node = element.childNodes[i];
-        caretOffset += node.innerHTML.length;
-    }
-
-    return caretOffset + offsetInNode;
-};*/
-
-
-
-/*function getCaretCharacterOffsetWithin(element)
-{
-    var caretOffset = 0;
-    var doc = element.ownerDocument || element.document;
-    var win = doc.defaultView || doc.parentWindow;
-    var sel;
-    if (typeof win.getSelection != "undefined") {
-        sel = win.getSelection();
-        if (sel.rangeCount > 0) {
-            var range = win.getSelection().getRangeAt(0);
-            var preCaretRange = range.cloneRange();
-            preCaretRange.selectNodeContents(element);
-            preCaretRange.setEnd(range.endContainer, range.endOffset);
-            caretOffset = preCaretRange.toString().length;
-        }
-    } else if ( (sel = doc.selection) && sel.type != "Control") {
-        var textRange = sel.createRange();
-        var preCaretTextRange = doc.body.createTextRange();
-        preCaretTextRange.moveToElementText(element);
-        preCaretTextRange.setEndPoint("EndToEnd", textRange);
-        caretOffset = preCaretTextRange.text.length;
-    }
-    return caretOffset;
-}
-
-function getCharacterOffsetWithin(range, node)
-{
-    var treeWalker = document.createTreeWalker(
-        node,
-        NodeFilter.SHOW_TEXT,
-        function(node) {
-            var nodeRange = document.createRange();
-            nodeRange.selectNode(node);
-            return nodeRange.compareBoundaryPoints(Range.END_TO_END, range) < 1 ?
-                NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
-        },
-        false
-    );
-
-    var charCount = 0;
-    while (treeWalker.nextNode()) {
-        charCount += treeWalker.currentNode.length;
-    }
-    if (range.startContainer.nodeType == 3) {
-        charCount += range.startOffset;
-    }
-    return charCount;
-}*/
 //============================================================//
 
 
