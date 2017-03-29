@@ -331,7 +331,7 @@ var codeEditor = function(editor)
                         /("(?:\\"|[^"])*")|('(?:\\'|[^'])*')/,// Quotes.
                         /(\/\/.*|\/\*[\s\S]*?\*\/)/,// Comments blocks (/* ... */) or trailing comments (// ...).
                         /(<[^>]*>)/,// Html tags.
-                        /((?:[\[\](){}|.:;,+\-?=]|&lt;|&gt;)+)/// Ponctuation not in html tag.
+                        /((?:[\[\](){}.:;,+\-?=]|&lt;|&gt;)+|&&|\|\|)/// Ponctuation not in html tag.
                     ],
                     regexPattern  = new RegExp(regexParts.map(function(x){return x.source}).join('|'), 'g'),
                     regexPattern2 = new RegExp(regexParts2.map(function(x){return x.source}).join('|'), 'g');
@@ -345,7 +345,7 @@ var codeEditor = function(editor)
                             switch(true)
                             {
                                 // Numbers and 'null'.
-                                case (m[1]):
+                                case (Boolean)(m[1]):
                                     m = m[1];
                                     Class = 'number';
                                     break;
