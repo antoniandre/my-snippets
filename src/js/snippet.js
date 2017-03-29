@@ -69,7 +69,7 @@ var initCodeEditors = function()
         // If first pre of code-wrapper.
         if (preIndex === 0)
         {
-            $wrapper.data('index', wrapperIndex++);
+            $wrapper.attr('data-index', wrapperIndex++);
             // Add a button to add a new code editor.
             $wrapper.find('pre').eq(0).before('<label class="add" data-increment="' + numberOfPre + '">+</label>');
         }
@@ -163,8 +163,9 @@ var initCodeEditors = function()
 var codeEditor = function(editor)
 {
     var self = this;
-    self.editor = $(editor);
-    self.language = null;// Set in self.init().
+    self.editor    = editor instanceof jQuery ? editor[0] : editor;
+    self.$editor   = $(editor);
+    self.language  = null;// Set in self.init().
     self.caretInfo = null;
 
     var inProgress      = false,// Debounce.
@@ -174,16 +175,13 @@ var codeEditor = function(editor)
         languageIsKnown = false,// Set in self.init().
         updateLanguage  = function()
         {
-            self.language = self.editor.attr('data-type');
+            self.language   = self.$editor.attr('data-type');
             languageIsKnown = isLanguageKnown(self.language);
         },
         bindEvents = function()
         {
-            self.editor
-                .on('mouseup', function(e)
-                {
-                    // console.log(getCaretInfo(self.editor[0]));
-                })
+            self.$editor
+                //.on('mouseup', function(e){console.log(getCaretInfo(self.editor));})
                 // IE9-
                 /*.on('keyup keypress', function(e)
                 {
@@ -197,7 +195,6 @@ var codeEditor = function(editor)
                 // IE 10+
                 .on('input', function(e)
                 {
-                    // console.log(e);
                     if (languageIsKnown) debounceColorizing();
                 })
                 .on('refresh', function(){self.refresh();})
@@ -228,22 +225,23 @@ var codeEditor = function(editor)
         {
             inProgress = true;
 
-            self.caretInfo = getCaretInfo(self.editor[0]);
-            console.log(self.caretInfo);
-            editor.innerHTML = colorizeText();
-            self.setCaret();
+            self.caretInfo = getCaretInfo(self.editor);
+            // console.log(self.caretInfo);
+            self.colorizePreContent();
+            if (self.caretInfo) self.setCaret();
+
             setTimeout(function(){inProgress = false;}, 100);
         }
         else debounceTimerId = setTimeout(function(){debounceColorizing()}, 200);
     };
 
-    var colorizeText = function()
+    self.colorizeText = function(text)
     {
-        var string = editor.innerHTML.stripTags();
+        var string = self.editor.innerHTML.stripTags().replace(/&amp;/g, '&');
 
         // console.group('Colorizing');
         // console.count('colorize');
-        // console.log(string)
+        console.log(string)
         switch (self.language)
         {
             case 'html':
@@ -322,10 +320,10 @@ var codeEditor = function(editor)
             case 'javascript':
                 var regexParts =
                     [
-                        /\b(\d+|null)\b/,
-                        /\b(true|false)\b/,
-                        /\b(new|getElementsBy(?:Tag|Class|)Name|getElementById|arguments|if|else|do|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval))(?=\W)/,
-                        /(?:(?=\W))(\$|jQuery)(?=\W|$)/
+                        /\b(\d+|null)\b/,// Number or null.
+                        /\b(true|false)\b/,// Booleans.
+                        /\b(new|getElementsBy(?:Tag|Class|)Name|getElementById|arguments|if|else|do|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval))(?=\W)/,// Keywords.
+                        /(?:(?=\W))(\$|jQuery)(?=\W|$)/// jQuery or $.
                     ],
                     // http://stackoverflow.com/a/41867753/2012407
                     regexParts2 =
@@ -333,12 +331,12 @@ var codeEditor = function(editor)
                         /("(?:\\"|[^"])*")|('(?:\\'|[^'])*')/,// Quotes.
                         /(\/\/.*|\/\*[\s\S]*?\*\/)/,// Comments blocks (/* ... */) or trailing comments (// ...).
                         /(<[^>]*>)/,// Html tags.
-                        /((?:[\[\](){}.:;,+\-?=]|&lt;|&gt;)+)/// Ponctuation not in html tag.
+                        /((?:[\[\](){}|.:;,+\-?=]|&lt;|&gt;)+)/// Ponctuation not in html tag.
                     ],
                     regexPattern  = new RegExp(regexParts.map(function(x){return x.source}).join('|'), 'g'),
                     regexPattern2 = new RegExp(regexParts2.map(function(x){return x.source}).join('|'), 'g');
 
-                string = string.unhtmlize()
+                string = string//.unhtmlize()
                         .replace(regexPattern, function()
                         {
                             var m = arguments,
@@ -347,7 +345,7 @@ var codeEditor = function(editor)
                             switch(true)
                             {
                                 // Numbers and 'null'.
-                                case (Boolean)(m[1]):
+                                case (m[1]):
                                     m = m[1];
                                     Class = 'number';
                                     break;
@@ -405,15 +403,24 @@ var codeEditor = function(editor)
                         });
             break;
         }
-        // console.log(string)
+        console.log(string)
         // console.groupEnd();
         return string;
+    };
+
+    self.colorizePreContent = function()
+    {
+        self.editor.innerHTML = self.colorizeText();
+
+        // Make sure each piece of text is wrap in an html tag for the selection detection to work flowlessly.
+        $.each(self.editor.childNodes, function(){if (this.nodeType === 3) $(this).wrap('<span/>')});
     };
 
     self.refresh = function()
     {
         // Reinit the content to default version (no syntax highlight).
-        self.editor.html(self.editor.html().stripTags());
+        // self.$editor.text(self.$editor.text());
+        self.editor.innerHTML = self.editor.innerText || self.editor.textContent;
 
         updateLanguage();
         if (languageIsKnown) debounceColorizing();
@@ -426,36 +433,29 @@ var codeEditor = function(editor)
      */
     self.setCaret = function()
     {
-        // console.group('self.setCaret()')
-
-        $.each(self.editor[0].childNodes, function(){if (this.nodeType === 3) $(this).wrap('<span/>')});
-
         var newTextBefore = '',
-            nodeIndex     = 0;
+            nodeIndex     = 0,
+            currentNodeText, newCaretOffset, range, sel, textNode;
 
-        // console.log(newTextBefore, self.caretInfo.plainTextBefore, self.caretInfo)
         while (newTextBefore < self.caretInfo.plainTextBefore)
         {
-            // console.log(nodeIndex, newTextBefore, self.caretInfo.plainTextBefore)
-            newTextBefore += self.editor[0].childNodes[nodeIndex].innerHTML.htmlize();
+            newTextBefore += self.editor.childNodes[nodeIndex].innerHTML.htmlize();
             nodeIndex++;
         }
 
-        var currentNodeText = self.editor[0].childNodes[nodeIndex-1].innerHTML.htmlize(),
-            newCaretOffset  = currentNodeText.length - (newTextBefore.length - self.caretInfo.plainTextBefore.length);
+        currentNodeText = self.editor.childNodes[nodeIndex - 1].innerHTML.htmlize();
+        newCaretOffset  = currentNodeText.length - (newTextBefore.length - self.caretInfo.plainTextBefore.length);
 
         // Place the cursor.
-        var range = document.createRange(),
-            sel = window.getSelection(),
-            textNode = self.editor[0].childNodes[nodeIndex-1].firstChild;
+        range = document.createRange();
+        sel = window.getSelection();
+        textNode = self.editor.childNodes[nodeIndex - 1].firstChild;
         range.setStart(textNode, Math.min(newCaretOffset, textNode.length));
         range.collapse(true);
         sel.removeAllRanges();
         sel.addRange(range);
 
-        self.editor[0].focus();
-
-        // console.groupEnd();
+        self.editor.focus();
     };
 
     var init = function()
@@ -463,19 +463,8 @@ var codeEditor = function(editor)
         updateLanguage();
 
         // Apply syntax highlighting if there is content in the <pre>.
-        if (editor.innerHTML && languageIsKnown) editor.innerHTML = colorizeText();
+        if (self.editor.innerHTML && languageIsKnown) self.colorizePreContent();
 
-        /*for (var i = 0, l = self.editor[0].childNodes.length; i < l; i++) {
-            var node = self.editor[0].childNodes[i];
-            if (node.nodeType === 3)
-            {
-                var txt = node;
-                console.log(node)
-                self.editor[0].childNodes[i] = document.createElement('span');
-                self.editor[0].childNodes[i].innerHTML = txt;
-            }
-        }*/
-        $.each(self.editor[0].childNodes, function(){if (this.nodeType === 3) $(this).wrap('<span/>')});
         bindEvents();
     }();
 };
@@ -494,7 +483,7 @@ String.prototype.stripTags = function()
  */
 String.prototype.htmlize = function()
 {
-    return this.replace(/&(l|g)t;/g, function(m0, m1){return {l: '<', g: '>'}[m1]});
+    return this.replace(/&(lt|gt|amp);/g, function(m0, m1){return {lt: '<', gt: '>', amp: '&'}[m1]});
 };
 
 
@@ -526,17 +515,18 @@ function getCaretInfo(element)
     var caretOffset = 0,
         sel = window.getSelection ? window.getSelection() : document.selection;
 
-    if (!sel.baseNode) return null;
+    // Don't calculate the caret position if there is no selection or if selected node is outside the element
+    if (!sel.baseNode || sel.baseNode === element) return null;
 
-    var selectionNode = sel.baseNode.parentNode,
-        nodeIndex = getIndex(selectionNode),
-        nodeText = sel.baseNode.textContent,
+    var selectionNode   = sel.baseNode.parentNode,
+        nodeIndex       = getIndex(selectionNode),
+        nodeText        = sel.baseNode.textContent,
         plainTextBefore = '';
 
     if (window.getSelection && sel.rangeCount > 0)
     {
-        var range = sel.getRangeAt(0);
-        var preCaretRange = range.cloneRange();
+        var range = sel.getRangeAt(0),
+            preCaretRange = range.cloneRange();
         preCaretRange.selectNodeContents(element);
         preCaretRange.setEnd(range.endContainer, range.endOffset);
         caretOffset = preCaretRange.toString().length;
@@ -553,10 +543,7 @@ function getCaretInfo(element)
 
     // Get all the plain text from start until the caret - no html tags: they are stripped once after the loop.
     // First loop through all the nodes until reaching the caret selection node.
-    for (var i = 0; i < nodeIndex; i++)
-    {
-        plainTextBefore += element.childNodes[i].innerHTML;
-    }
+    for (var i = 0; i < nodeIndex; i++) plainTextBefore += element.childNodes[i].innerHTML;
 
     // Once the node of the selection caret is reached, add the text before caret to the total text before caret var.
     var nodeTextBeforeCaret = element.childNodes[nodeIndex].innerHTML.htmlize().substr(0, sel.anchorOffset);

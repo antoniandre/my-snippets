@@ -2,7 +2,7 @@
   "name": "my-snippets",
   "version": "0.0.1",
   "description": "",
-  "main": "gulpfile.js",
+  "main": "",
   "dependencies": {},
   "devDependencies": {
     "autoprefixer": "latest",
