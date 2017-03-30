@@ -31,17 +31,17 @@ var addTab = function($target, targetIndex, $wrapper)
             '<input type="radio" data-type="' + type + '" id="' + targetTag + targetIndex + '"' + checked
             + ' name="codeWrapper' + wrapperIndex + '">' + '<label for="' + targetTag + targetIndex
             + '"><span contenteditable class="code-label">' + (label ? label : type) + '</span>'
-            + '<span class="languages">Languages:<br>'
+            + '<span class="languages"><strong>Languages:</strong>'
+            + '<input type="radio" name="language' + targetIndex + '" id="language' + targetIndex + '1" class="hidden" value="txt">'
             + '<label for="language' + targetIndex + '1">plain-text</label> '
-            + '<input type="radio" name="language' + targetIndex + '" id="language' + targetIndex + '1" value="txt"><br>'
+            + '<input type="radio" name="language' + targetIndex + '" id="language' + targetIndex + '2" class="hidden" value="js">'
             + '<label for="language' + targetIndex + '2">js</label> '
-            + '<input type="radio" name="language' + targetIndex + '" id="language' + targetIndex + '2" value="js"><br>'
+            + '<input type="radio" name="language' + targetIndex + '" id="language' + targetIndex + '3" class="hidden" value="css">'
             + '<label for="language' + targetIndex + '3">css</label> '
-            + '<input type="radio" name="language' + targetIndex + '" id="language' + targetIndex + '3" value="css"><br>'
+            + '<input type="radio" name="language' + targetIndex + '" id="language' + targetIndex + '4" class="hidden" value="html">'
             + '<label for="language' + targetIndex + '4">html</label> '
-            + '<input type="radio" name="language' + targetIndex + '" id="language' + targetIndex + '4" value="html"><br>'
+            + '<input type="radio" name="language' + targetIndex + '" id="language' + targetIndex + '5" class="hidden" value="php">'
             + '<label for="language' + targetIndex + '5">php</label> '
-            + '<input type="radio" name="language' + targetIndex + '" id="language' + targetIndex + '5" value="php">'
             + '</span></label>');
 };
 
@@ -237,11 +237,11 @@ var codeEditor = function(editor)
 
     self.colorizeText = function(text)
     {
-        var string = self.editor.innerHTML.stripTags().replace(/&amp;/g, '&');
+        var string = self.editor.innerHTML.replace(/<br>/g, '\n').stripTags().replace(/&amp;/g, '&');
 
         // console.group('Colorizing');
         // console.count('colorize');
-        console.log(string)
+        console.log(self.editor.innerHTML)
         switch (self.language)
         {
             case 'html':
@@ -331,7 +331,7 @@ var codeEditor = function(editor)
                         /("(?:\\"|[^"])*")|('(?:\\'|[^'])*')/,// Quotes.
                         /(\/\/.*|\/\*[\s\S]*?\*\/)/,// Comments blocks (/* ... */) or trailing comments (// ...).
                         /(<[^>]*>)/,// Html tags.
-                        /((?:[\[\](){}.:;,+\-?=]|&lt;|&gt;)+|&&|\|\|)/// Ponctuation not in html tag.
+                        /(!==?|(?:[\[\](){}.:;,+\-?=]|&lt;|&gt;)+|&&|\|\|)/// Ponctuation not in html tag.
                     ],
                     regexPattern  = new RegExp(regexParts.map(function(x){return x.source}).join('|'), 'g'),
                     regexPattern2 = new RegExp(regexParts2.map(function(x){return x.source}).join('|'), 'g');
@@ -437,19 +437,22 @@ var codeEditor = function(editor)
             nodeIndex     = 0,
             currentNodeText, newCaretOffset, range, sel, textNode;
 
+        console.log(nodeIndex, self.editor.childNodes.length, self.editor.childNodes[0], self.editor.childNodes[0].nodeType, self.editor.childNodes[nodeIndex], newTextBefore, self.caretInfo.plainTextBefore)
         while (newTextBefore < self.caretInfo.plainTextBefore)
         {
             newTextBefore += self.editor.childNodes[nodeIndex].innerHTML.htmlize();
             nodeIndex++;
         }
+        nodeIndex--;
+        if (nodeIndex < 0) nodeIndex = 0;
 
-        currentNodeText = self.editor.childNodes[nodeIndex - 1].innerHTML.htmlize();
+        currentNodeText = self.editor.childNodes[nodeIndex].innerHTML.htmlize();
         newCaretOffset  = currentNodeText.length - (newTextBefore.length - self.caretInfo.plainTextBefore.length);
 
         // Place the cursor.
         range = document.createRange();
         sel = window.getSelection();
-        textNode = self.editor.childNodes[nodeIndex - 1].firstChild;
+        textNode = self.editor.childNodes[nodeIndex].firstChild;
         range.setStart(textNode, Math.min(newCaretOffset, textNode.length));
         range.collapse(true);
         sel.removeAllRanges();
@@ -515,13 +518,13 @@ function getCaretInfo(element)
     var caretOffset = 0,
         sel = window.getSelection ? window.getSelection() : document.selection;
 
-    // Don't calculate the caret position if there is no selection or if selected node is outside the element
-    if (!sel.baseNode || sel.baseNode === element) return null;
-
-    var selectionNode   = sel.baseNode.parentNode,
-        nodeIndex       = getIndex(selectionNode),
-        nodeText        = sel.baseNode.textContent,
+    var selectionNode   = sel.baseNode ? sel.baseNode.parentNode : null,
+        nodeIndex       = selectionNode ? getIndex(selectionNode) : 0,
+        nodeText        = sel.baseNode ? sel.baseNode.textContent : '',
         plainTextBefore = '';
+
+    // Don't calculate the caret position if there is no selection or if selected node is outside the element
+    if (!sel.baseNode || sel.baseNode === element || selectionNode === element) return null;
 
     if (window.getSelection && sel.rangeCount > 0)
     {
@@ -543,14 +546,16 @@ function getCaretInfo(element)
 
     // Get all the plain text from start until the caret - no html tags: they are stripped once after the loop.
     // First loop through all the nodes until reaching the caret selection node.
+    console.log('selection node:', selectionNode, nodeIndex, nodeText)
     for (var i = 0; i < nodeIndex; i++) plainTextBefore += element.childNodes[i].innerHTML;
 
     // Once the node of the selection caret is reached, add the text before caret to the total text before caret var.
-    var nodeTextBeforeCaret = element.childNodes[nodeIndex].innerHTML.htmlize().substr(0, sel.anchorOffset);
+    var nodeTextBeforeCaret = element.childNodes[nodeIndex] ?
+                              element.childNodes[nodeIndex].innerHTML.htmlize().substr(0, sel.anchorOffset) : '';
 
     // And htmlize to convert htmlentities to a single character.
     // ! \ This is very important for placing the caret at the right position after syntax highlighting.
-    plainTextBefore = plainTextBefore.htmlize() + nodeTextBeforeCaret;
+    plainTextBefore = plainTextBefore.stripTags().htmlize() + nodeTextBeforeCaret;
 
     return {
         posInNode: Math.max(sel.anchorOffset, sel.focusOffset),// select range from left or right keep the end of range.
