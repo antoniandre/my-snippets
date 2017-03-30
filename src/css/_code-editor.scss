@@ -1,0 +1,237 @@
+/*================================ CODE EDITOR ===============================*/
+@font-face{
+    font-family: 'Fira Code';
+    src: url('https://github.com/tonsky/FiraCode/blob/master/distr/eot/FiraCode-Regular.eot');
+    src: url('https://github.com/tonsky/FiraCode/blob/master/distr/eot/FiraCode-Regular.eot') format('embedded-opentype'),
+         url('https://github.com/tonsky/FiraCode/blob/master/distr/woff2/FiraCode-Regular.woff2') format('woff2'),
+         url('https://github.com/tonsky/FiraCode/blob/master/distr/woff/FiraCode-Regular.woff') format('woff'),
+         url('https://github.com/tonsky/FiraCode/blob/master/distr/ttf/FiraCode-Regular.ttf') format('truetype');
+    font-weight: 400;
+    font-style: normal;
+}
+
+#see-the-code + label {
+    position: relative;
+    margin: 0 auto;
+    width: 10em;
+    text-align: center;
+    padding-bottom: 10px;
+    text-transform: uppercase;
+    color: #ccc;
+    display: block;
+    cursor: pointer;
+    transition: .4s linear;
+
+    &:before {
+        position: absolute;
+        top: 100%;
+        font-size: 200%;
+        border-radius: 1.2em;
+        width: 1.2em;
+        height: 1.2em;
+        line-height: 1.2em;
+        display: inline-block;
+        text-align: center;
+        margin: auto;
+        left: 0;
+        right: 0;
+        border: 1px solid #ccc;
+        transition: all .9s ease-in-out, color .4s linear, border-color .4s linear;
+        z-index: 2;
+    }
+    &:hover,
+    &:hover:before {color: $primary-color;border-color: $primary-color;}
+}
+#see-the-code:checked + label:before {
+    transform: translateY(20px) rotate(135deg);
+}
+
+.code-section {
+    height: 0px;
+    overflow: hidden;
+    position: relative;
+    background-color: #fff;
+    margin: 40px -1px 30px;
+    padding: 0px 30px;
+    transition: .9s ease-in-out;
+
+    &:before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -2em;
+        right: -2em;
+        bottom: 0;
+        box-shadow: 0 0 5px rgba(0,0,0,.1) inset;
+    }
+}
+#see-the-code:checked ~ .code-section {
+    height: 500px;
+    margin-top: 10px;
+    margin-bottom: 50px;
+    padding-top: 35px;
+    padding-bottom: 15px;
+}
+.code-wrapper {
+    position: relative;
+    margin: 30px 0 10px;
+    border: 1px solid #eee;
+    background-color: #fbfbfb;
+    padding: 8px;
+    border-radius: 4px;
+    color: #444;
+    min-height: 200px;
+    max-height: 100%;
+    text-align: right;/* for tab labels */
+
+    &.no-tabs {min-height: 0;}
+}
+.code-wrapper pre:before {display: none;}
+.code-wrapper > label,
+.code-wrapper.no-tabs:after {
+    text-transform: capitalize;
+    position: absolute;
+    right: 10px;
+    bottom: 100%;
+    padding: 3px 8px;
+    font-size: 140%;
+    background-color: #fbfbfb;
+    border: 1px solid #eee;
+    border-radius: 3px 3px 0 0;
+    font: 100% roboto, sans-serif;
+    // z-index: 1;
+    user-select: none;
+}
+.code-wrapper:after {
+    content: attr(data-type);
+    position: absolute;
+    right: 10px;
+    bottom: 100%;
+    color: #ccc;
+    border-bottom-color: #fbfbfb;
+}
+.code-wrapper[data-label]:after {
+    content: attr(data-label);
+}
+
+.code-wrapper > label {
+    position: relative;
+    display: inline-block;
+    top: -30px;
+    margin: 0 1px;
+    color: #bbb;
+    background-color: #f2f2f2;
+    cursor: pointer;
+
+    &:hover {
+        background-color: #fbfbfb;
+    }
+}
+.code-wrapper > input:checked + label {
+    border-bottom-color: #fbfbfb;
+    background-color: #fbfbfb;
+    color: $heading-color;
+}
+.code-wrapper > label .languages {
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    z-index: 3;
+    width: 10em;
+    margin: 15px 0 0 -5em;
+    padding-top: 10px;
+    color: #bbb;
+    background-color: #fbfbfb;
+    border: 1px solid lighten($link-color, 20%);
+    border-radius: 3px;
+    cursor: pointer;
+    display: none;
+
+    &:before {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: -15px;
+        height: 100%;
+        z-index: -1;
+        display: block;
+    }
+
+    input[type="radio"] {
+        position: fixed;
+        right: 100%;
+        bottom: 100%;
+    }
+    input[type="radio"]:checked + label:after {
+        content: "ok";
+    }
+    label {
+        display: block;
+        padding: 4px 15px 4px 4px;
+    }
+    label:hover {
+        background-color: #eee;
+        border-right: 3px solid lighten($link-color, 20%);
+    }
+}
+.code-wrapper > label:hover .languages,
+.code-wrapper > label span:focus ~ .languages {
+    display: block;
+}
+.code-wrapper > input {
+    position: absolute;
+}
+.code-wrapper > input[data-type="txt"]:checked ~ pre[data-type="txt"],
+.code-wrapper > input[data-type="html"]:checked ~ pre[data-type="html"],
+.code-wrapper > input[data-type="css"]:checked ~ pre[data-type="css"],
+.code-wrapper > input[data-type="js"]:checked ~ pre[data-type="js"],
+.code-wrapper > input[data-type="result"]:checked ~ pre[data-type="result"] {z-index: 2;}
+
+.code-wrapper pre,
+.code-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 100%;/* For iframe*/
+    max-height: 100%;
+    box-sizing: border-box;
+    background-color: #fbfbfb;
+    z-index: 1;
+    overflow: auto;
+    text-align: left;
+    font-family: "Fira Code";
+}
+.code-wrapper pre {padding: 10px;}
+.code-wrapper.no-tabs pre {position: static;height: auto;padding: 0;}
+.code-wrapper iframe {width: 100%;border: none;}
+
+pre .comment {font-style: italic;color: #aaa;}
+pre .comment * {color: #aaa !important;}
+pre .quote {color: #c11;}
+pre .value {color: #c11;}
+pre .quote * {color: #c11 !important;}
+pre .number {color: #c11;}
+pre .bool {color: #c11;}
+pre .keyword {color: #11c;}
+pre .tag {color: #11c;}
+pre .ponctuation {color: #99f;}
+pre .dollar {color: #f63;}
+pre .attribute {color: #f63;}
+pre[data-type="css"] .attribute {color: #70d;}
+pre[data-type="css"] .keyword {color: #c06;}
+pre .selector {color: #f0d;}
+
+.param span {color: #f33;}
+.param em {color: #ccc;}
+.param code {font-weight: bold;}
+
+@media screen and (max-width: 560px) {
+    .code-section {
+        padding-left: 0px;
+        padding-right: 0px;
+    }
+}
+/*============================================================================*/

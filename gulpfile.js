@@ -107,7 +107,7 @@ var gulp    = require('gulp'),
 
     doCss = function()
     {
-        var css = gulp.src([config.src + '/css/*.+(scss|css)', '!' + config.src + '/css/inc.*.+(scss|css)'])
+        var css = gulp.src([config.src + '/css/*.+(scss|css)'/*, '!' + config.src + '/css/inc.*.+(scss|css)'*/])
             .pipe(
                 plugins.include(
                 {
@@ -128,7 +128,7 @@ var gulp    = require('gulp'),
 
     doCssMin = function()
     {
-        var css = gulp.src([config.src + '/css/*.+(scss|css)', '!' + config.src + '/css/inc.*.+(scss|css)'])
+        var css = gulp.src([config.src + '/css/*.+(scss|css)'/*, '!' + config.src + '/css/inc.*.+(scss|css)'*/])
             .pipe(
                 plugins.include(
                 {
