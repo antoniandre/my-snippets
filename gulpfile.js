@@ -104,10 +104,19 @@ var gulp    = require('gulp'),
 
         return php;
     },
+    doFonts = function()
+    {
+        var symlink = gulp.src(config.src + '/css/fonts')
+            .pipe(gulp.symlink(config.dest + '/css'));
+
+        console.log('OK - fonts folder symlinked.');
+
+        return symlink;
+    },
 
     doCss = function()
     {
-        var css = gulp.src([config.src + '/css/*.+(scss|css)'/*, '!' + config.src + '/css/inc.*.+(scss|css)'*/])
+        var css = gulp.src([config.src + '/css/*.+(scss|css)'])
             .pipe(
                 plugins.include(
                 {
@@ -128,7 +137,7 @@ var gulp    = require('gulp'),
 
     doCssMin = function()
     {
-        var css = gulp.src([config.src + '/css/*.+(scss|css)'/*, '!' + config.src + '/css/inc.*.+(scss|css)'*/])
+        var css = gulp.src([config.src + '/css/*.+(scss|css)'])
             .pipe(
                 plugins.include(
                 {
@@ -236,9 +245,9 @@ var gulp    = require('gulp'),
 
 // SHORTCUT TASKS: BUILD, DEV, PROD, DEFAULT.
 //=======================================================================================//
-gulp.task('dev', gulp.series(doSetEnv, doSnippetsSymlink, gulp.parallel(doPhp, doTpl, doCss, doJs), gulp.parallel(doSync, doWatch)));
+gulp.task('dev', gulp.series(doSetEnv, doSnippetsSymlink, gulp.parallel(doPhp, doTpl, doFonts, doCss, doJs), gulp.parallel(doSync, doWatch)));
 
-gulp.task('prod', gulp.series(doSetEnv, doSnippetsSymlink, gulp.parallel(doPhp, doTpl, doCssMin, doJsMin), gulp.parallel(doSync, doWatch)));
+gulp.task('prod', gulp.series(doSetEnv, doSnippetsSymlink, gulp.parallel(doPhp, doTpl, doFonts, doCssMin, doJsMin), gulp.parallel(doSync, doWatch)));
 
 // Run when typing 'gulp' (only) in console.
 gulp.task('default', gulp.series('dev'));

@@ -1,11 +1,11 @@
 /*================================ CODE EDITOR ===============================*/
 @font-face{
-    font-family: 'Fira Code';
-    src: url('https://github.com/tonsky/FiraCode/blob/master/distr/eot/FiraCode-Regular.eot');
-    src: url('https://github.com/tonsky/FiraCode/blob/master/distr/eot/FiraCode-Regular.eot') format('embedded-opentype'),
-         url('https://github.com/tonsky/FiraCode/blob/master/distr/woff2/FiraCode-Regular.woff2') format('woff2'),
-         url('https://github.com/tonsky/FiraCode/blob/master/distr/woff/FiraCode-Regular.woff') format('woff'),
-         url('https://github.com/tonsky/FiraCode/blob/master/distr/ttf/FiraCode-Regular.ttf') format('truetype');
+    font-family: 'fira';
+    src: url('fonts/firacode-regular.eot');
+    src: url('fonts/firacode-regular.eot') format('embedded-opentype'),
+         url('fonts/firacode-regular.woff2') format('woff2'),
+         url('fonts/firacode-regular.woff') format('woff'),
+         url('fonts/firacode-regular.ttf') format('truetype');
     font-weight: 400;
     font-style: normal;
 }
@@ -231,7 +231,7 @@
     z-index: 1;
     overflow: auto;
     text-align: left;
-    font-family: "Fira Code";
+    font-family: "fira";
 }
 .code-wrapper pre {padding: 10px;}
 .code-wrapper.no-tabs pre {position: static;height: auto;padding: 0;}
