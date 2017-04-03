@@ -1,4 +1,5 @@
 RewriteEngine On
 
+RewriteRule css/fonts/ - [L]
 RewriteRule \.(js|css)$ - [L]
 RewriteRule ^.*$ index.php [L]

@@ -17,31 +17,34 @@ var wrapPre = function($pre)
     return $pre.wrap('<div class="code-wrapper ' + $pre.attr('class') + '"/>').parent();
 };
 
-var addTab = function($target, targetIndex, $wrapper)
+var addTab = function($target, $wrapper)
 {
     var targetTag    = $target[0].tagName.toLowerCase(),
         type         = $target.data('type'),
         label        = $target.data('label'),
+        preUniqueId  = $target.data('uid'),
         checked      = $target.data('active') !== undefined ? '  checked' : '',
         $wrapper     = $wrapper || $target.parent(),
-        wrapperIndex = $wrapper.data('index');
+        wrapperIndex = $wrapper.data('index'),
+        langHtml     = '',
+        languages    = {txt: 'plain text', js: 'javascript', css: 'css', html: 'html', php: 'php'},
+        i            = 0;
 
-    $wrapper.find('label.add')
+    for (var l in languages)
+    {
+        i++;
+        langHtml += '<input type="radio" name="language' + preUniqueId + '" id="language' + preUniqueId + i
+                  + '" class="hidden" value="' + l + '"' + (type === l || (!type && l === 'txt') ? ' checked' : '') + '>'
+                  + '<label for="language' + preUniqueId + i + '">' + languages[l] + '</label> ';
+    }
+
+    $target
         .before(
-            '<input type="radio" data-type="' + type + '" id="' + targetTag + targetIndex + '"' + checked
-            + ' name="codeWrapper' + wrapperIndex + '">' + '<label for="' + targetTag + targetIndex
+            '<input type="radio" data-type="' + type + '" id="' + targetTag + preUniqueId + '"' + checked
+            + ' name="codeWrapper' + wrapperIndex + '">' + '<label for="' + targetTag + preUniqueId
             + '"><span contenteditable class="code-label">' + (label ? label : type) + '</span>'
             + '<span class="languages"><strong>Languages:</strong>'
-            + '<input type="radio" name="language' + targetIndex + '" id="language' + targetIndex + '1" class="hidden" value="txt">'
-            + '<label for="language' + targetIndex + '1">plain-text</label> '
-            + '<input type="radio" name="language' + targetIndex + '" id="language' + targetIndex + '2" class="hidden" value="js">'
-            + '<label for="language' + targetIndex + '2">js</label> '
-            + '<input type="radio" name="language' + targetIndex + '" id="language' + targetIndex + '3" class="hidden" value="css">'
-            + '<label for="language' + targetIndex + '3">css</label> '
-            + '<input type="radio" name="language' + targetIndex + '" id="language' + targetIndex + '4" class="hidden" value="html">'
-            + '<label for="language' + targetIndex + '4">html</label> '
-            + '<input type="radio" name="language' + targetIndex + '" id="language' + targetIndex + '5" class="hidden" value="php">'
-            + '<label for="language' + targetIndex + '5">php</label> '
+            + langHtml
             + '</span></label>');
 };
 
@@ -55,14 +58,15 @@ var addTab = function($target, targetIndex, $wrapper)
  */
 var initCodeEditors = function()
 {
-    var wrapperIndex = -1;
+    var wrapperIndex = -1,
+        preUniqueId  = 0;
 
     // Loop through all the <pre> tags, wrap them with a code-wrapper if not yet done and apply syntax highlighting.
     $('pre').each(function(i)
     {
-        var $pre        = $(this),
+        var $pre        = $(this).attr('data-uid', ++preUniqueId),
             $wrapper    = $pre.parents('.code-wrapper').length ? $pre.parents('.code-wrapper') : wrapPre($pre),
-            preIndex    = $pre.prevAll('pre').length,
+            preIndex    = $pre.prevAll('pre').length,// Index of that pre relative to its wrapper.
             numberOfPre = $wrapper.find('pre').length,// Number of code editors in the same code-wrapper.
             html        = this.innerHTML || '';
 
@@ -71,11 +75,11 @@ var initCodeEditors = function()
         {
             $wrapper.attr('data-index', wrapperIndex++);
             // Add a button to add a new code editor.
-            $wrapper.find('pre').eq(0).before('<label class="add" data-increment="' + numberOfPre + '">+</label>');
+            $wrapper.append('<label class="add" data-increment="' + numberOfPre + '">+</label>');
         }
 
         // Create the tab system.
-        addTab($pre, preIndex, $wrapper);
+        addTab($pre, $wrapper);
 
         // If last pre of code-wrapper.
         /*if (preIndex === numberOfPre - 1)
@@ -106,16 +110,14 @@ var initCodeEditors = function()
 
     $('.code-wrapper .add').on('click', function()
     {
-        var tabIndex = $(this).data('increment'),
-            $wrapper = $(this).parent();
+        var $wrapper = $(this).parent(),
+            $newPre  = $('<pre class="i-code" contenteditable="true" data-type="txt" data-label="Label" data-uid="' + (++preUniqueId) + '"/>');
 
-        $(this).siblings('pre:last').after('<pre class="i-code" contenteditable="true" data-type="plain-text" data-label="Label"/>');
+        $(this).siblings('pre:last').after($newPre);
 
-        addTab($(this).siblings('pre:last'), tabIndex, $wrapper);
-        $(this)
-            .prev().trigger('click').trigger('focus');
+        addTab($newPre, $wrapper);
 
-        $(this).data('increment', tabIndex + 1);
+        $newPre.trigger('click').trigger('focus');
     });
 
 
@@ -214,26 +216,25 @@ var codeEditor = function(editor)
                     // Do whatever with pasteddata.
                     alert('Paste not developed yet :)\n\n\n' + pastedData);
                 });
-        };
-
-    var debounceColorizing = function()
-    {
-        clearTimeout(debounceTimerId);
-        debounceTimerId = null;
-
-        if (!inProgress)
+        },
+        debounceColorizing = function()
         {
-            inProgress = true;
+            clearTimeout(debounceTimerId);
+            debounceTimerId = null;
 
-            self.caretInfo = getCaretInfo(self.editor);
-            // console.log(self.caretInfo);
-            self.colorizePreContent();
-            if (self.caretInfo) self.setCaret();
+            if (!inProgress)
+            {
+                inProgress = true;
 
-            setTimeout(function(){inProgress = false;}, 100);
-        }
-        else debounceTimerId = setTimeout(function(){debounceColorizing()}, 200);
-    };
+                self.caretInfo = getCaretInfo(self.editor);
+                // console.log(self.caretInfo);
+                self.colorizePreContent();
+                if (self.caretInfo) self.setCaret();
+
+                setTimeout(function(){inProgress = false;}, 100);
+            }
+            else debounceTimerId = setTimeout(function(){debounceColorizing()}, 200);
+        };
 
     self.colorizeText = function(text)
     {

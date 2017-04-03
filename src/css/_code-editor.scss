@@ -211,11 +211,7 @@
 .code-wrapper > input {
     position: absolute;
 }
-.code-wrapper > input[data-type="txt"]:checked ~ pre[data-type="txt"],
-.code-wrapper > input[data-type="html"]:checked ~ pre[data-type="html"],
-.code-wrapper > input[data-type="css"]:checked ~ pre[data-type="css"],
-.code-wrapper > input[data-type="js"]:checked ~ pre[data-type="js"],
-.code-wrapper > input[data-type="result"]:checked ~ pre[data-type="result"] {z-index: 2;}
+.code-wrapper > input:checked + label + pre {z-index: 2;}
 
 .code-wrapper pre,
 .code-wrapper iframe {
