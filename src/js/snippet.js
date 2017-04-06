@@ -160,7 +160,7 @@ var initCodeEditors = function()
 /**
  * Class.
  *
- * @param {*} editor
+ * @param {DOM Object} editor
  */
 var codeEditor = function(editor)
 {
@@ -242,7 +242,7 @@ var codeEditor = function(editor)
 
         // console.group('Colorizing');
         // console.count('colorize');
-        console.log(self.editor.innerHTML)
+        // console.log(self.editor.innerHTML)
         switch (self.language)
         {
             case 'html':
@@ -314,63 +314,62 @@ var codeEditor = function(editor)
                             return '<span class="keyword">' + arguments[1].toUpperCase() + '</span>';
                          });
             break;
+            case 'javascript':// Alias.
+                self.language = 'js';
             case 'php':
-                string = string.replace(/\b(define|echo|print_r|var_dump)(?=\W)/ig, '<span class="keyword">$1</span>');
-            break;
             case 'js':
-            case 'javascript':
-                var regexParts =
-                    [
-                        /\b(\d+|null)\b/,// Number or null.
-                        /\b(true|false)\b/,// Booleans.
-                        /\b(new|getElementsBy(?:Tag|Class|)Name|getElementById|arguments|if|else|do|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval))(?=\W)/,// Keywords.
-                        /(?:(?=\W))(\$|jQuery)(?=\W|$)/// jQuery or $.
-                    ],
-                    // http://stackoverflow.com/a/41867753/2012407
-                    regexParts2 =
+                var dictionnary =
+                {
+                    js:
+                    {
+                        number: /\b(\d+|null)\b/,
+                        boolean: /\b(true|false)\b/,
+                        keyword: /\b(new|getElementsBy(?:Tag|Class|)Name|getElementById|arguments|if|else|do|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval))(?=\W)/,
+                        dollar: /(?:(?=\W))(\$|jQuery)(?=\W|$)/// jQuery or $.
+                    },
+                    php:
+                    {
+                        number: /\b(\d+|null)\b/,
+                        boolean: /\b(true|false)\b/,
+                        keyword: /\b(define|echo|die|print_r|var_dump|if|else|do|return|case|default|function|\$this|while|for|switch|in|break|continue)(?=\W)/,
+                        variable: /(?:(?=\W))(\$\w+)/
+                    }
+                }, classMap = [], regexArray = [];
+
+
+                for (var Class in dictionnary[self.language])
+                {
+                    classMap.push(Class);
+                    regexArray.push(dictionnary[self.language][Class]);
+                }
+
+                var regexParts2 =
                     [
                         /("(?:\\"|[^"])*")|('(?:\\'|[^'])*')/,// Quotes.
                         /(\/\/.*|\/\*[\s\S]*?\*\/)/,// Comments blocks (/* ... */) or trailing comments (// ...).
                         /(<[^>]*>)/,// Html tags.
                         /(!==?|(?:[\[\](){}.:;,+\-?=]|&lt;|&gt;)+|&&|\|\|)/// Ponctuation not in html tag.
                     ],
-                    regexPattern  = new RegExp(regexParts.map(function(x){return x.source}).join('|'), 'g'),
+                    regexPattern  = new RegExp(regexArray.map(function(x){return x.source}).join('|'), 'g'),
                     regexPattern2 = new RegExp(regexParts2.map(function(x){return x.source}).join('|'), 'g');
 
                 string = string//.unhtmlize()
                         .replace(regexPattern, function()
                         {
-                            var m = arguments,
-                                Class = '';
-
-                            switch(true)
+                            var match, Class;
+                            // "arguments.length - 2" because the function is called with arguments like so:
+                            // function(strMatch, c1, c2, ..., cn, matchOffset, sourceString){}. With c = the captures.
+                            for (var i = 1; i <= arguments.length - 2; i++)
                             {
-                                // Numbers and 'null'.
-                                case (Boolean)(m[1]):
-                                    m = m[1];
-                                    Class = 'number';
+                                if (arguments[i])
+                                {
+                                    match = arguments[i];
+                                    Class = classMap[i - 1];
                                     break;
-
-                                // True or False.
-                                case (Boolean)(m[2]):
-                                    m = m[2];
-                                    Class = 'bool';
-                                    break;
-
-                                // True or False.
-                                case (Boolean)(m[3]):
-                                    m = m[3];
-                                    Class = 'keyword';
-                                    break;
-
-                                // $ or 'jQuery'.
-                                case (Boolean)(m[4]):
-                                    m = m[4];
-                                    Class = 'dollar';
-                                    break;
+                                }
                             }
 
-                            return '<span class="' + Class + '">' + m + '</span>';
+                            return '<span class="' + Class + '">' + match + '</span>';
                         })
                         .replace(regexPattern2, function()
                         {
@@ -404,7 +403,7 @@ var codeEditor = function(editor)
                         });
             break;
         }
-        console.log(string)
+        // console.log(string)
         // console.groupEnd();
         return string;
     };

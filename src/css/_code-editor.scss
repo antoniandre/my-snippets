@@ -244,6 +244,8 @@ pre .keyword {color: #11c;}
 pre .tag {color: #11c;}
 pre .ponctuation {color: #99f;}
 pre .dollar {color: #f63;}
+pre.special {color: #f63;}
+pre .variable {color: #f63;}
 pre .attribute {color: #f63;}
 pre[data-type="css"] .attribute {color: #70d;}
 pre[data-type="css"] .keyword {color: #c06;}
