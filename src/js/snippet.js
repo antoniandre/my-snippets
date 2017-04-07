@@ -325,13 +325,14 @@ var codeEditor = function(editor)
                         number: /\b(\d+|null)\b/,
                         boolean: /\b(true|false)\b/,
                         keyword: /\b(new|getElementsBy(?:Tag|Class|)Name|getElementById|arguments|if|else|do|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval))(?=\W)/,
+                        variable: /(?!\.)([a-zA-Z][\w\d_]*)/,
                         dollar: /(?:(?=\W))(\$|jQuery)(?=\W|$)/// jQuery or $.
                     },
                     php:
                     {
                         number: /\b(\d+|null)\b/,
                         boolean: /\b(true|false)\b/,
-                        keyword: /\b(define|echo|die|print_r|var_dump|if|else|do|return|case|default|function|\$this|while|for|switch|in|break|continue)(?=\W)/,
+                        keyword: /\b(define|echo|die|print_r|var_dump|if|else|do|return|case|default|function|\$this|while|for|switch|in|break|continue)(?=\W|$)/,
                         variable: /(?:(?=\W))(\$\w+)/
                     }
                 }, classMap = [], regexArray = [];
@@ -352,9 +353,11 @@ var codeEditor = function(editor)
                     ],
                     regexPattern  = new RegExp(regexArray.map(function(x){return x.source}).join('|'), 'g'),
                     regexPattern2 = new RegExp(regexParts2.map(function(x){return x.source}).join('|'), 'g');
+                    regexPattern2 = new RegExp(regexPattern2.source + '|' + regexPattern.source, 'g');
 
+console.log(regexPattern2)
                 string = string//.unhtmlize()
-                        .replace(regexPattern, function()
+                        /*.replace(regexPattern, function()
                         {
                             var match, Class;
                             // "arguments.length - 2" because the function is called with arguments like so:
@@ -370,7 +373,7 @@ var codeEditor = function(editor)
                             }
 
                             return '<span class="' + Class + '">' + match + '</span>';
-                        })
+                        })*/
                         .replace(regexPattern2, function()
                         {
                             var m = arguments,
@@ -380,12 +383,12 @@ var codeEditor = function(editor)
                             {
                                 // Quotes.
                                 case (Boolean)(m[1] || m[2]):
-                                    Return = '<span class="quote">' + (m[1] || m[2]).stripTags() + '</span>';
+                                    Return = '<span class="quote">' + (m[1] || m[2]).unhtmlize().stripTags() + '</span>';
                                     break;
 
                                 // Comments.
                                 case (Boolean)(m[3]):
-                                    Return = '<span class="comment">' + (m[3]).stripTags() + '</span>';
+                                    Return = '<span class="comment">' + (m[3]).unhtmlize().stripTags() + '</span>';
                                     break;
 
                                 // Html tags.
@@ -396,6 +399,28 @@ var codeEditor = function(editor)
                                 // Ponctuation.
                                 case (Boolean)(m[5] && !m[4]):
                                     Return = '<span class="ponctuation">' + m[5] + '</span>';
+                                    break;
+
+                                // default:
+                                //     Return = m[0];
+                                //     break;
+                                default:
+                                    var match, Class, dictionnaryMatches = Array.prototype.slice.call(arguments, 6, arguments.length - 2);
+// console.error(dictionnaryMatches, classMap)
+                                    // "arguments.length - 2" because the function is called with arguments like so:
+                                    // function(strMatch, c1, c2, ..., cn, matchOffset, sourceString){}. With c = the captures.
+                                    for (var i = 0; i <= dictionnaryMatches.length; i++)
+                                    {
+                                        if (dictionnaryMatches[i])
+                                        {
+                                            match = dictionnaryMatches[i];
+                                            Class = classMap[i];
+console.error(match, Class)
+                                            break;
+                                        }
+                                    }
+
+                                    Return = '<span class="' + Class + '">' + match + '</span>';
                                     break;
                             }
 
