@@ -17,6 +17,13 @@ var wrapPre = function($pre)
     return $pre.wrap('<div class="code-wrapper ' + $pre.attr('class') + '"/>').parent();
 };
 
+/**
+ * Add a tab system to navigate through each code editor.
+ *
+ * @param {object} target   The current code editor <pre>.
+ * @param {object} wrapper  The container in which to create the tabs system.
+ * @return void.
+ */
 var addTab = function($target, $wrapper)
 {
     var targetTag    = $target[0].tagName.toLowerCase(),
@@ -318,63 +325,60 @@ var codeEditor = function(editor)
                 self.language = 'js';
             case 'php':
             case 'js':
-                var dictionnary =
-                {
-                    js:
+                var regexBasics =
                     {
-                        number: /\b(\d+|null)\b/,
-                        boolean: /\b(true|false)\b/,
-                        keyword: /\b(new|getElementsBy(?:Tag|Class|)Name|getElementById|arguments|if|else|do|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval))(?=\W)/,
-                        variable: /(?!\.)([a-zA-Z][\w\d_]*)/,
-                        dollar: /(?:(?=\W))(\$|jQuery)(?=\W|$)/// jQuery or $.
+                        quote:      /("(?:\\"|[^"])*")|('(?:\\'|[^'])*')/,// Match simple and double quotes by pair.
+                        comment:    /(\/\/.*|\/\*[\s\S]*?\*\/)/,// Comments blocks (/* ... */) or trailing comments (// ...).
+                        htmlTag:    /(<[^>]*>)/,
+                        ponctuation: /(!==?|(?:[\[\](){}.:;,+\-?=]|&lt;|&gt;)+|&&|\|\|)/// Ponctuation not in html tag.
                     },
-                    php:
+                    dictionnary =
                     {
-                        number: /\b(\d+|null)\b/,
-                        boolean: /\b(true|false)\b/,
-                        keyword: /\b(define|echo|die|print_r|var_dump|if|else|do|return|case|default|function|\$this|while|for|switch|in|break|continue)(?=\W|$)/,
-                        variable: /(?:(?=\W))(\$\w+)/
-                    }
-                }, classMap = [], regexArray = [];
+                        js:
+                        {
+                            quote:       regexBasics.quote,
+                            comment:     regexBasics.comment,
+                            // htmlTag:     regexBasics.htmlTag,
+                            ponctuation: regexBasics.ponctuation,
+                            number:      /\b(\d+|null)\b/,
+                            boolean:     /\b(true|false)\b/,
+                            keyword:     /\b(new|getElementsBy(?:Tag|Class|)Name|getElementById|arguments|if|else|do|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval))(?=\W)/,
+                            // variable:    /(?!\.)([a-zA-Z][\w\d_]*)/,
+                            variable:    /(?:[^.]|^)\b([a-zA-Z]\w*)/,
+                            dollar:      /(?:(?=\W))(\$|jQuery)(?=\W|$)/// jQuery or $.
+                        },
+                        php:
+                        {
+                            quote:       regexBasics.quote,
+                            comment:     regexBasics.comment,
+                            // htmlTag:     regexBasics.htmlTag,
+                            ponctuation: regexBasics.ponctuation,
+                            number:      /\b(\d+|null)\b/,
+                            boolean:     /\b(true|false)\b/,
+                            keyword:     /\b(define|echo|die|print_r|var_dump|if|else|do|return|case|default|function|\$this|while|for|switch|in|break|continue)(?=\W|$)/,
+                            variable:    /(?:(?=\W))(\$\w+)/
+                        }
+                    },
+                    classMap = [],
+                    regexArray = [],
+                    regexPattern = '';
 
 
                 for (var Class in dictionnary[self.language])
                 {
                     classMap.push(Class);
-                    regexArray.push(dictionnary[self.language][Class]);
+                    if (Class === 'quote') classMap.push(Class);// Add twice cause 2 captures in quote regexp.
+
+                    // regexArray.push(dictionnary[self.language][Class]);
+                    regexPattern += (regexPattern ? '|' : '') + dictionnary[self.language][Class].source;
                 }
 
-                var regexParts2 =
-                    [
-                        /("(?:\\"|[^"])*")|('(?:\\'|[^'])*')/,// Quotes.
-                        /(\/\/.*|\/\*[\s\S]*?\*\/)/,// Comments blocks (/* ... */) or trailing comments (// ...).
-                        /(<[^>]*>)/,// Html tags.
-                        /(!==?|(?:[\[\](){}.:;,+\-?=]|&lt;|&gt;)+|&&|\|\|)/// Ponctuation not in html tag.
-                    ],
-                    regexPattern  = new RegExp(regexArray.map(function(x){return x.source}).join('|'), 'g'),
-                    regexPattern2 = new RegExp(regexParts2.map(function(x){return x.source}).join('|'), 'g');
-                    regexPattern2 = new RegExp(regexPattern2.source + '|' + regexPattern.source, 'g');
+                regexPattern = new RegExp(regexPattern, 'g');
+                // var regexPattern  = new RegExp(regexArray.map(function(x){return x.source}).join('|'), 'g');
 
-console.log(regexPattern2)
+console.log(regexPattern)
                 string = string//.unhtmlize()
-                        /*.replace(regexPattern, function()
-                        {
-                            var match, Class;
-                            // "arguments.length - 2" because the function is called with arguments like so:
-                            // function(strMatch, c1, c2, ..., cn, matchOffset, sourceString){}. With c = the captures.
-                            for (var i = 1; i <= arguments.length - 2; i++)
-                            {
-                                if (arguments[i])
-                                {
-                                    match = arguments[i];
-                                    Class = classMap[i - 1];
-                                    break;
-                                }
-                            }
-
-                            return '<span class="' + Class + '">' + match + '</span>';
-                        })*/
-                        .replace(regexPattern2, function()
+                        .replace(regexPattern, function()
                         {
                             var m = arguments,
                                 Return = '';
@@ -392,33 +396,32 @@ console.log(regexPattern2)
                                     break;
 
                                 // Html tags.
-                                case (Boolean)(m[4]):
-                                    Return = m[4];
-                                    break;
+                                // case (Boolean)(m[4]):
+                                //     Return = m[4];console.log('m4', m[4])
+                                //     break;
 
                                 // Ponctuation.
-                                case (Boolean)(m[5] && !m[4]):
-                                    Return = '<span class="ponctuation">' + m[5] + '</span>';
+                                case (Boolean)(m[4]):
+                                    Return = '<span class="ponctuation">' + m[4] + '</span>';
                                     break;
 
-                                // default:
-                                //     Return = m[0];
-                                //     break;
                                 default:
-                                    var match, Class, dictionnaryMatches = Array.prototype.slice.call(arguments, 6, arguments.length - 2);
+                                    var match, Class,
+                                        // "arguments.length - 2" because the function is called with arguments like so:
+                                        // function(strMatch, c1, c2, ..., cn, matchOffset, sourceString){}. With c = the captures.
+                                        dictionnaryMatches = Array.prototype.slice.call(arguments, 1, arguments.length - 2);
 // console.error(dictionnaryMatches, classMap)
-                                    // "arguments.length - 2" because the function is called with arguments like so:
-                                    // function(strMatch, c1, c2, ..., cn, matchOffset, sourceString){}. With c = the captures.
-                                    for (var i = 0; i <= dictionnaryMatches.length; i++)
+                                    for (var i = 0; i < dictionnaryMatches.length; i++)
                                     {
                                         if (dictionnaryMatches[i])
                                         {
                                             match = dictionnaryMatches[i];
                                             Class = classMap[i];
-console.error(match, Class)
+
                                             break;
                                         }
                                     }
+                                    console.log('default', match, Class, classMap, dictionnaryMatches, dictionnary[self.language])
 
                                     Return = '<span class="' + Class + '">' + match + '</span>';
                                     break;
