@@ -275,45 +275,6 @@ var codeEditor = function(editor)
                            + attributes + '<span class="ponctuation">&gt;</span>';
                 });
             break;
-            case 'css':
-                string = string
-                .replace(/((?:\/\*\s*))*([^{]+)\s*{\s*([^}]+)\s*}\s*(?:\*\/)*\s*/mg, function()
-                {
-                    // If commented don't parse inner.
-                    if ((arguments[1]||'').indexOf('/*') > -1)
-                        return '\n<span class="comment">/* '+ arguments[2] + '{\n    ' + arguments[3] + '\n} */</span>';
-
-                    if (arguments[3])
-                    {
-                        var properties = '', props = arguments[3].replace(/^;+?(.*).+?$/, '$1').split(';');
-
-                        for (var i = 0, l = props.length; i < l; i++)
-                        {
-                            var prop = props[i].trim();
-                            if (prop)
-                            {
-                                properties += '\n    ' + prop.replace(
-                                    /\s*([^:]+)\s*:\s*([^;]+)\s*;?\s*/, function()
-                                    {
-                                        return '<span class="attribute">'
-                                                + arguments[1]
-                                                + '</span>'
-                                                + '<span class="ponctuation">: </span>'
-                                                + '<span class="value">'
-                                                + arguments[2]
-                                                    .replace(/([(),])/g, '<span class="ponctuation">$1</span>')
-                                                + '</span><span class="ponctuation">;</span>';
-                                    });
-                            }
-                        }
-                    }
-
-                    return '\n<span class="selector">' + arguments[2].trim().replace(/(:(?:before|after))/, '<span class="keyword">$1</span>') + '</span>'
-                        +' <span class="ponctuation">{</span>' + properties + '\n<span class="ponctuation">}</span>';
-                })
-                // Wrap extra comments.
-                .replace(/(\/\*\s*(?:.(?!<[^>]+>))*?\s*\*\/\s*)/mg, '\n<span class="comment">$1</span>').trim();
-            break;
             case 'sql':
                 string = string.replace(
                          /\b(\*|CREATE|ALL|DATABASE|TABLE|GRANT|PRIVILEGES|IDENTIFIED|FLUSH|SELECT|UPDATE|DELETE|INSERT|FROM|WHERE|(?:ORDER|GROUP) BY|LIMIT|(?:(?:LEFT|RIGHT|INNER|OUTER) |)JOIN|AS|ON|COUNT|CASE|TO|IF|WHEN|BETWEEN|AND|OR|CONCAT)(?=\W)/ig, function()
@@ -323,6 +284,7 @@ var codeEditor = function(editor)
             break;
             case 'javascript':// Alias.
                 self.language = 'js';
+            case 'css':
             case 'php':
             case 'js':
                 var regexBasics =
@@ -330,22 +292,43 @@ var codeEditor = function(editor)
                         quote:      /("(?:\\"|[^"])*")|('(?:\\'|[^'])*')/,// Match simple and double quotes by pair.
                         comment:    /(\/\/.*|\/\*[\s\S]*?\*\/)/,// Comments blocks (/* ... */) or trailing comments (// ...).
                         htmlTag:    /(<[^>]*>)/,
-                        ponctuation: /(!==?|(?:[\[\](){}.:;,+\-?=]|&lt;|&gt;)+|&&|\|\|)/// Ponctuation not in html tag.
+                        ponctuation: /(!==?|(?:[\[\](){}.:;,+\-?=]|&lt;|&gt;)+|&&|\|\|)/,// Ponctuation not in html tag.
                     },
                     dictionnary =
                     {
+                        html:
+                        {
+                            quote:       regexBasics.quote,
+                            comment:     /(<!--[\s\S]*?-->)/,
+                            tag:         /(\d)\s+/,
+                            ponctuation: /([=/<>]+)/,
+                            attribute:   /([a-zA-Z\-]+)(?=\s*(?:=|\/?>))/,
+                        },
+                        css:
+                        {
+                            quote:       regexBasics.quote,
+                            comment:     regexBasics.comment,
+                            selector:    /(?:^|\b)((?:[.#-\w\*+ >:,]|&gt;)+)(?=\s*\{)/,// Any part before '{'.
+                            "keyword selector":  /(@(?:import|media|font-face|keyframe)|screen|print|and)(?=[\s({])/,
+                            "keyword attribute": /(content|float|display|position|top|left|right|bottom|(?:(?:max|min)-)?width|(?:(?:max|min|line)-)?height|font(?:-(?:family|style|size|weight|variant|stretch))?|vertical-align|color|opacity|visibility|transform|transition|animation|background(?:-(?:color|position|image|repeat|size))?|(?:padding|margin|border)(?:-(?:top|left|right|bottom))?|border(?:-radius)|white-space|text-(?:align|transform|decoration|shadow)|overflow(?:-(?:x|y))?|letter-spacing|box-(?:sizing|shadow))(?=\s*:)/,
+                            "keyword value":     /(inline-block|inline|block|absolute|relative|static|fixed|inherit|none|auto|hidden|visible|top|left|right|bottom|center|pre|wrap|nowrap|(?:upper|lower)case|capitalize|linear|ease(?:-in)?(?:-out)?|cubic-bezier|(?:no-)?repeat|repeat(?:-x|-y)|contain|cover)(?=\s*[,;}(])/,
+                            number:      /(-?(?:\.\d+|\d+(?:\.\d+)?))/,
+                            color:       /(transparent|#(?:[\da-f]{6}|[\da-f]{3})|rgba?\([\d., ]*\))/,
+                            ponctuation: /([:,;{}@#()])/,
+                            attribute:   /([a-zA-Z\-]+)(?=\s*:)/,
+                            unit:        /(px|%|r?em|m?s)(?=(?:\s*[;,}]|\s+[\-\d#]))/
+                        },
                         js:
                         {
                             quote:       regexBasics.quote,
                             comment:     regexBasics.comment,
                             // htmlTag:     regexBasics.htmlTag,
-                            ponctuation: regexBasics.ponctuation,
-                            number:      /\b(\d+|null)\b/,
+                            number:      /\b(\d+(?:\.\d+)?|null)\b/,
                             boolean:     /\b(true|false)\b/,
                             keyword:     /\b(new|getElementsBy(?:Tag|Class|)Name|getElementById|arguments|if|else|do|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval))(?=\W)/,
-                            // variable:    /(?!\.)([a-zA-Z][\w\d_]*)/,
-                            variable:    /(?:[^.]|^)\b([a-zA-Z]\w*)/,
-                            dollar:      /(?:(?=\W))(\$|jQuery)(?=\W|$)/// jQuery or $.
+                            ponctuation: /(!==?|(?:[\[\](){}:;,+\-?=]|&lt;|&gt;)+|\.|\.+(?![a-zA-Z])|&&|\|\|)/,// Override for '.' part of variable/
+                            variable:    /(\.?[a-zA-Z]\w*)/,
+                            dollar:      /(\$|jQuery)(?=\W|$)/,// jQuery or $.
                         },
                         php:
                         {
@@ -353,14 +336,13 @@ var codeEditor = function(editor)
                             comment:     regexBasics.comment,
                             // htmlTag:     regexBasics.htmlTag,
                             ponctuation: regexBasics.ponctuation,
-                            number:      /\b(\d+|null)\b/,
+                            number:      /\b(\d+(?:\.\d+)?|null)\b/,
                             boolean:     /\b(true|false)\b/,
                             keyword:     /\b(define|echo|die|print_r|var_dump|if|else|do|return|case|default|function|\$this|while|for|switch|in|break|continue)(?=\W|$)/,
                             variable:    /(?:(?=\W))(\$\w+)/
                         }
                     },
                     classMap = [],
-                    regexArray = [],
                     regexPattern = '';
 
 
@@ -369,65 +351,46 @@ var codeEditor = function(editor)
                     classMap.push(Class);
                     if (Class === 'quote') classMap.push(Class);// Add twice cause 2 captures in quote regexp.
 
-                    // regexArray.push(dictionnary[self.language][Class]);
                     regexPattern += (regexPattern ? '|' : '') + dictionnary[self.language][Class].source;
                 }
 
-                regexPattern = new RegExp(regexPattern, 'g');
-                // var regexPattern  = new RegExp(regexArray.map(function(x){return x.source}).join('|'), 'g');
+                        // if (self.language === 'css')
+                        // {
+                        //     string = string.htmlize();
+                        //     console.log(string)
+                        // }
 
-console.log(regexPattern)
                 string = string//.unhtmlize()
-                        .replace(regexPattern, function()
+                        .replace(new RegExp(regexPattern, 'g'), function()
                         {
-                            var m = arguments,
-                                Return = '';
+                            var match, Class,
+                                // "arguments.length - 2" because the function is called with arguments like so:
+                                // function(strMatch, c1, c2, ..., cn, matchOffset, sourceString){}. With c = the captures.
+                                dictionnaryMatches = Array.prototype.slice.call(arguments, 1, arguments.length - 2);
 
-                            switch(true)
+                            for (var i = 0; i < dictionnaryMatches.length; i++)
                             {
-                                // Quotes.
-                                case (Boolean)(m[1] || m[2]):
-                                    Return = '<span class="quote">' + (m[1] || m[2]).unhtmlize().stripTags() + '</span>';
+                                if (dictionnaryMatches[i])
+                                {
+                                    match = dictionnaryMatches[i];
+                                    Class = classMap[i];
+
                                     break;
+                                }
+                            }
+                            // console.log('default', match, Class, classMap, dictionnaryMatches, dictionnary[self.language])
 
-                                // Comments.
-                                case (Boolean)(m[3]):
-                                    Return = '<span class="comment">' + (m[3]).unhtmlize().stripTags() + '</span>';
-                                    break;
-
-                                // Html tags.
-                                // case (Boolean)(m[4]):
-                                //     Return = m[4];console.log('m4', m[4])
-                                //     break;
-
-                                // Ponctuation.
-                                case (Boolean)(m[4]):
-                                    Return = '<span class="ponctuation">' + m[4] + '</span>';
-                                    break;
-
-                                default:
-                                    var match, Class,
-                                        // "arguments.length - 2" because the function is called with arguments like so:
-                                        // function(strMatch, c1, c2, ..., cn, matchOffset, sourceString){}. With c = the captures.
-                                        dictionnaryMatches = Array.prototype.slice.call(arguments, 1, arguments.length - 2);
-// console.error(dictionnaryMatches, classMap)
-                                    for (var i = 0; i < dictionnaryMatches.length; i++)
-                                    {
-                                        if (dictionnaryMatches[i])
-                                        {
-                                            match = dictionnaryMatches[i];
-                                            Class = classMap[i];
-
-                                            break;
-                                        }
-                                    }
-                                    console.log('default', match, Class, classMap, dictionnaryMatches, dictionnary[self.language])
-
-                                    Return = '<span class="' + Class + '">' + match + '</span>';
-                                    break;
+                            if (Class === 'quote')   match = (arguments[1] || arguments[2]).unhtmlize().stripTags();
+                            if (Class === 'comment') match = match.unhtmlize().stripTags();
+                            if (Class === 'variable' && match[0] === '.' && self.language === 'js')
+                            {
+                                /**
+                                 * @todo don't apply variable color if char before '.' is not '\w'.
+                                 */
+                                return '<span class="ponctuation">.</span><span class="objAttr">' + match.substr(1) + '</span>';
                             }
 
-                            return Return;
+                            return '<span class="' + Class + '">' + match + '</span>';
                         });
             break;
         }
@@ -465,7 +428,7 @@ console.log(regexPattern)
             nodeIndex     = 0,
             currentNodeText, newCaretOffset, range, sel, textNode;
 
-        console.log(nodeIndex, self.editor.childNodes.length, self.editor.childNodes[0], self.editor.childNodes[0].nodeType, self.editor.childNodes[nodeIndex], newTextBefore, self.caretInfo.plainTextBefore)
+        // console.log(nodeIndex, self.editor.childNodes.length, self.editor.childNodes[0], self.editor.childNodes[0].nodeType, self.editor.childNodes[nodeIndex], newTextBefore, self.caretInfo.plainTextBefore)
         while (newTextBefore < self.caretInfo.plainTextBefore)
         {
             newTextBefore += self.editor.childNodes[nodeIndex].innerHTML.htmlize();
@@ -574,7 +537,7 @@ function getCaretInfo(element)
 
     // Get all the plain text from start until the caret - no html tags: they are stripped once after the loop.
     // First loop through all the nodes until reaching the caret selection node.
-    console.log('selection node:', selectionNode, nodeIndex, nodeText)
+    // console.log('selection node:', selectionNode, nodeIndex, nodeText)
     for (var i = 0; i < nodeIndex; i++) plainTextBefore += element.childNodes[i].innerHTML;
 
     // Once the node of the selection caret is reached, add the text before caret to the total text before caret var.
