@@ -49,7 +49,7 @@ var addTab = function($target, $wrapper)
         .before(
             '<input type="radio" data-type="' + type + '" id="' + targetTag + preUniqueId + '"' + checked
             + ' name="codeWrapper' + wrapperIndex + '">' + '<label for="' + targetTag + preUniqueId
-            + '"><span contenteditable class="code-label">' + (label ? label : type) + '</span>'
+            + '" data-uid="' + preUniqueId + '"><span contenteditable class="code-label">' + (label ? label : type) + '</span>'
             + '<span class="languages"><strong>Languages:</strong>'
             + langHtml
             + '</span></label>');
@@ -129,6 +129,7 @@ var initCodeEditors = function()
 
 
     // On saving edits.
+    // For each pre get the code, label and type and send them to the php script for saving into JSON.
     $('.code-form').on('submit', function(e)
     {
         e.preventDefault();
@@ -142,15 +143,14 @@ var initCodeEditors = function()
 
         return false;
     })
-    .on('change', '.code-label', function(e)
+    // On modify label of current editor.
+    // Update matching <pre> data-label attribute.
+    .on('input', '.code-label', function(e)
     {
-        var label        = this.value,
-            tabToggler   = $('input#' + $(this).parents('label').attr('for')),
-            codeLanguage = tabToggler.attr('data-type'),
-            matchingPre  = $('pre[data-type=' + codeLanguage + ']');
-
-        matchingPre.add(tabToggler).attr('data-label', label);
+        var preUniqueId  = $(this).parents('label').data('uid');
+        $('pre[data-uid=' + preUniqueId + ']').attr('data-label', this.innerHTML);
     })
+    // On changing the language of current editor (select in dropdown list).
     .on('change', '.languages input', function(e)
     {
         var newLanguage = this.value,
@@ -169,11 +169,12 @@ var initCodeEditors = function()
  *
  * @param {DOM Object} editor
  */
-var codeEditor = function(editor)
+var codeEditor = function(editor, params)
 {
     var self = this;
+    self.params    = $.extend({cssColors: true}, params);
     self.editor    = editor instanceof jQuery ? editor[0] : editor;
-    self.$editor   = $(editor);
+    self.$editor   = $(self.editor);
     self.language  = null;// Set in self.init().
     self.caretInfo = null;
 
@@ -199,12 +200,12 @@ var codeEditor = function(editor)
                             : (String.fromCharCode(e.charCode));// Only trigger recolorizing if the key prints something.
                     console.log(e.type, e.which);
 
-                    if (cond) debounceColorizing();
+                    if (cond) debounceColorizing(self);
                 });*/
                 // IE 10+
                 .on('input', function(e)
                 {
-                    if (languageIsKnown) debounceColorizing();
+                    if (languageIsKnown) debounceColorizing(self);
                 })
                 .on('refresh', function(){self.refresh();})
                 .on('paste', function(e)
@@ -220,11 +221,15 @@ var codeEditor = function(editor)
                     clipboardData = e.originalEvent.clipboardData || window.clipboardData;
                     pastedData = clipboardData.getData('Text');
 
-                    // Do whatever with pasteddata.
+                    // Do whatever with pasted data.
                     alert('Paste not developed yet :)\n\n\n' + pastedData);
                 });
         },
-        debounceColorizing = function()
+        //!\ Takes 'self' as parameter because by declaring the debounceColorizing() function as a var (private) and not in self,
+        // the method will be overwritten by each following instance and the 'self' inside that function would be the last occurance of them.
+        // Another solution is to declare debounceColorizing in self, but doing will allow external use like a public method.
+        // Third option is to use prototype... @todo: try that.
+        debounceColorizing = function(self)
         {
             clearTimeout(debounceTimerId);
             debounceTimerId = null;
@@ -240,7 +245,7 @@ var codeEditor = function(editor)
 
                 setTimeout(function(){inProgress = false;}, 100);
             }
-            else debounceTimerId = setTimeout(function(){debounceColorizing()}, 200);
+            else debounceTimerId = setTimeout(function(){debounceColorizing(self)}, 200);
         };
 
     self.colorizeText = function(text)
@@ -252,29 +257,29 @@ var codeEditor = function(editor)
         // console.log(self.editor.innerHTML)
         switch (self.language)
         {
-            case 'html':
-                string = string.replace(/&lt;(\/?)(\w+) ?(.*?)&gt;/mg, function()
-                {
-                    var attributes = '';
+            // case 'html':
+            //     string = string.replace(/&lt;(\/?)(\w+) ?(.*?)&gt;/mg, function()
+            //     {
+            //         var attributes = '';
 
-                    if (arguments[3])
-                    {
-                        var attrs = arguments[3].split(' ');
-                        for (var i = 0, l = attrs.length; i < l; i++)
-                        {
-                            attributes += ' ' + attrs[i].replace(
-                                /((?:\w|-)+)=('|"|)(.*?)\2/,
-                                '<span class="attribute">$1</span>'
-                                + '<span class="ponctuation">=</span>'
-                                + '<span class="quote">"$3"</span>');
-                        }
-                    }
+            //         if (arguments[3])
+            //         {
+            //             var attrs = arguments[3].split(' ');
+            //             for (var i = 0, l = attrs.length; i < l; i++)
+            //             {
+            //                 attributes += ' ' + attrs[i].replace(
+            //                     /((?:\w|-)+)=('|"|)(.*?)\2/,
+            //                     '<span class="attribute">$1</span>'
+            //                     + '<span class="ponctuation">=</span>'
+            //                     + '<span class="quote">"$3"</span>');
+            //             }
+            //         }
 
-                    return '<span class="ponctuation">&lt;' + arguments[1] + '</span>'
-                           + '<span class="tag">' + arguments[2] + '</span>'
-                           + attributes + '<span class="ponctuation">&gt;</span>';
-                });
-            break;
+            //         return '<span class="ponctuation">&lt;' + arguments[1] + '</span>'
+            //                + '<span class="tag">' + arguments[2] + '</span>'
+            //                + attributes + '<span class="ponctuation">&gt;</span>';
+            //     });
+            // break;
             case 'sql':
                 string = string.replace(
                          /\b(\*|CREATE|ALL|DATABASE|TABLE|GRANT|PRIVILEGES|IDENTIFIED|FLUSH|SELECT|UPDATE|DELETE|INSERT|FROM|WHERE|(?:ORDER|GROUP) BY|LIMIT|(?:(?:LEFT|RIGHT|INNER|OUTER) |)JOIN|AS|ON|COUNT|CASE|TO|IF|WHEN|BETWEEN|AND|OR|CONCAT)(?=\W)/ig, function()
@@ -354,11 +359,6 @@ var codeEditor = function(editor)
                     regexPattern += (regexPattern ? '|' : '') + dictionnary[self.language][Class].source;
                 }
 
-                        // if (self.language === 'css')
-                        // {
-                        //     string = string.htmlize();
-                        //     console.log(string)
-                        // }
 
                 string = string//.unhtmlize()
                         .replace(new RegExp(regexPattern, 'g'), function()
@@ -382,6 +382,12 @@ var codeEditor = function(editor)
 
                             if (Class === 'quote')   match = (arguments[1] || arguments[2]).unhtmlize().stripTags();
                             if (Class === 'comment') match = match.unhtmlize().stripTags();
+                            if (Class === 'color' && self.language === 'css' && self.params.cssColors)
+                            {
+                                // var color = findColorOpposite(match);
+                                var color = isColorDark(match) ? '#fff' : '#000';
+                                var styles = ' style="background-color:' + match + ';color: ' + color + '"';
+                            }
                             if (Class === 'variable' && match[0] === '.' && self.language === 'js')
                             {
                                 /**
@@ -390,7 +396,7 @@ var codeEditor = function(editor)
                                 return '<span class="ponctuation">.</span><span class="objAttr">' + match.substr(1) + '</span>';
                             }
 
-                            return '<span class="' + Class + '">' + match + '</span>';
+                            return '<span class="' + Class + '"' + (styles !== undefined ? styles : '') + '>' + match + '</span>';
                         });
             break;
         }
@@ -558,6 +564,56 @@ function getCaretInfo(element)
         plainTextBefore: plainTextBefore,
         // selectedText: .substr(caretOffset, Math.max(sel.anchorOffset, sel.focusOffset));
     };
+};
+
+
+/*var findColorOpposite = function(colorString)
+{
+    var rgbColor, hexColor, r, g, b, color;
+
+    if (rgbColor = colorString.match(/rgba?\((.*),\s*(.*),\s*(.*)[^)]*\)/))
+    {
+        r = 255 - parseInt(rgbColor[1]);
+        g = 255 - parseInt(rgbColor[2]);
+        b = 255 - parseInt(rgbColor[3]);
+        color = 'rgb(' + r + ',' + g + ',' + b + ')';
+    }
+    else if (hexColor = colorString.match(/#([\da-f]{3}(?:[\da-f]{3})?)/))
+    {
+        var hexMap = '0123456789abcdef'.split(''),
+            newHex = '';
+
+        for (var i = 0, l = hexColor[1].length; i < l; i++)
+        {
+            newHex += (hexMap[16 - (hexMap.indexOf(hexColor[1][i]) + 1)]);
+        };
+        color = '#' + newHex;
+    }
+
+    return color;
+};*/
+
+
+var isColorDark = function(colorString)
+{
+    var rgbColor, hexColor, rDark, gDark, bDark;
+
+    if (rgbColor = colorString.match(/rgba?\((.*),\s*(.*),\s*(.*)[^)]*\)/))
+    {
+        rDark = parseInt(rgbColor[1]) <= 100;
+        gDark = parseInt(rgbColor[2]) <= 100;
+        bDark = parseInt(rgbColor[3]) <= 100;
+    }
+    else if (hexColor = colorString.match(/#([\da-f]{3}(?:[\da-f]{3})?)/))
+    {
+        var has3chars = hexColor[1].length === 3;
+        rDark = parseInt(hexColor[1][0]) <= 9;
+        gDark = parseInt(hexColor[1][has3chars ? 1 : 2]) <= 9;
+        bDark = parseInt(hexColor[1][has3chars ? 2 : 4]) <= 9;
+    }
+
+    // #00f blue is also a dark color...
+    return (rDark && gDark && bDark) || (rDark && gDark && !bDark) || (!rDark && gDark && bDark);
 };
 //============================================================//
 
