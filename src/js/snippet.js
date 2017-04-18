@@ -172,7 +172,7 @@ var initCodeEditors = function()
 var codeEditor = function(editor, params)
 {
     var self = this;
-    self.params    = $.extend({cssColors: true}, params);
+    self.options    = $.extend({cssColors: true}, params);
     self.editor    = editor instanceof jQuery ? editor[0] : editor;
     self.$editor   = $(self.editor);
     self.language  = null;// Set in self.init().
@@ -182,71 +182,80 @@ var codeEditor = function(editor, params)
         debounceTimerId = null,
         knownLanguages  = ['js', 'javascript', 'css', 'php', 'html', 'sql'],
         isLanguageKnown = function(language){return self.language && knownLanguages.indexOf(self.language) > -1;}
-        languageIsKnown = false,// Set in self.init().
-        updateLanguage  = function()
-        {
-            self.language   = self.$editor.attr('data-type');
-            languageIsKnown = isLanguageKnown(self.language);
-        },
-        bindEvents = function()
-        {
-            self.$editor
-                //.on('mouseup', function(e){console.log(getCaretInfo(self.editor));})
-                // IE9-
-                /*.on('keyup keypress', function(e)
-                {
-                    var cond = e.type === 'keyup' ?
-                            (e.which === 8 || e.which === 13)// 8 = <backspace>, 13 = <enter>.
-                            : (String.fromCharCode(e.charCode));// Only trigger recolorizing if the key prints something.
-                    console.log(e.type, e.which);
+        languageIsKnown = false;// Set in self.init().
 
-                    if (cond) debounceColorizing(self);
-                });*/
-                // IE 10+
-                .on('input', function(e)
-                {
-                    if (languageIsKnown) debounceColorizing(self);
-                })
-                .on('refresh', function(){self.refresh();})
-                .on('paste', function(e)
-                {
-                    var clipboardData, pastedData;
+    self.updateLanguage  = function()
+    {
+        self.language   = self.$editor.attr('data-type');
+        languageIsKnown = isLanguageKnown(self.language);
+    };
 
-                    // Stop data actually being pasted into div.
-                    e.stopPropagation();
-                    e.preventDefault();
-                    console.log(e)
-
-                    // Get pasted data via clipboard API.
-                    clipboardData = e.originalEvent.clipboardData || window.clipboardData;
-                    pastedData = clipboardData.getData('Text');
-
-                    // Do whatever with pasted data.
-                    alert('Paste not developed yet :)\n\n\n' + pastedData);
-                });
-        },
-        //!\ Takes 'self' as parameter because by declaring the debounceColorizing() function as a var (private) and not in self,
-        // the method will be overwritten by each following instance and the 'self' inside that function would be the last occurance of them.
-        // Another solution is to declare debounceColorizing in self, but doing will allow external use like a public method.
-        // Third option is to use prototype... @todo: try that.
-        debounceColorizing = function(self)
-        {
-            clearTimeout(debounceTimerId);
-            debounceTimerId = null;
-
-            if (!inProgress)
+    self.bindEvents = function()
+    {
+        self.$editor
+            //.on('mouseup', function(e){console.log(getCaretInfo(self.editor));})
+            // IE9-
+            /*.on('keyup keypress', function(e)
             {
-                inProgress = true;
+                var cond = e.type === 'keyup' ?
+                        (e.which === 8 || e.which === 13)// 8 = <backspace>, 13 = <enter>.
+                        : (String.fromCharCode(e.charCode));// Only trigger recolorizing if the key prints something.
+                console.log(e.type, e.which);
 
-                self.caretInfo = getCaretInfo(self.editor);
-                // console.log(self.caretInfo);
-                self.colorizePreContent();
-                if (self.caretInfo) self.setCaret();
+                if (cond) self.debounceColorizing();
+            });*/
+            // IE 10+
+            .on('input', function(e)
+            {
+                if (languageIsKnown) self.debounceColorizing();
+            })
+            .on('refresh', function(){self.refresh();})
+            .on('paste', function(e)
+            {
+                var clipboardData, pastedData;
 
-                setTimeout(function(){inProgress = false;}, 100);
-            }
-            else debounceTimerId = setTimeout(function(){debounceColorizing(self)}, 200);
-        };
+                // Stop data actually being pasted into div.
+                // e.stopPropagation();
+                // e.preventDefault();
+                console.log(e)
+
+                // Get pasted data via clipboard API.
+                clipboardData = e.originalEvent.clipboardData || window.clipboardData;
+                pastedData = clipboardData.getData('Text');
+
+                // Do whatever with pasted data.
+                // alert('Paste not developed yet :)\n\n\n' + pastedData);
+            });
+    };
+
+    //!\ Takes 'self' as parameter because by declaring the debounceColorizing() function as a var (private) and not in self,
+    // the method will be overwritten by each following instance and the 'self' inside that function would be the last occurance of them.
+    // Another solution is to declare debounceColorizing in self, but doing will allow external use like a public method.
+    // Third option is to use prototype... @todo: try that.
+    self.debounceColorizing = function()
+    {
+        clearTimeout(debounceTimerId);
+        debounceTimerId = null;
+
+        if (!inProgress)
+        {
+            inProgress = true;
+
+            // First check if carret is in the code editor and if so capture its position.
+            self.caretInfo = getCaretInfo(self.editor);
+            // console.log(self.caretInfo);
+
+            // DO the syntax hilighting of the content placed in the active code editor.
+            self.colorizePreContent();
+
+            // Move caret to correct position after changing the code editor content.
+            // Don't try to place carret if selection is outside the code editor.
+            if (self.caretInfo && self.$editor.find(self.caretInfo.node).length) self.setCaret();
+
+            setTimeout(function(){inProgress = false;}, 100);
+        }
+        else debounceTimerId = setTimeout(function(){self.debounceColorizing()}, 200);
+    };
 
     self.colorizeText = function(text)
     {
@@ -290,13 +299,14 @@ var codeEditor = function(editor, params)
             case 'javascript':// Alias.
                 self.language = 'js';
             case 'css':
+            case 'html':
             case 'php':
             case 'js':
                 var regexBasics =
                     {
-                        quote:      /("(?:\\"|[^"])*")|('(?:\\'|[^'])*')/,// Match simple and double quotes by pair.
-                        comment:    /(\/\/.*|\/\*[\s\S]*?\*\/)/,// Comments blocks (/* ... */) or trailing comments (// ...).
-                        htmlTag:    /(<[^>]*>)/,
+                        quote:       /("(?:\\"|[^"])*")|('(?:\\'|[^'])*')/,// Match simple and double quotes by pair.
+                        comment:     /(\/\/.*|\/\*[\s\S]*?\*\/)/,// Comments blocks (/* ... */) or trailing comments (// ...).
+                        htmlTag:     /(<[^>]*>)/,
                         ponctuation: /(!==?|(?:[\[\](){}.:;,+\-?=]|&lt;|&gt;)+|&&|\|\|)/,// Ponctuation not in html tag.
                     },
                     dictionnary =
@@ -306,7 +316,7 @@ var codeEditor = function(editor, params)
                             quote:       regexBasics.quote,
                             comment:     /(<!--[\s\S]*?-->)/,
                             tag:         /(\d)\s+/,
-                            ponctuation: /([=/<>]+)/,
+                            ponctuation: /([=/]+|&lt;|&gt;)/,
                             attribute:   /([a-zA-Z\-]+)(?=\s*(?:=|\/?>))/,
                         },
                         css:
@@ -316,7 +326,7 @@ var codeEditor = function(editor, params)
                             selector:    /(?:^|\b)((?:[.#-\w\*+ >:,]|&gt;)+)(?=\s*\{)/,// Any part before '{'.
                             "keyword selector":  /(@(?:import|media|font-face|keyframe)|screen|print|and)(?=[\s({])/,
                             "keyword attribute": /(content|float|display|position|top|left|right|bottom|(?:(?:max|min)-)?width|(?:(?:max|min|line)-)?height|font(?:-(?:family|style|size|weight|variant|stretch))?|vertical-align|color|opacity|visibility|transform|transition|animation|background(?:-(?:color|position|image|repeat|size))?|(?:padding|margin|border)(?:-(?:top|left|right|bottom))?|border(?:-radius)|white-space|text-(?:align|transform|decoration|shadow)|overflow(?:-(?:x|y))?|letter-spacing|box-(?:sizing|shadow))(?=\s*:)/,
-                            "keyword value":     /(inline-block|inline|block|absolute|relative|static|fixed|inherit|none|auto|hidden|visible|top|left|right|bottom|center|pre|wrap|nowrap|(?:upper|lower)case|capitalize|linear|ease(?:-in)?(?:-out)?|cubic-bezier|(?:no-)?repeat|repeat(?:-x|-y)|contain|cover)(?=\s*[,;}(])/,
+                            "keyword value":     /(inline-block|inline|block|absolute|relative|static|fixed|inherit|none|auto|hidden|visible|top|left|right|bottom|center|pre|wrap|nowrap|(?:upper|lower)case|capitalize|linear(?:-gradient)|ease(?:-in)?(?:-out)?|cubic-bezier|(?:no-)?repeat|repeat(?:-x|-y)|contain|cover)(?=\s*[,;}(])/,
                             number:      /(-?(?:\.\d+|\d+(?:\.\d+)?))/,
                             color:       /(transparent|#(?:[\da-f]{6}|[\da-f]{3})|rgba?\([\d., ]*\))/,
                             ponctuation: /([:,;{}@#()])/,
@@ -382,7 +392,7 @@ var codeEditor = function(editor, params)
 
                             if (Class === 'quote')   match = (arguments[1] || arguments[2]).unhtmlize().stripTags();
                             if (Class === 'comment') match = match.unhtmlize().stripTags();
-                            if (Class === 'color' && self.language === 'css' && self.params.cssColors)
+                            if (Class === 'color' && self.language === 'css' && self.options.cssColors)
                             {
                                 // var color = findColorOpposite(match);
                                 var color = isColorDark(match) ? '#fff' : '#000';
@@ -419,8 +429,8 @@ var codeEditor = function(editor, params)
         // self.$editor.text(self.$editor.text());
         self.editor.innerHTML = self.editor.innerText || self.editor.textContent;
 
-        updateLanguage();
-        if (languageIsKnown) debounceColorizing();
+        self.updateLanguage();
+        if (languageIsKnown) self.debounceColorizing();
     };
 
     /**
@@ -431,18 +441,17 @@ var codeEditor = function(editor, params)
     self.setCaret = function()
     {
         var newTextBefore = '',
-            nodeIndex     = 0,
+            nodeIndex     = -1,
             currentNodeText, newCaretOffset, range, sel, textNode;
 
         // console.log(nodeIndex, self.editor.childNodes.length, self.editor.childNodes[0], self.editor.childNodes[0].nodeType, self.editor.childNodes[nodeIndex], newTextBefore, self.caretInfo.plainTextBefore)
         while (newTextBefore < self.caretInfo.plainTextBefore)
         {
-            newTextBefore += self.editor.childNodes[nodeIndex].innerHTML.htmlize();
             nodeIndex++;
+            newTextBefore += self.editor.childNodes[nodeIndex].innerHTML.htmlize();
         }
-        nodeIndex--;
-        if (nodeIndex < 0) nodeIndex = 0;
 
+        // NodeIndex should never be -1 here. If it is the function is called whereas it should not be.
         currentNodeText = self.editor.childNodes[nodeIndex].innerHTML.htmlize();
         newCaretOffset  = currentNodeText.length - (newTextBefore.length - self.caretInfo.plainTextBefore.length);
 
@@ -460,12 +469,12 @@ var codeEditor = function(editor, params)
 
     var init = function()
     {
-        updateLanguage();
+        self.updateLanguage();
 
         // Apply syntax highlighting if there is content in the <pre>.
         if (self.editor.innerHTML && languageIsKnown) self.colorizePreContent();
 
-        bindEvents();
+        self.bindEvents();
     }();
 };
 
@@ -520,8 +529,8 @@ function getCaretInfo(element)
         nodeText        = sel.baseNode ? sel.baseNode.textContent : '',
         plainTextBefore = '';
 
-    // Don't calculate the caret position if there is no selection or if selected node is outside the element
-    if (!sel.baseNode || sel.baseNode === element || selectionNode === element) return null;
+    // Don't calculate the caret position if there is no selection or if selected node is outside the element.
+    if (!sel.baseNode || !$(element).find(selectionNode).length) return null;
 
     if (window.getSelection && sel.rangeCount > 0)
     {
@@ -544,10 +553,14 @@ function getCaretInfo(element)
     // Get all the plain text from start until the caret - no html tags: they are stripped once after the loop.
     // First loop through all the nodes until reaching the caret selection node.
     // console.log('selection node:', selectionNode, nodeIndex, nodeText)
-    for (var i = 0; i < nodeIndex; i++) plainTextBefore += element.childNodes[i].innerHTML;
+    for (var i = 0; i < nodeIndex; i++)
+    {
+        if (element.childNodes[i]) plainTextBefore += element.childNodes[i].innerHTML;
+        else break;
+    }
 
     // Once the node of the selection caret is reached, add the text before caret to the total text before caret var.
-    var nodeTextBeforeCaret = element.childNodes[nodeIndex] ?
+    var nodeTextBeforeCaret = element.childNodes[nodeIndex] && element.childNodes[nodeIndex].innerHTML ?
                               element.childNodes[nodeIndex].innerHTML.htmlize().substr(0, sel.anchorOffset) : '';
 
     // And htmlize to convert htmlentities to a single character.
@@ -557,7 +570,7 @@ function getCaretInfo(element)
     return {
         posInNode: Math.max(sel.anchorOffset, sel.focusOffset),// select range from left or right keep the end of range.
         posInFullPlainText: caretOffset,
-        // node: selectionNode,
+        node: selectionNode,
         nodeIndex: nodeIndex,
         nodeText: nodeText,
         // nodeTextBefore: nodeText.substr(0, Math.max(sel.anchorOffset, sel.focusOffset)),
