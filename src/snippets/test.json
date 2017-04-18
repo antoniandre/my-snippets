@@ -1,18 +1,1 @@
-{
-  "name": "test",
-  "h1": "test",
-  "icon": "i-star",
-  "dependencies": {},
-  "languages":
-  {
-    "js": {
-      "code": "$(document).ready(function()\n{\n    // Some code commment.\n    var i = \"able\";\n    QUOTES\n    str = '//\\''; // comment.'test'\n    str = \"//'\"; // comment.\n    str = '\\'//\\''; // comment.\n    str = '\"\\'//\\'\"'; // comment.\n    str = \"'// \"; // comment.\n    \n    \n    COMMENTS\n    /*'//\\'';// hjkjh.'test'\n    \"//'\";// hjkjh.\n    '\\'//\\'';// hjkjh.\n    \"'// \";// hjkjh.*/ yo; // test.\n    \n    // var i = 'able';\n});"
-    },
-    "css": {
-      "code": ""
-    },
-    "html": {
-      "code": ""
-    }
-  }
-}
+{"name":"test","h1":"test","icon":"i-star","dependencies":{},"languages":{"js":{"code":"$(document).ready(function()\n{\n    \/\/ Some code commment.\n    var i = \"able\";\n    QUOTES\n    str = '\/\/\\''; \/\/ comment.'test'\n    str = \"\/\/'\"; \/\/ comment.\n    str = '\\'\/\/\\''; \/\/ comment.\n    str = '\"\\'\/\/\\'\"'; \/\/ comment.\n    str = \"'\/\/ \"; \/\/ comment.\n    \n    \n    COMMENTS\n    \/*'\/\/\\'';\/\/ hjkjh.'test'\n    \"\/\/'\";\/\/ hjkjh.\n    '\\'\/\/\\'';\/\/ hjkjh.\n    \"'\/\/ \";\/\/ hjkjh.*\/ yo; \/\/ test.\n    \n    \/\/ var i = 'able';\n});","label":null},"css":{"code":"* {text-align: center;}\nhtml {color: #f70;}","label":null},"html":{"code":"","label":null}}}

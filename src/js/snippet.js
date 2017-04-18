@@ -148,18 +148,17 @@ var initCodeEditors = function()
     .on('input', '.code-label', function(e)
     {
         var preUniqueId  = $(this).parents('label').data('uid');
+
         $('pre[data-uid=' + preUniqueId + ']').attr('data-label', this.innerHTML);
     })
     // On changing the language of current editor (select in dropdown list).
     .on('change', '.languages input', function(e)
     {
-        var newLanguage = this.value,
-            tabToggler  = $('input#' + $(this).parents('label').attr('for')),
-            oldLanguage = tabToggler.attr('data-type'),
-            matchingPre = $('pre[data-type=' + oldLanguage + ']');
+        var preUniqueId  = $(this).parents('label').data('uid');
 
-        matchingPre.add(tabToggler).attr('data-type', newLanguage);
-        matchingPre.trigger('refresh');
+        $('pre[data-uid=' + preUniqueId + ']')
+            .attr('data-type', this.value)
+            .trigger('refresh');
     });
 };
 
@@ -169,10 +168,10 @@ var initCodeEditors = function()
  *
  * @param {DOM Object} editor
  */
-var codeEditor = function(editor, params)
+var codeEditor = function(editor, options)
 {
     var self = this;
-    self.options    = $.extend({cssColors: true}, params);
+    self.options   = $.extend({cssColors: true}, options);
     self.editor    = editor instanceof jQuery ? editor[0] : editor;
     self.$editor   = $(self.editor);
     self.language  = null;// Set in self.init().
@@ -241,18 +240,18 @@ var codeEditor = function(editor, params)
         {
             inProgress = true;
 
-            // First check if carret is in the code editor and if so capture its position.
-            self.caretInfo = getCaretInfo(self.editor);
-            // console.log(self.caretInfo);
+        // First check if carret is in the code editor and if so capture its position.
+        self.caretInfo = getCaretInfo(self.editor);
+        // console.log(self.caretInfo);
 
-            // DO the syntax hilighting of the content placed in the active code editor.
-            self.colorizePreContent();
+        // DO the syntax hilighting of the content placed in the active code editor.
+        self.colorizePreContent();
 
-            // Move caret to correct position after changing the code editor content.
-            // Don't try to place carret if selection is outside the code editor.
-            if (self.caretInfo && self.$editor.find(self.caretInfo.node).length) self.setCaret();
+        // Move caret to correct position after changing the code editor content.
+        // Don't try to place carret if selection is outside the code editor.
+        if (self.caretInfo) self.setCaret();
 
-            setTimeout(function(){inProgress = false;}, 100);
+        setTimeout(function(){inProgress = false;}, 100);
         }
         else debounceTimerId = setTimeout(function(){self.debounceColorizing()}, 200);
     };
@@ -314,9 +313,9 @@ var codeEditor = function(editor, params)
                         html:
                         {
                             quote:       regexBasics.quote,
-                            comment:     /(<!--[\s\S]*?-->)/,
+                            comment:     /(&lt;!--[\s\S]*?--&gt;)/,
                             tag:         /(\d)\s+/,
-                            ponctuation: /([=/]+|&lt;|&gt;)/,
+                            ponctuation: /([=/<>]+|&lt;|&gt;)/,
                             attribute:   /([a-zA-Z\-]+)(?=\s*(?:=|\/?>))/,
                         },
                         css:
