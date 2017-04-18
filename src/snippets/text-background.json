@@ -1,0 +1,16 @@
+{
+  "name": "text-background",
+  "h1": "Text background",
+  "icon": "i-star",
+  "compile": "true",
+  "dependencies": {},
+  "languages":
+  {
+    "css": {
+        "code": "p {\n    text-align: center;\n    margin: 100px 0;\n    display: block;\n    background: #ff3535;\n    background: -moz-linear-gradient(left, #ff3535 0%, #ffb22d 19%, #f7df00 37%, #26ff6c 56%, #268bff 76%, #8b3cff 100%);\n    background: -webkit-gradient(linear, left top, right top, color-stop(0%,#ff3535), color-stop(19%,#ffb22d), color-stop(37%,#f7df00), color-stop(56%,#26ff6c), color-stop(76%,#268bff), color-stop(100%,#8b3cff));\n    background: -webkit-linear-gradient(left, #ff3535 0%,#ffb22d 19%,#f7df00 37%,#26ff6c 56%,#268bff 76%,#8b3cff 100%);\n    background: -o-linear-gradient(left, #ff3535 0%,#ffb22d 19%,#f7df00 37%,#26ff6c 56%,#268bff 76%,#8b3cff 100%);\n    background: -ms-linear-gradient(left, #ff3535 0%,#ffb22d 19%,#f7df00 37%,#26ff6c 56%,#268bff 76%,#8b3cff 100%);\n    background: linear-gradient(to right, #ff3535 0%,#ffb22d 19%,#f7df00 37%,#26ff6c 56%,#268bff 76%,#8b3cff 100%);\n    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ff3535', endColorstr='#8b3cff',GradientType=1 );\n    -webkit-background-clip: text;\n    -webkit-text-fill-color: transparent;\n    font-size: 25px;\n    letter-spacing: 0.05em;\n}"
+    },
+    "html": {
+      "code": "<p>Top Shelf Web Design &amp; Development</p>"
+    }
+  }
+}
