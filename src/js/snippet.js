@@ -240,29 +240,33 @@ var codeEditor = function(editor, options)
         {
             inProgress = true;
 
-        // First check if carret is in the code editor and if so capture its position.
-        self.caretInfo = getCaretInfo(self.editor);
-        // console.log(self.caretInfo);
+            // First check if carret is in the code editor and if so capture its position.
+            self.caretInfo = getCaretInfo(self.editor);
+            // console.log(self.caretInfo);
 
-        // DO the syntax hilighting of the content placed in the active code editor.
-        self.colorizePreContent();
+            // DO the syntax hilighting of the content placed in the active code editor.
+            self.colorizePreContent();
 
-        // Move caret to correct position after changing the code editor content.
-        // Don't try to place carret if selection is outside the code editor.
-        if (self.caretInfo) self.setCaret();
+            // Move caret to correct position after changing the code editor content.
+            // Don't try to place carret if selection is outside the code editor.
+            if (self.caretInfo) self.setCaret();
 
-        setTimeout(function(){inProgress = false;}, 100);
+            setTimeout(function(){inProgress = false;}, 100);
         }
         else debounceTimerId = setTimeout(function(){self.debounceColorizing()}, 200);
     };
 
     self.colorizeText = function(text)
     {
-        var string = self.editor.innerHTML.replace(/<br>/g, '\n').stripTags().replace(/&amp;/g, '&');
+        var string = self.editor.innerHTML
+                        .replace(/<br>/g, '\n')// Convert <br> tag from pressing 'enter' to a linebreak.
+                        .stripTags()
+                        .unhtmlize()
+                        /*.replace(/&amp;/g, '&')*/;
 
         // console.group('Colorizing');
         // console.count('colorize');
-        // console.log(self.editor.innerHTML)
+        // console.log(self.editor)
         switch (self.language)
         {
             // case 'html':
@@ -314,21 +318,26 @@ var codeEditor = function(editor, options)
                         {
                             quote:       regexBasics.quote,
                             comment:     /(&lt;!--[\s\S]*?--&gt;)/,
-                            tag:         /(\d)\s+/,
-                            ponctuation: /([=/<>]+|&lt;|&gt;)/,
-                            attribute:   /([a-zA-Z\-]+)(?=\s*(?:=|\/?>))/,
+                            tag:         /(&lt;\/?)([a-z]\w*)(.*?)(\/?&gt;)/,
+                            // Treated inside tag because javascript does not support lookbehind,
+                            // so be more specific inside tag first match:
+                            // ponctuation: /([=/]+|&lt;\/?|\/?&gt;)/,
+                            // tagName: /([a-z]\w+)\b/,
+                            // attribute:   /([a-zA-Z\-]+)(?=\s*(?:=|\/?&gt;))/,
                         },
                         css:
                         {
                             quote:       regexBasics.quote,
-                            comment:     regexBasics.comment,
+                            comment:     /(\/\*[\s\S]*?\*\/)/,
                             selector:    /(?:^|\b)((?:[.#-\w\*+ >:,]|&gt;)+)(?=\s*\{)/,// Any part before '{'.
                             "keyword selector":  /(@(?:import|media|font-face|keyframe)|screen|print|and)(?=[\s({])/,
                             "keyword attribute": /(content|float|display|position|top|left|right|bottom|(?:(?:max|min)-)?width|(?:(?:max|min|line)-)?height|font(?:-(?:family|style|size|weight|variant|stretch))?|vertical-align|color|opacity|visibility|transform|transition|animation|background(?:-(?:color|position|image|repeat|size))?|(?:padding|margin|border)(?:-(?:top|left|right|bottom))?|border(?:-radius)|white-space|text-(?:align|transform|decoration|shadow)|overflow(?:-(?:x|y))?|letter-spacing|box-(?:sizing|shadow))(?=\s*:)/,
                             "keyword value":     /(inline-block|inline|block|absolute|relative|static|fixed|inherit|none|auto|hidden|visible|top|left|right|bottom|center|pre|wrap|nowrap|(?:upper|lower)case|capitalize|linear(?:-gradient)|ease(?:-in)?(?:-out)?|cubic-bezier|(?:no-)?repeat|repeat(?:-x|-y)|contain|cover)(?=\s*[,;}(])/,
                             number:      /(-?(?:\.\d+|\d+(?:\.\d+)?))/,
                             color:       /(transparent|#(?:[\da-f]{6}|[\da-f]{3})|rgba?\([\d., ]*\))/,
-                            ponctuation: /([:,;{}@#()])/,
+                            // ponctuation: /([:,;{}@#()]+)/,// @todo Why can't use this one if text contains '<' or '>' ??
+                            htmlentity: /(&.*?;)/,
+                            ponctuation: /([:,;{}@#()]+|&lt;|&gt;)/,
                             attribute:   /([a-zA-Z\-]+)(?=\s*:)/,
                             unit:        /(px|%|r?em|m?s)(?=(?:\s*[;,}]|\s+[\-\d#]))/
                         },
@@ -340,7 +349,7 @@ var codeEditor = function(editor, options)
                             number:      /\b(\d+(?:\.\d+)?|null)\b/,
                             boolean:     /\b(true|false)\b/,
                             keyword:     /\b(new|getElementsBy(?:Tag|Class|)Name|getElementById|arguments|if|else|do|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval))(?=\W)/,
-                            ponctuation: /(!==?|(?:[\[\](){}:;,+\-?=]|&lt;|&gt;)+|\.|\.+(?![a-zA-Z])|&&|\|\|)/,// Override for '.' part of variable/
+                            ponctuation: /(!==?|(?:[\[\](){}:;,+\-?=]|&lt;|&gt;)+|\.|\.+(?![a-zA-Z])|&&|\|\|)/,// Override default since '.' can be part of js variable.
                             variable:    /(\.?[a-zA-Z]\w*)/,
                             dollar:      /(\$|jQuery)(?=\W|$)/,// jQuery or $.
                         },
@@ -364,12 +373,12 @@ var codeEditor = function(editor, options)
                 {
                     classMap.push(Class);
                     if (Class === 'quote') classMap.push(Class);// Add twice cause 2 captures in quote regexp.
+                    if (self.language === 'html' && Class === 'tag') classMap.push(Class, Class, Class);
 
                     regexPattern += (regexPattern ? '|' : '') + dictionnary[self.language][Class].source;
                 }
 
-
-                string = string//.unhtmlize()
+                string = string
                         .replace(new RegExp(regexPattern, 'g'), function()
                         {
                             var match, Class,
@@ -391,6 +400,19 @@ var codeEditor = function(editor, options)
 
                             if (Class === 'quote')   match = (arguments[1] || arguments[2]).unhtmlize().stripTags();
                             if (Class === 'comment') match = match.unhtmlize().stripTags();
+                            if (Class === 'tag' && self.language === 'html')
+                            {
+                                var tagPieces = dictionnaryMatches.slice(3);
+                                // console.log(tagPieces)
+                                return '<span class="ponctuation">' + tagPieces[0] + '</span>'
+                                      + '<span class="tag-name">' + tagPieces[1] + '</span>'
+                                      + (tagPieces[2]||'').replace(/\s*([a-z]\w+)=("|')(.*?)\2/g, function()
+                                        {
+                                            return ' <span class="attribute">' + arguments[1] + '</span><span class="ponctuation">=</span>'
+                                                 + '<span class="quote">' + arguments[2] + arguments[3] + arguments[2] + '</span>'
+                                        })
+                                      + '<span class="ponctuation">' + tagPieces[3] + '</span>';
+                            }
                             if (Class === 'color' && self.language === 'css' && self.options.cssColors)
                             {
                                 // var color = findColorOpposite(match);
@@ -424,9 +446,9 @@ var codeEditor = function(editor, options)
 
     self.refresh = function()
     {
-        // Reinit the content to default version (no syntax highlight).
-        // self.$editor.text(self.$editor.text());
-        self.editor.innerHTML = self.editor.innerText || self.editor.textContent;
+        // When switching language, reinit the content to plain text (remove syntax highlight html) with
+        // (self.editor.innerText || self.editor.textContent), then unhtmlize to convert '<' and '>' to htmlentities.
+        self.editor.innerHTML = (self.editor.innerText || self.editor.textContent).unhtmlize();
 
         self.updateLanguage();
         if (languageIsKnown) self.debounceColorizing();
@@ -443,12 +465,14 @@ var codeEditor = function(editor, options)
             nodeIndex     = -1,
             currentNodeText, newCaretOffset, range, sel, textNode;
 
-        // console.log(nodeIndex, self.editor.childNodes.length, self.editor.childNodes[0], self.editor.childNodes[0].nodeType, self.editor.childNodes[nodeIndex], newTextBefore, self.caretInfo.plainTextBefore)
+        // console.log(self.caretInfo)
+        // debugger;
         while (newTextBefore < self.caretInfo.plainTextBefore)
         {
             nodeIndex++;
             newTextBefore += self.editor.childNodes[nodeIndex].innerHTML.htmlize();
         }
+        if (nodeIndex < 0) nodeIndex = 0;
 
         // NodeIndex should never be -1 here. If it is the function is called whereas it should not be.
         currentNodeText = self.editor.childNodes[nodeIndex].innerHTML.htmlize();
@@ -523,13 +547,14 @@ function getCaretInfo(element)
     var caretOffset = 0,
         sel = window.getSelection ? window.getSelection() : document.selection;
 
-    var selectionNode   = sel.baseNode ? sel.baseNode.parentNode : null,
+    var selectionNode   = sel.baseNode ? (sel.baseNode.parentNode !== element ? sel.baseNode.parentNode : sel.baseNode) : null,
         nodeIndex       = selectionNode ? getIndex(selectionNode) : 0,
         nodeText        = sel.baseNode ? sel.baseNode.textContent : '',
         plainTextBefore = '';
 
     // Don't calculate the caret position if there is no selection or if selected node is outside the element.
-    if (!sel.baseNode || !$(element).find(selectionNode).length) return null;
+    // When inputting content in empty editor the selection node will be the editor itself.
+    if (!selectionNode || (!$(element).find(selectionNode).length && !$(element).is(selectionNode))) return null;
 
     if (window.getSelection && sel.rangeCount > 0)
     {
@@ -554,7 +579,7 @@ function getCaretInfo(element)
     // console.log('selection node:', selectionNode, nodeIndex, nodeText)
     for (var i = 0; i < nodeIndex; i++)
     {
-        if (element.childNodes[i]) plainTextBefore += element.childNodes[i].innerHTML;
+        if (element.childNodes[i]) plainTextBefore += element.childNodes[i][element.childNodes[i].nodeType === 3 ? 'nodeValue' : 'innerHTML'];
         else break;
     }
 

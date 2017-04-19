@@ -238,25 +238,29 @@ pre {
     .comment {font-style: italic;color: #aaa;}
     .comment * {color: #aaa !important;}
     .quote {color: #c11;}
-    .value {color: #c11;}
     .quote * {color: #c11 !important;}
     .number {color: #c11;}
     .boolean {color: #c11;}
     .keyword {color: #11c;font-weight: bold;}
-    .tag {color: #11c;}
     .ponctuation {color: #99f;}
     .dollar,
     .special {color: #f63;}
     .variable {color: #29e;}
     .objAttr {color: #0bc;}
-    .attribute {color: #f63;}
-    &[data-type="css"] .attribute {color: #70d;}
-    &[data-type="css"] .keyword {color: #c06;}
-    &[data-type="css"] .keyword.attribute {color: #e28;}
-    &[data-type="css"] .color {background: #eee;padding: 1px 4px;}
-    &[data-type="css"] .unit {color: #0bc;}
-    &[data-type="css"] .selector {color: #f0d;}
-    &[data-type="css"] .keyword.selector {color: #f5f;}
+    &[data-type="html"] {
+        .tag-name {color: #11c;}
+        .attribute {color: #f63;}
+    }
+    &[data-type="css"] {
+        .attribute {color: #70d;}
+        .value {color: #c11;}
+        .keyword {color: #c06;}
+        .keyword.attribute {color: #e28;}
+        .color {background: #eee;padding: 1px 4px;}
+        .unit {color: #0bc;}
+        .selector {color: #f0d;}
+        .keyword.selector {color: #f5f;}
+    }
 }
 
 .param span {color: #f33;}
