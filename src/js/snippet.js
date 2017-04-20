@@ -55,33 +55,8 @@ var addTab = function($target, $wrapper)
             + '</span></label>');
 };
 
-// If the attribute 'data-result' is present on .code-wrapper then run the given html + css + js in an iframe.
-var addResultTab = function($wrapper)
-{
-    var html     = ($wrapper.find('pre[data-type="html"]').html() ||'').stripTags().htmlize(),
-        js       = ($wrapper.find('pre[data-type="js"]').html()   ||'').stripTags(),
-        css      = ($wrapper.find('pre[data-type="css"]').html()  ||'').htmlize().stripTags(),
-        contents = '<html><head><link rel="stylesheet" type="text/css" href="../../grid/css/grid.css">'
-                    + '<script src="../bower_components/jquery/dist/jquery.min.js"></script>'
-                    + '<script src="../bower_components/jquery.easing/js/jquery.easing.min.js"></script>'
-                    + '<script src="../../grid/js/grid.js"></script>'
-                    + '<style>' + css + '</style></head><body>'
-                    + html
-                    + '<script>' + js + '</script>'
-                    + '</body></html>',
-        $iframe  = $wrapper.append('<iframe data-type="result"></iframe>').find('iframe');
-    $iframe[0].contentDocument.write(contents);
-
-    addTab($iframe, preIndex + 'i', $wrapper);
-};
-
 /**
- * Home made simple syntax highlighter for JS, CSS and HTML.
- * Just cz it's fun to do. :)
- * Will parse content in every <pre> tag that has a known data-type (so html, css, js only)
- * to wrap chars and words with spans.
  *
- * @return void.
  */
 var initCodeEditors = function()
 {
@@ -108,66 +83,21 @@ var initCodeEditors = function()
         // Create the tab system.
         addTab($pre, $wrapper);
 
-        // If last pre of code-wrapper.
-        // if (preIndex === numberOfPre - 1 && $wrapper.data('result')) addResultTab($wrapper);
-
         if ($pre.is('[contenteditable="true"]')) new codeEditor(this);
-    });
-
-    $('.code-wrapper .add').on('click', function()
-    {
-        var $wrapper = $(this).parent(),
-            $newPre  = $('<pre class="i-code" contenteditable="true" data-type="txt" data-label="Label" data-uid="' + (++preUniqueId) + '"/>');
-
-        $(this).siblings('pre:last').after($newPre);
-
-        addTab($newPre, $wrapper);
-
-        $newPre.trigger('click').trigger('focus');
-    });
-
-
-    // On saving edits.
-    // For each pre get the code, label and type and send them to the php script for saving into JSON.
-    $('.code-form').on('submit', function(e)
-    {
-        e.preventDefault();
-        var codes = [];
-
-        $('pre').each(function(i)
-        {
-            codes.push({label: $(this).attr('data-label'), language: $(this).attr('data-type'), code: this.innerHTML.stripTags()});
-        });
-        $.post(location, 'codes=' + JSON.stringify(codes));
-
-        return false;
-    })
-    // On modify label of current editor.
-    // Update matching <pre> data-label attribute.
-    .on('input', '.code-label', function(e)
-    {
-        var preUniqueId  = $(this).parents('label').data('uid');
-
-        $('pre[data-uid=' + preUniqueId + ']').attr('data-label', this.innerHTML);
-    })
-    // On changing the language of current editor (select in dropdown list).
-    .on('change', '.languages input', function(e)
-    {
-        var preUniqueId  = $(this).parents('label').data('uid');
-
-        $('pre[data-uid=' + preUniqueId + ']')
-            .attr('data-type', this.value)
-            .trigger('refresh');
     });
 };
 
 
 /**
- * Class.
+ * Syntax highlighter Class for JS, CSS, HTML, PHP and SQL languages.
+ * Purpose is to parse content in given <pre> tag that has a known language (e.g.  data-type="html", css, js, etc.)
+ * and colorize the words, ponctuation, etc.
  *
- * @param {DOM Object} editor
+ * @param {DOM object} editor The given wrapper to transform to a code editor with syntax hilighting.
+ * @param {object} options The settings to apply on the code editor.
+ * @return void.
  */
-var codeEditor = function(editor, options)
+var codeEditorReady, codeEditor = function(editor, options)
 {
     var self = this;
     self.options   = $.extend({cssColors: true}, options);
@@ -182,13 +112,63 @@ var codeEditor = function(editor, options)
         isLanguageKnown = function(language){return self.language && knownLanguages.indexOf(self.language) > -1;}
         languageIsKnown = false;// Set in self.init().
 
-    self.updateLanguage  = function()
+    self.updateLanguage = function()
     {
         self.language   = self.$editor.attr('data-type');
         languageIsKnown = isLanguageKnown(self.language);
     };
 
-    self.bindEvents = function()
+    self.bindClassEvents = function()
+    {
+        codeEditorReady = true;
+
+        $('.code-wrapper .add').on('click', function()
+        {
+            var $wrapper = $(this).parent(),
+                $newPre  = $('<pre class="i-code" contenteditable="true" data-type="txt" data-label="Label" data-uid="' + (++preUniqueId) + '"/>');
+
+            $(this).siblings('pre:last').after($newPre);
+
+            addTab($newPre, $wrapper);
+
+            $newPre.trigger('click').trigger('focus');
+        });
+
+        // On saving edits.
+        // For each pre get the code, label and type and send them to the php script for saving into JSON.
+        $('.code-form').on('submit', function(e)
+        {
+            e.preventDefault();
+            var codes = [];
+
+            $('pre').each(function(i)
+            {
+                codes.push({label: $(this).attr('data-label'), language: $(this).attr('data-type'), code: this.innerHTML.stripTags()});
+            });
+            $.post(location, 'codes=' + JSON.stringify(codes));
+
+            return false;
+        })
+        // On modify label of current editor.
+        // Update matching <pre> data-label attribute.
+        .on('input', '.code-label', function(e)
+        {
+            var preUniqueId  = $(this).parents('label').data('uid');
+
+            $('pre[data-uid=' + preUniqueId + ']').attr('data-label', this.innerHTML);
+        })
+        // On changing the language of current editor (select in dropdown list).
+        .on('change', '.languages input', function(e)
+        {
+            var preUniqueId  = $(this).parents('label').data('uid');
+
+            $('pre[data-uid=' + preUniqueId + ']')
+                .attr('data-type', this.value)
+                .trigger('refresh');
+        });
+    }
+
+    self.bindInstanceEvents = function()
     {
         self.$editor
             //.on('mouseup', function(e){console.log(getCaretInfo(self.editor));})
@@ -226,10 +206,9 @@ var codeEditor = function(editor, options)
             });
     };
 
-    //!\ Takes 'self' as parameter because by declaring the debounceColorizing() function as a var (private) and not in self,
-    // the method will be overwritten by each following instance and the 'self' inside that function would be the last occurance of them.
-    // Another solution is to declare debounceColorizing in self, but doing will allow external use like a public method.
-    // Third option is to use prototype... @todo: try that.
+    /**
+     *
+     */
     self.debounceColorizing = function()
     {
         clearTimeout(debounceTimerId);
@@ -263,10 +242,7 @@ var codeEditor = function(editor, options)
                         .unhtmlize()
                         /*.replace(/&amp;/g, '&')*/;
 
-        // console.group('Colorizing');
-        // console.count('colorize');
-        // console.log(self.editor)
-        if (self.language = 'javascript') self.language = 'js';// Alias.
+        if (self.language === 'javascript') self.language = 'js';// Alias.
         if (isLanguageKnown(self.language))
         {
             var regexBasics =
@@ -350,60 +326,55 @@ var codeEditor = function(editor, options)
                 regexPattern += (regexPattern ? '|' : '') + dictionnary[self.language][Class].source;
             }
 
-            string = string
-                    .replace(new RegExp(regexPattern, 'g'), function()
+            string = string.replace(new RegExp(regexPattern, 'g'), function()
+            {
+                var match, Class,
+                    // "arguments.length - 2" because the function is called with arguments like so:
+                    // function(strMatch, c1, c2, ..., cn, matchOffset, sourceString){}. With c = the captures.
+                    dictionnaryMatches = Array.prototype.slice.call(arguments, 1, arguments.length - 2);
+
+                for (var i = 0; i < dictionnaryMatches.length; i++)
+                {
+                    if (dictionnaryMatches[i])
                     {
-                        var match, Class,
-                            // "arguments.length - 2" because the function is called with arguments like so:
-                            // function(strMatch, c1, c2, ..., cn, matchOffset, sourceString){}. With c = the captures.
-                            dictionnaryMatches = Array.prototype.slice.call(arguments, 1, arguments.length - 2);
+                        match = dictionnaryMatches[i];
+                        Class = classMap[i];
 
-                        for (var i = 0; i < dictionnaryMatches.length; i++)
-                        {
-                            if (dictionnaryMatches[i])
+                        break;
+                    }
+                }
+
+                if (Class === 'quote')   match = (arguments[1] || arguments[2]).unhtmlize().stripTags();
+                if (Class === 'comment') match = match.unhtmlize().stripTags();
+                if (Class === 'tag' && self.language === 'html')
+                {
+                    var tagPieces = dictionnaryMatches.slice(3);
+
+                    return '<span class="ponctuation">' + tagPieces[0] + '</span>'
+                            + '<span class="tag-name">' + tagPieces[1] + '</span>'
+                            + (tagPieces[2]||'').replace(/\s*([a-z]\w+)=("|')(.*?)\2/g, function()
                             {
-                                match = dictionnaryMatches[i];
-                                Class = classMap[i];
+                                return ' <span class="attribute">' + arguments[1] + '</span><span class="ponctuation">=</span>'
+                                        + '<span class="quote">' + arguments[2] + arguments[3] + arguments[2] + '</span>'
+                            })
+                            + '<span class="ponctuation">' + tagPieces[3] + '</span>';
+                }
+                if (Class === 'color' && self.language === 'css' && self.options.cssColors)
+                {
+                    var styles = ' style="background-color:' + match + ';color: #' + (isColorDark(match) ? 'fff' : '000') + '"';
+                }
+                if (Class === 'variable' && match[0] === '.' && self.language === 'js')
+                {
+                    /**
+                     * @todo don't apply variable color if char before '.' is not '\w'.
+                     */
+                    return '<span class="ponctuation">.</span><span class="objAttr">' + match.substr(1) + '</span>';
+                }
 
-                                break;
-                            }
-                        }
-                        // console.log('default', match, Class, classMap, dictionnaryMatches, dictionnary[self.language])
-
-                        if (Class === 'quote')   match = (arguments[1] || arguments[2]).unhtmlize().stripTags();
-                        if (Class === 'comment') match = match.unhtmlize().stripTags();
-                        if (Class === 'tag' && self.language === 'html')
-                        {
-                            var tagPieces = dictionnaryMatches.slice(3);
-                            // console.log(tagPieces)
-                            return '<span class="ponctuation">' + tagPieces[0] + '</span>'
-                                    + '<span class="tag-name">' + tagPieces[1] + '</span>'
-                                    + (tagPieces[2]||'').replace(/\s*([a-z]\w+)=("|')(.*?)\2/g, function()
-                                    {
-                                        return ' <span class="attribute">' + arguments[1] + '</span><span class="ponctuation">=</span>'
-                                                + '<span class="quote">' + arguments[2] + arguments[3] + arguments[2] + '</span>'
-                                    })
-                                    + '<span class="ponctuation">' + tagPieces[3] + '</span>';
-                        }
-                        if (Class === 'color' && self.language === 'css' && self.options.cssColors)
-                        {
-                            // var color = findColorOpposite(match);
-                            var color = isColorDark(match) ? '#fff' : '#000';
-                            var styles = ' style="background-color:' + match + ';color: ' + color + '"';
-                        }
-                        if (Class === 'variable' && match[0] === '.' && self.language === 'js')
-                        {
-                            /**
-                             * @todo don't apply variable color if char before '.' is not '\w'.
-                             */
-                            return '<span class="ponctuation">.</span><span class="objAttr">' + match.substr(1) + '</span>';
-                        }
-
-                        return '<span class="' + Class + '"' + (styles !== undefined ? styles : '') + '>' + match + '</span>';
-                    });
+                return '<span class="' + Class + '"' + (styles !== undefined ? styles : '') + '>' + match + '</span>';
+            });
         }
-        // console.log(string)
-        // console.groupEnd();
+
         return string;
     };
 
@@ -468,32 +439,13 @@ var codeEditor = function(editor, options)
         // Apply syntax highlighting if there is content in the <pre>.
         if (self.editor.innerHTML && languageIsKnown) self.colorizePreContent();
 
-        self.bindEvents();
+        if (!codeEditorReady) self.bindClassEvents();
+        self.bindInstanceEvents();
     }();
 };
 
 
-String.prototype.stripTags = function()
-{
-    return this.replace(/<\/?\w+[^>]*\/?>/g, '');
-};
 
-
-/**
- * Re-htmlize a string. So replace every '&lt;' and '&gt;' with '<' and '>'.
- *
- * @return string: html content.
- */
-String.prototype.htmlize = function()
-{
-    return this.replace(/&(lt|gt|amp);/g, function(m0, m1){return {lt: '<', gt: '>', amp: '&'}[m1]});
-};
-
-
-String.prototype.unhtmlize = function()
-{
-    return this.replace(/[<>]/g, function(m){return {'<': '&lt;', '>': '&gt;'}[m]})
-};
 
 
 /**
@@ -575,33 +527,6 @@ function getCaretInfo(element)
 };
 
 
-/*var findColorOpposite = function(colorString)
-{
-    var rgbColor, hexColor, r, g, b, color;
-
-    if (rgbColor = colorString.match(/rgba?\((.*),\s*(.*),\s*(.*)[^)]*\)/))
-    {
-        r = 255 - parseInt(rgbColor[1]);
-        g = 255 - parseInt(rgbColor[2]);
-        b = 255 - parseInt(rgbColor[3]);
-        color = 'rgb(' + r + ',' + g + ',' + b + ')';
-    }
-    else if (hexColor = colorString.match(/#([\da-f]{3}(?:[\da-f]{3})?)/))
-    {
-        var hexMap = '0123456789abcdef'.split(''),
-            newHex = '';
-
-        for (var i = 0, l = hexColor[1].length; i < l; i++)
-        {
-            newHex += (hexMap[16 - (hexMap.indexOf(hexColor[1][i]) + 1)]);
-        };
-        color = '#' + newHex;
-    }
-
-    return color;
-};*/
-
-
 var isColorDark = function(colorString)
 {
     var rgbColor, hexColor, rDark, gDark, bDark;
@@ -622,6 +547,29 @@ var isColorDark = function(colorString)
 
     // #00f blue is also a dark color...
     return (rDark && gDark && bDark) || (rDark && gDark && !bDark) || (!rDark && gDark && bDark);
+};
+
+
+String.prototype.stripTags = function()
+{
+    return this.replace(/<\/?\w+[^>]*\/?>/g, '');
+};
+
+
+/**
+ * Re-htmlize a string. So replace every '&lt;' and '&gt;' with '<' and '>'.
+ *
+ * @return string: html content.
+ */
+String.prototype.htmlize = function()
+{
+    return this.replace(/&(lt|gt|amp);/g, function(m0, m1){return {lt: '<', gt: '>', amp: '&'}[m1]});
+};
+
+
+String.prototype.unhtmlize = function()
+{
+    return this.replace(/[<>]/g, function(m){return {'<': '&lt;', '>': '&gt;'}[m]})
 };
 //============================================================//
 
