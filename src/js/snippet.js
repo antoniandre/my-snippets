@@ -17,56 +17,18 @@ var wrapPre = function($pre)
     return $pre.wrap('<div class="code-wrapper ' + $pre.attr('class') + '"/>').parent();
 };
 
-/**
- * Add a tab system to navigate through each code editor.
- *
- * @param {object} target   The current code editor <pre>.
- * @param {object} wrapper  The container in which to create the tabs system.
- * @return void.
- */
-var addTab = function($target, $wrapper)
-{
-    var targetTag    = $target[0].tagName.toLowerCase(),
-        type         = $target.data('type'),
-        label        = $target.data('label'),
-        preUniqueId  = $target.data('uid'),
-        checked      = $target.data('active') !== undefined ? '  checked' : '',
-        $wrapper     = $wrapper || $target.parent(),
-        wrapperIndex = $wrapper.data('index'),
-        langHtml     = '',
-        languages    = {txt: 'plain text', js: 'javascript', css: 'css', html: 'html', php: 'php'},
-        i            = 0;
-
-    for (var l in languages)
-    {
-        i++;
-        langHtml += '<input type="radio" name="language' + preUniqueId + '" id="language' + preUniqueId + i
-                  + '" class="hidden" value="' + l + '"' + (type === l || (!type && l === 'txt') ? ' checked' : '') + '>'
-                  + '<label for="language' + preUniqueId + i + '">' + languages[l] + '</label> ';
-    }
-
-    $target
-        .before(
-            '<input type="radio" data-type="' + type + '" id="' + targetTag + preUniqueId + '"' + checked
-            + ' name="codeWrapper' + wrapperIndex + '">' + '<label for="' + targetTag + preUniqueId
-            + '" data-uid="' + preUniqueId + '"><span contenteditable class="code-label">' + (label ? label : type) + '</span>'
-            + '<span class="languages"><strong>Languages:</strong>'
-            + langHtml
-            + '</span></label>');
-};
 
 /**
  *
  */
 var initCodeEditors = function()
 {
-    var wrapperIndex = -1,
-        preUniqueId  = 0;
+    var wrapperIndex = -1;
 
     // Loop through all the <pre> tags, wrap them with a code-wrapper if not yet done and apply syntax highlighting.
     $('pre').each(function(i)
     {
-        var $pre        = $(this).attr('data-uid', ++preUniqueId),
+        var $pre        = $(this),
             $wrapper    = $pre.parents('.code-wrapper').length ? $pre.parents('.code-wrapper') : wrapPre($pre),
             preIndex    = $pre.prevAll('pre').length,// Index of that pre relative to its wrapper.
             numberOfPre = $wrapper.find('pre').length,// Number of code editors in the same code-wrapper.
@@ -79,9 +41,6 @@ var initCodeEditors = function()
             // Add a button to add a new code editor.
             $wrapper.append('<label class="add" data-increment="' + numberOfPre + '">+</label>');
         }
-
-        // Create the tab system.
-        addTab($pre, $wrapper);
 
         if ($pre.is('[contenteditable="true"]')) new codeEditor(this);
     });
@@ -97,19 +56,27 @@ var initCodeEditors = function()
  * @param {object} options The settings to apply on the code editor.
  * @return void.
  */
-var codeEditorReady, codeEditor = function(editor, options)
+var codeEditor = function(editor, options)
 {
+    // Static vars.
+    codeEditor.knownLanguages = codeEditor.knownLanguages || ['js', 'css', 'php', 'html', 'sql'];
+    codeEditor.ready = codeEditor.ready || false;
+    codeEditor.uid = codeEditor.uid + 1 || 1;
+
     var self = this;
+    // Public vars.
     self.options   = $.extend({cssColors: true}, options);
     self.editor    = editor instanceof jQuery ? editor[0] : editor;
     self.$editor   = $(self.editor);
+    self.$wrapper  = self.$editor.parent();
+    self.uid       = codeEditor.uid;
     self.language  = null;// Set in self.init().
     self.caretInfo = null;
 
+    // Private vars.
     var inProgress      = false,// Debounce.
         debounceTimerId = null,
-        knownLanguages  = ['js', 'css', 'php', 'html', 'sql'],
-        isLanguageKnown = function(language){return self.language && knownLanguages.indexOf(self.language) > -1;}
+        isLanguageKnown = function(language){return self.language && codeEditor.knownLanguages.indexOf(self.language) > -1;},
         languageIsKnown = false;// Set in self.init().
 
     self.updateLanguage = function()
@@ -118,92 +85,49 @@ var codeEditorReady, codeEditor = function(editor, options)
         languageIsKnown = isLanguageKnown(self.language);
     };
 
-    self.bindClassEvents = function()
+    /**
+     * Add a tab system to navigate through each code editor.
+     *
+     * @param {object} target   The current code editor <pre>.
+     * @param {object} wrapper  The container in which to create the tabs system.
+     * @return void.
+     */
+    var addTab = function($target, $wrapper, uid, edit)
     {
-        codeEditorReady = true;
+        var targetTag    = $target[0].tagName.toLowerCase(),
+            type         = $target.data('type'),
+            label        = $target.data('label'),
+            checked      = $target.data('active') !== undefined ? '  checked' : '',
+            $wrapper     = $wrapper || $target.parent(),
+            wrapperIndex = $wrapper.data('index'),
+            langHtml     = '',
+            languages    = {txt: 'plain text', js: 'javascript', css: 'css', html: 'html', php: 'php'},
+            i            = 0;
 
-        $('.code-wrapper .add').on('click', function()
+        $target.attr('data-uid', uid);
+
+        for (var l in languages)
         {
-            var $wrapper = $(this).parent(),
-                $newPre  = $('<pre class="i-code" contenteditable="true" data-type="txt" data-label="Label" data-uid="' + (++preUniqueId) + '"/>');
+            i++;
+            langHtml += '<input type="radio" name="language' + uid + '" id="language' + uid + i
+                    + '" class="hidden" value="' + l + '"' + (type === l || (!type && l === 'txt') ? ' checked' : '') + '>'
+                    + '<label for="language' + uid + i + '">' + languages[l] + '</label> ';
+        }
 
-            $(this).siblings('pre:last').after($newPre);
+        $target
+            .before(
+                '<input type="radio" data-type="' + type + '" id="' + targetTag + uid + '"' + checked
+                + ' name="codeWrapper' + wrapperIndex + '">' + '<label for="' + targetTag + uid
+                + '" data-uid="' + uid + '"><span contenteditable class="code-label">' + (label ? label : type) + '</span>'
+                + '<span class="languages"><strong>Languages:</strong>'
+                + langHtml
+                + '</span></label>');
 
-            addTab($newPre, $wrapper);
-
-            $newPre.trigger('click').trigger('focus');
-        });
-
-        // On saving edits.
-        // For each pre get the code, label and type and send them to the php script for saving into JSON.
-        $('.code-form').on('submit', function(e)
+        if (edit)
         {
-            e.preventDefault();
-            var codes = [];
-
-            $('pre').each(function(i)
-            {
-                codes.push({label: $(this).attr('data-label'), language: $(this).attr('data-type'), code: this.innerHTML.stripTags()});
-            });
-            $.post(location, 'codes=' + JSON.stringify(codes));
-
-            return false;
-        })
-        // On modify label of current editor.
-        // Update matching <pre> data-label attribute.
-        .on('input', '.code-label', function(e)
-        {
-            var preUniqueId  = $(this).parents('label').data('uid');
-
-            $('pre[data-uid=' + preUniqueId + ']').attr('data-label', this.innerHTML);
-        })
-        // On changing the language of current editor (select in dropdown list).
-        .on('change', '.languages input', function(e)
-        {
-            var preUniqueId  = $(this).parents('label').data('uid');
-
-            $('pre[data-uid=' + preUniqueId + ']')
-                .attr('data-type', this.value)
-                .trigger('refresh');
-        });
-    }
-
-    self.bindInstanceEvents = function()
-    {
-        self.$editor
-            //.on('mouseup', function(e){console.log(getCaretInfo(self.editor));})
-            // IE9-
-            /*.on('keyup keypress', function(e)
-            {
-                var cond = e.type === 'keyup' ?
-                        (e.which === 8 || e.which === 13)// 8 = <backspace>, 13 = <enter>.
-                        : (String.fromCharCode(e.charCode));// Only trigger recolorizing if the key prints something.
-                console.log(e.type, e.which);
-
-                if (cond) self.debounceColorizing();
-            });*/
-            // IE 10+
-            .on('input', function(e)
-            {
-                if (languageIsKnown) self.debounceColorizing();
-            })
-            .on('refresh', function(){self.refresh();})
-            .on('paste', function(e)
-            {
-                var clipboardData, pastedData;
-
-                // Stop data actually being pasted into div.
-                // e.stopPropagation();
-                // e.preventDefault();
-                console.log(e)
-
-                // Get pasted data via clipboard API.
-                clipboardData = e.originalEvent.clipboardData || window.clipboardData;
-                pastedData = clipboardData.getData('Text');
-
-                // Do whatever with pasted data.
-                // alert('Paste not developed yet :)\n\n\n' + pastedData);
-            });
+            $('#' + targetTag + uid).click()
+                .siblings('label').find('.code-label').focus().select();
+        }
     };
 
     /**
@@ -432,14 +356,103 @@ var codeEditorReady, codeEditor = function(editor, options)
         self.editor.focus();
     };
 
+    self.bindInstanceEvents = function()
+    {
+        self.$editor
+            //.on('mouseup', function(e){console.log(getCaretInfo(self.editor));})
+            // IE9-
+            /*.on('keyup keypress', function(e)
+            {
+                var cond = e.type === 'keyup' ?
+                        (e.which === 8 || e.which === 13)// 8 = <backspace>, 13 = <enter>.
+                        : (String.fromCharCode(e.charCode));// Only trigger recolorizing if the key prints something.
+                console.log(e.type, e.which);
+
+                if (cond) self.debounceColorizing();
+            });*/
+            // IE 10+
+            .on('input', function(e)
+            {
+                if (languageIsKnown) self.debounceColorizing();
+            })
+            .on('refresh', function(){self.refresh();})
+            .on('paste', function(e)
+            {
+                var clipboardData, pastedData;
+
+                // Stop data actually being pasted into div.
+                // e.stopPropagation();
+                // e.preventDefault();
+                console.log(e)
+
+                // Get pasted data via clipboard API.
+                clipboardData = e.originalEvent.clipboardData || window.clipboardData;
+                pastedData = clipboardData.getData('Text');
+
+                // Do whatever with pasted data.
+                // alert('Paste not developed yet :)\n\n\n' + pastedData);
+            });
+    };
+
+    codeEditor.init = function()
+    {
+        codeEditor.ready = true;
+
+        $('.code-wrapper .add').on('click', function()
+        {
+            var $newPre  = $('<pre class="i-code" contenteditable="true" data-type="txt" data-label="Label"/>');
+
+            $(this).siblings('pre:last').after($newPre);
+
+            // Init a new code editor on the new created tab.
+            new codeEditor($newPre, {new: true});
+        });
+
+        // On saving edits.
+        // For each pre get the code, label and type and send them to the php script for saving into JSON.
+        $('.code-form').on('submit', function(e)
+        {
+            e.preventDefault();
+            var codes = [];
+
+            $('pre').each(function(i)
+            {
+                codes.push({label: $(this).attr('data-label'), language: $(this).attr('data-type'), code: this.innerHTML.stripTags()});
+            });
+            $.post(location, 'codes=' + JSON.stringify(codes));
+
+            return false;
+        })
+        // On modify label of current editor.
+        // Update matching <pre> data-label attribute.
+        .on('input', '.code-label', function(e)
+        {
+            var uid  = $(this).parents('label').data('uid');
+
+            $('pre[data-uid=' + uid + ']').attr('data-label', this.innerHTML);
+        })
+        // On changing the language of current editor (select in dropdown list).
+        .on('change', '.languages input', function(e)
+        {
+            var uid  = $(this).parents('label').data('uid');
+
+            $('pre[data-uid=' + uid + ']')
+                .attr('data-type', this.value)
+                .trigger('refresh');
+        });
+    };
+
     var init = function()
     {
+        // Create the tab system.
+        addTab(self.$editor, self.$wrapper, self.uid, self.options.hasOwnProperty('new'));
+
         self.updateLanguage();
 
         // Apply syntax highlighting if there is content in the <pre>.
         if (self.editor.innerHTML && languageIsKnown) self.colorizePreContent();
 
-        if (!codeEditorReady) self.bindClassEvents();
+        if (!codeEditor.ready) codeEditor.init();
         self.bindInstanceEvents();
     }();
 };
