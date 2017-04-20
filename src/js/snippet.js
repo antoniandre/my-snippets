@@ -55,6 +55,26 @@ var addTab = function($target, $wrapper)
             + '</span></label>');
 };
 
+// If the attribute 'data-result' is present on .code-wrapper then run the given html + css + js in an iframe.
+var addResultTab = function($wrapper)
+{
+    var html     = ($wrapper.find('pre[data-type="html"]').html() ||'').stripTags().htmlize(),
+        js       = ($wrapper.find('pre[data-type="js"]').html()   ||'').stripTags(),
+        css      = ($wrapper.find('pre[data-type="css"]').html()  ||'').htmlize().stripTags(),
+        contents = '<html><head><link rel="stylesheet" type="text/css" href="../../grid/css/grid.css">'
+                    + '<script src="../bower_components/jquery/dist/jquery.min.js"></script>'
+                    + '<script src="../bower_components/jquery.easing/js/jquery.easing.min.js"></script>'
+                    + '<script src="../../grid/js/grid.js"></script>'
+                    + '<style>' + css + '</style></head><body>'
+                    + html
+                    + '<script>' + js + '</script>'
+                    + '</body></html>',
+        $iframe  = $wrapper.append('<iframe data-type="result"></iframe>').find('iframe');
+    $iframe[0].contentDocument.write(contents);
+
+    addTab($iframe, preIndex + 'i', $wrapper);
+};
+
 /**
  * Home made simple syntax highlighter for JS, CSS and HTML.
  * Just cz it's fun to do. :)
@@ -89,28 +109,7 @@ var initCodeEditors = function()
         addTab($pre, $wrapper);
 
         // If last pre of code-wrapper.
-        /*if (preIndex === numberOfPre - 1)
-        {
-            // If the attribute 'data-result' is present on .code-wrapper then run the given html + css + js in an iframe.
-            if ($wrapper.data('result'))
-            {
-                var html     = ($wrapper.find('pre[data-type="html"]').html() ||'').stripTags().htmlize(),
-                    js       = ($wrapper.find('pre[data-type="js"]').html()   ||'').stripTags(),
-                    css      = ($wrapper.find('pre[data-type="css"]').html()  ||'').htmlize().stripTags(),
-                    contents = '<html><head><link rel="stylesheet" type="text/css" href="../../grid/css/grid.css">'
-                             + '<script src="../bower_components/jquery/dist/jquery.min.js"></script>'
-                             + '<script src="../bower_components/jquery.easing/js/jquery.easing.min.js"></script>'
-                             + '<script src="../../grid/js/grid.js"></script>'
-                             + '<style>' + css + '</style></head><body>'
-                             + html
-                             + '<script>' + js + '</script>'
-                             + '</body></html>',
-                    $iframe  = $wrapper.append('<iframe data-type="result"></iframe>').find('iframe');
-                $iframe[0].contentDocument.write(contents);
-
-                addTab($iframe, preIndex + 'i', $wrapper);
-            }
-        }*/
+        // if (preIndex === numberOfPre - 1 && $wrapper.data('result')) addResultTab($wrapper);
 
         if ($pre.is('[contenteditable="true"]')) new codeEditor(this);
     });
@@ -179,7 +178,7 @@ var codeEditor = function(editor, options)
 
     var inProgress      = false,// Debounce.
         debounceTimerId = null,
-        knownLanguages  = ['js', 'javascript', 'css', 'php', 'html', 'sql'],
+        knownLanguages  = ['js', 'css', 'php', 'html', 'sql'],
         isLanguageKnown = function(language){return self.language && knownLanguages.indexOf(self.language) > -1;}
         languageIsKnown = false;// Set in self.init().
 
@@ -267,169 +266,141 @@ var codeEditor = function(editor, options)
         // console.group('Colorizing');
         // console.count('colorize');
         // console.log(self.editor)
-        switch (self.language)
+        if (self.language = 'javascript') self.language = 'js';// Alias.
+        if (isLanguageKnown(self.language))
         {
-            // case 'html':
-            //     string = string.replace(/&lt;(\/?)(\w+) ?(.*?)&gt;/mg, function()
-            //     {
-            //         var attributes = '';
-
-            //         if (arguments[3])
-            //         {
-            //             var attrs = arguments[3].split(' ');
-            //             for (var i = 0, l = attrs.length; i < l; i++)
-            //             {
-            //                 attributes += ' ' + attrs[i].replace(
-            //                     /((?:\w|-)+)=('|"|)(.*?)\2/,
-            //                     '<span class="attribute">$1</span>'
-            //                     + '<span class="ponctuation">=</span>'
-            //                     + '<span class="quote">"$3"</span>');
-            //             }
-            //         }
-
-            //         return '<span class="ponctuation">&lt;' + arguments[1] + '</span>'
-            //                + '<span class="tag">' + arguments[2] + '</span>'
-            //                + attributes + '<span class="ponctuation">&gt;</span>';
-            //     });
-            // break;
-            case 'sql':
-                string = string.replace(
-                         /\b(\*|CREATE|ALL|DATABASE|TABLE|GRANT|PRIVILEGES|IDENTIFIED|FLUSH|SELECT|UPDATE|DELETE|INSERT|FROM|WHERE|(?:ORDER|GROUP) BY|LIMIT|(?:(?:LEFT|RIGHT|INNER|OUTER) |)JOIN|AS|ON|COUNT|CASE|TO|IF|WHEN|BETWEEN|AND|OR|CONCAT)(?=\W)/ig, function()
-                         {
-                            return '<span class="keyword">' + arguments[1].toUpperCase() + '</span>';
-                         });
-            break;
-            case 'javascript':// Alias.
-                self.language = 'js';
-            case 'css':
-            case 'html':
-            case 'php':
-            case 'js':
-                var regexBasics =
-                    {
-                        quote:       /("(?:\\"|[^"])*")|('(?:\\'|[^'])*')/,// Match simple and double quotes by pair.
-                        comment:     /(\/\/.*|\/\*[\s\S]*?\*\/)/,// Comments blocks (/* ... */) or trailing comments (// ...).
-                        htmlTag:     /(<[^>]*>)/,
-                        ponctuation: /(!==?|(?:[\[\](){}.:;,+\-?=]|&lt;|&gt;)+|&&|\|\|)/,// Ponctuation not in html tag.
-                    },
-                    dictionnary =
-                    {
-                        html:
-                        {
-                            quote:       regexBasics.quote,
-                            comment:     /(&lt;!--[\s\S]*?--&gt;)/,
-                            tag:         /(&lt;\/?)([a-z]\w*)(.*?)(\/?&gt;)/,
-                            // Treated inside tag because javascript does not support lookbehind,
-                            // so be more specific inside tag first match:
-                            // ponctuation: /([=/]+|&lt;\/?|\/?&gt;)/,
-                            // tagName: /([a-z]\w+)\b/,
-                            // attribute:   /([a-zA-Z\-]+)(?=\s*(?:=|\/?&gt;))/,
-                        },
-                        css:
-                        {
-                            quote:       regexBasics.quote,
-                            comment:     /(\/\*[\s\S]*?\*\/)/,
-                            selector:    /(?:^|\b)((?:[.#-\w\*+ >:,]|&gt;)+)(?=\s*\{)/,// Any part before '{'.
-                            "keyword selector":  /(@(?:import|media|font-face|keyframe)|screen|print|and)(?=[\s({])/,
-                            "keyword attribute": /(content|float|display|position|top|left|right|bottom|(?:(?:max|min)-)?width|(?:(?:max|min|line)-)?height|font(?:-(?:family|style|size|weight|variant|stretch))?|vertical-align|color|opacity|visibility|transform|transition|animation|background(?:-(?:color|position|image|repeat|size))?|(?:padding|margin|border)(?:-(?:top|left|right|bottom))?|border(?:-radius)|white-space|text-(?:align|transform|decoration|shadow)|overflow(?:-(?:x|y))?|letter-spacing|box-(?:sizing|shadow))(?=\s*:)/,
-                            "keyword value":     /(inline-block|inline|block|absolute|relative|static|fixed|inherit|none|auto|hidden|visible|top|left|right|bottom|center|pre|wrap|nowrap|(?:upper|lower)case|capitalize|linear(?:-gradient)|ease(?:-in)?(?:-out)?|cubic-bezier|(?:no-)?repeat|repeat(?:-x|-y)|contain|cover)(?=\s*[,;}(])/,
-                            number:      /(-?(?:\.\d+|\d+(?:\.\d+)?))/,
-                            color:       /(transparent|#(?:[\da-f]{6}|[\da-f]{3})|rgba?\([\d., ]*\))/,
-                            // ponctuation: /([:,;{}@#()]+)/,// @todo Why can't use this one if text contains '<' or '>' ??
-                            htmlentity: /(&.*?;)/,
-                            ponctuation: /([:,;{}@#()]+|&lt;|&gt;)/,
-                            attribute:   /([a-zA-Z\-]+)(?=\s*:)/,
-                            unit:        /(px|%|r?em|m?s)(?=(?:\s*[;,}]|\s+[\-\d#]))/
-                        },
-                        js:
-                        {
-                            quote:       regexBasics.quote,
-                            comment:     regexBasics.comment,
-                            // htmlTag:     regexBasics.htmlTag,
-                            number:      /\b(\d+(?:\.\d+)?|null)\b/,
-                            boolean:     /\b(true|false)\b/,
-                            keyword:     /\b(new|getElementsBy(?:Tag|Class|)Name|getElementById|arguments|if|else|do|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval))(?=\W)/,
-                            ponctuation: /(!==?|(?:[\[\](){}:;,+\-?=]|&lt;|&gt;)+|\.|\.+(?![a-zA-Z])|&&|\|\|)/,// Override default since '.' can be part of js variable.
-                            variable:    /(\.?[a-zA-Z]\w*)/,
-                            dollar:      /(\$|jQuery)(?=\W|$)/,// jQuery or $.
-                        },
-                        php:
-                        {
-                            quote:       regexBasics.quote,
-                            comment:     regexBasics.comment,
-                            // htmlTag:     regexBasics.htmlTag,
-                            ponctuation: regexBasics.ponctuation,
-                            number:      /\b(\d+(?:\.\d+)?|null)\b/,
-                            boolean:     /\b(true|false)\b/,
-                            keyword:     /\b(define|echo|die|print_r|var_dump|if|else|do|return|case|default|function|\$this|while|for|switch|in|break|continue)(?=\W|$)/,
-                            variable:    /(?:(?=\W))(\$\w+)/
-                        }
-                    },
-                    classMap = [],
-                    regexPattern = '';
-
-
-                for (var Class in dictionnary[self.language])
+            var regexBasics =
                 {
-                    classMap.push(Class);
-                    if (Class === 'quote') classMap.push(Class);// Add twice cause 2 captures in quote regexp.
-                    if (self.language === 'html' && Class === 'tag') classMap.push(Class, Class, Class);
+                    quote:       /("(?:\\"|[^"])*")|('(?:\\'|[^'])*')/,// Match simple and double quotes by pair.
+                    comment:     /(\/\/.*|\/\*[\s\S]*?\*\/)/,// Comments blocks (/* ... */) or trailing comments (// ...).
+                    htmlTag:     /(<[^>]*>)/,
+                    ponctuation: /(!==?|(?:[\[\](){}.:;,+\-?=]|&lt;|&gt;)+|&&|\|\|)/,// Ponctuation not in html tag.
+                },
+                dictionnary =
+                {
+                    html:
+                    {
+                        quote:       regexBasics.quote,
+                        comment:     /(&lt;!--[\s\S]*?--&gt;)/,
+                        tag:         /(&lt;\/?)([a-z]\w*)(.*?)(\/?&gt;)/,
+                        // Treated inside tag because javascript does not support lookbehind,
+                        // so be more specific inside tag first match:
+                        // ponctuation: /([=/]+|&lt;\/?|\/?&gt;)/,
+                        // tagName: /([a-z]\w+)\b/,
+                        // attribute:   /([a-zA-Z\-]+)(?=\s*(?:=|\/?&gt;))/,
+                    },
+                    css:
+                    {
+                        quote:       regexBasics.quote,
+                        comment:     /(\/\*[\s\S]*?\*\/)/,
+                        selector:    /(?:^|\b)((?:[.#-\w\*+ >:,]|&gt;)+)(?=\s*\{)/,// Any part before '{'.
+                        "keyword selector":  /(@(?:import|media|font-face|keyframe)|screen|print|and)(?=[\s({])/,
+                        "keyword attribute": /(content|float|display|position|top|left|right|bottom|(?:(?:max|min)-)?width|(?:(?:max|min|line)-)?height|font(?:-(?:family|style|size|weight|variant|stretch))?|vertical-align|color|opacity|visibility|transform|transition|animation|background(?:-(?:color|position|image|repeat|size))?|(?:padding|margin|border)(?:-(?:top|left|right|bottom))?|border(?:-radius)|white-space|text-(?:align|transform|decoration|shadow)|overflow(?:-(?:x|y))?|letter-spacing|box-(?:sizing|shadow))(?=\s*:)/,
+                        "keyword value":     /(inline-block|inline|block|absolute|relative|static|fixed|inherit|none|auto|hidden|visible|top|left|right|bottom|center|pre|wrap|nowrap|(?:upper|lower)case|capitalize|linear(?:-gradient)|ease(?:-in)?(?:-out)?|cubic-bezier|(?:no-)?repeat|repeat(?:-x|-y)|contain|cover)(?=\s*[,;}(])/,
+                        number:      /(-?(?:\.\d+|\d+(?:\.\d+)?))/,
+                        color:       /(transparent|#(?:[\da-f]{6}|[\da-f]{3})|rgba?\([\d., ]*\))/,
+                        // ponctuation: /([:,;{}@#()]+)/,// @todo Why can't use this one if text contains '<' or '>' ??
+                        htmlentity: /(&.*?;)/,
+                        ponctuation: /([:,;{}@#()]+|&lt;|&gt;)/,
+                        attribute:   /([a-zA-Z\-]+)(?=\s*:)/,
+                        unit:        /(px|%|r?em|m?s)(?=(?:\s*[;,}]|\s+[\-\d#]))/
+                    },
+                    js:
+                    {
+                        quote:       regexBasics.quote,
+                        comment:     regexBasics.comment,
+                        // htmlTag:     regexBasics.htmlTag,
+                        number:      /\b(\d+(?:\.\d+)?|null)\b/,
+                        boolean:     /\b(true|false)\b/,
+                        keyword:     /\b(new|getElementsBy(?:Tag|Class|)Name|getElementById|arguments|if|else|do|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval))(?=\W)/,
+                        ponctuation: /(!==?|(?:[\[\](){}:;,+\-?=]|&lt;|&gt;)+|\.|\.+(?![a-zA-Z])|&&|\|\|)/,// Override default since '.' can be part of js variable.
+                        variable:    /(\.?[a-zA-Z]\w*)/,
+                        dollar:      /(\$|jQuery)(?=\W|$)/,// jQuery or $.
+                    },
+                    php:
+                    {
+                        quote:       regexBasics.quote,
+                        comment:     regexBasics.comment,
+                        ponctuation: regexBasics.ponctuation,
+                        number:      /\b(\d+(?:\.\d+)?|null)\b/,
+                        boolean:     /\b(true|false)\b/,
+                        keyword:     /\b(define|echo|die|print_r|var_dump|if|else|do|return|case|default|function|\$this|while|for|switch|in|break|continue)(?=\W|$)/,
+                        variable:    /(?:(?=\W))(\$\w+)/
+                    },
+                    sql:
+                    {
+                        quote:       regexBasics.quote,
+                        comment:     regexBasics.comment,
+                        ponctuation: regexBasics.ponctuation,
+                        number:      /\b(\d+(?:\.\d+)?|null)\b/,
+                        boolean:     /\b(true|false)\b/,
+                        keyword:     /\b(\*|CREATE|ALL|DATABASE|TABLE|GRANT|PRIVILEGES|IDENTIFIED|FLUSH|SELECT|UPDATE|DELETE|INSERT|FROM|WHERE|(?:ORDER|GROUP) BY|LIMIT|(?:(?:LEFT|RIGHT|INNER|OUTER) |)JOIN|AS|ON|COUNT|CASE|TO|IF|WHEN|BETWEEN|AND|OR|CONCAT)(?=\W|$)/
+                    }
+                },
+                classMap = [],
+                regexPattern = '';
 
-                    regexPattern += (regexPattern ? '|' : '') + dictionnary[self.language][Class].source;
-                }
 
-                string = string
-                        .replace(new RegExp(regexPattern, 'g'), function()
+            for (var Class in dictionnary[self.language])
+            {
+                classMap.push(Class);
+                if (Class === 'quote') classMap.push(Class);// Add twice cause 2 captures in quote regexp.
+                if (self.language === 'html' && Class === 'tag') classMap.push(Class, Class, Class);
+
+                regexPattern += (regexPattern ? '|' : '') + dictionnary[self.language][Class].source;
+            }
+
+            string = string
+                    .replace(new RegExp(regexPattern, 'g'), function()
+                    {
+                        var match, Class,
+                            // "arguments.length - 2" because the function is called with arguments like so:
+                            // function(strMatch, c1, c2, ..., cn, matchOffset, sourceString){}. With c = the captures.
+                            dictionnaryMatches = Array.prototype.slice.call(arguments, 1, arguments.length - 2);
+
+                        for (var i = 0; i < dictionnaryMatches.length; i++)
                         {
-                            var match, Class,
-                                // "arguments.length - 2" because the function is called with arguments like so:
-                                // function(strMatch, c1, c2, ..., cn, matchOffset, sourceString){}. With c = the captures.
-                                dictionnaryMatches = Array.prototype.slice.call(arguments, 1, arguments.length - 2);
-
-                            for (var i = 0; i < dictionnaryMatches.length; i++)
+                            if (dictionnaryMatches[i])
                             {
-                                if (dictionnaryMatches[i])
-                                {
-                                    match = dictionnaryMatches[i];
-                                    Class = classMap[i];
+                                match = dictionnaryMatches[i];
+                                Class = classMap[i];
 
-                                    break;
-                                }
+                                break;
                             }
-                            // console.log('default', match, Class, classMap, dictionnaryMatches, dictionnary[self.language])
+                        }
+                        // console.log('default', match, Class, classMap, dictionnaryMatches, dictionnary[self.language])
 
-                            if (Class === 'quote')   match = (arguments[1] || arguments[2]).unhtmlize().stripTags();
-                            if (Class === 'comment') match = match.unhtmlize().stripTags();
-                            if (Class === 'tag' && self.language === 'html')
-                            {
-                                var tagPieces = dictionnaryMatches.slice(3);
-                                // console.log(tagPieces)
-                                return '<span class="ponctuation">' + tagPieces[0] + '</span>'
-                                      + '<span class="tag-name">' + tagPieces[1] + '</span>'
-                                      + (tagPieces[2]||'').replace(/\s*([a-z]\w+)=("|')(.*?)\2/g, function()
-                                        {
-                                            return ' <span class="attribute">' + arguments[1] + '</span><span class="ponctuation">=</span>'
-                                                 + '<span class="quote">' + arguments[2] + arguments[3] + arguments[2] + '</span>'
-                                        })
-                                      + '<span class="ponctuation">' + tagPieces[3] + '</span>';
-                            }
-                            if (Class === 'color' && self.language === 'css' && self.options.cssColors)
-                            {
-                                // var color = findColorOpposite(match);
-                                var color = isColorDark(match) ? '#fff' : '#000';
-                                var styles = ' style="background-color:' + match + ';color: ' + color + '"';
-                            }
-                            if (Class === 'variable' && match[0] === '.' && self.language === 'js')
-                            {
-                                /**
-                                 * @todo don't apply variable color if char before '.' is not '\w'.
-                                 */
-                                return '<span class="ponctuation">.</span><span class="objAttr">' + match.substr(1) + '</span>';
-                            }
+                        if (Class === 'quote')   match = (arguments[1] || arguments[2]).unhtmlize().stripTags();
+                        if (Class === 'comment') match = match.unhtmlize().stripTags();
+                        if (Class === 'tag' && self.language === 'html')
+                        {
+                            var tagPieces = dictionnaryMatches.slice(3);
+                            // console.log(tagPieces)
+                            return '<span class="ponctuation">' + tagPieces[0] + '</span>'
+                                    + '<span class="tag-name">' + tagPieces[1] + '</span>'
+                                    + (tagPieces[2]||'').replace(/\s*([a-z]\w+)=("|')(.*?)\2/g, function()
+                                    {
+                                        return ' <span class="attribute">' + arguments[1] + '</span><span class="ponctuation">=</span>'
+                                                + '<span class="quote">' + arguments[2] + arguments[3] + arguments[2] + '</span>'
+                                    })
+                                    + '<span class="ponctuation">' + tagPieces[3] + '</span>';
+                        }
+                        if (Class === 'color' && self.language === 'css' && self.options.cssColors)
+                        {
+                            // var color = findColorOpposite(match);
+                            var color = isColorDark(match) ? '#fff' : '#000';
+                            var styles = ' style="background-color:' + match + ';color: ' + color + '"';
+                        }
+                        if (Class === 'variable' && match[0] === '.' && self.language === 'js')
+                        {
+                            /**
+                             * @todo don't apply variable color if char before '.' is not '\w'.
+                             */
+                            return '<span class="ponctuation">.</span><span class="objAttr">' + match.substr(1) + '</span>';
+                        }
 
-                            return '<span class="' + Class + '"' + (styles !== undefined ? styles : '') + '>' + match + '</span>';
-                        });
-            break;
+                        return '<span class="' + Class + '"' + (styles !== undefined ? styles : '') + '>' + match + '</span>';
+                    });
         }
         // console.log(string)
         // console.groupEnd();
