@@ -17,7 +17,7 @@
         },
         "html":
         {
-            "code": "\n<div class=\"thanks\">\n    <svg version=\"1.1\" id=\"tick\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" viewBox=\"0 0 37 37\" style=\"enable-background:new 0 0 37 37;\" xml:space=\"preserve\">\n        <path class=\"circ path\" style=\"fill:none;stroke:#000;stroke-width:3;stroke-linejoin:round;stroke-miterlimit:10;\" d=\"M30.5,6.5L30.5,6.5c6.6,6.6,6.6,17.4,0,24l0,0c-6.6,6.6-17.4,6.6-24,0l0,0c-6.6-6.6-6.6-17.4,0-24l0,0C13.1-0.2,23.9-0.2,30.5,6.5z\"/>\n        <polyline class=\"tick path\" style=\"fill:none;stroke:#000;stroke-width:3;stroke-linejoin:round;stroke-miterlimit:10;\" points=\"11.6,20 15.9,24.2 26.4,13.8\"/>\n    </svg>\n    <p>Thank you!</p>\n    <button onclick=\"$('.thanks').toggleClass('show')\">show / hide</button></div>"
+            "code": "\n<div class=\"thanks\">\n    <svg version=\"1.1\" id=\"tick\" xmlns=\"http://www.w3.org/2000/svg\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" x=\"0px\" y=\"0px\" viewBox=\"0 0 37 37\" style=\"enable-background:new 0 0 37 37;\" xml:space=\"preserve\">\n        <path class=\"circ path\" style=\"fill:none;stroke:#000;stroke-width:3;stroke-linejoin:round;stroke-miterlimit:10;\" d=\"M30.5,6.5L30.5,6.5c6.6,6.6,6.6,17.4,0,24l0,0c-6.6,6.6-17.4,6.6-24,0l0,0c-6.6-6.6-6.6-17.4,0-24l0,0C13.1-0.2,23.9-0.2,30.5,6.5z\"/>\n        <polyline class=\"tick path\" style=\"fill:none;stroke:#000;stroke-width:3;stroke-linejoin:round;stroke-miterlimit:10;\" points=\"11.6,20 15.9,24.2 26.4,13.8\"/>\n    </svg>\n    <p>Thank you!</p>\n    <button onclick=\"$('.thanks').toggleClass('show');return false\">show / hide</button></div>"
         }
     }
 }

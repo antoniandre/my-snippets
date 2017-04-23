@@ -193,17 +193,21 @@ var codeEditor = function(editor, options)
                     {
                         quote:       regexBasics.quote,
                         comment:     /(\/\*[\s\S]*?\*\/)/,
-                        selector:    /(?:^|\b)((?:[.#-\w\*+ >:,]|&gt;)+)(?=\s*\{)/,// Any part before '{'.
-                        "keyword selector":  /(@(?:import|media|font-face|keyframe)|screen|print|and)(?=[\s({])/,
-                        "keyword attribute": /(content|float|display|position|top|left|right|bottom|(?:(?:max|min)-)?width|(?:(?:max|min|line)-)?height|font(?:-(?:family|style|size|weight|variant|stretch))?|vertical-align|color|opacity|visibility|transform|transition|animation|background(?:-(?:color|position|image|repeat|size))?|(?:padding|margin|border)(?:-(?:top|left|right|bottom))?|border(?:-radius)|white-space|text-(?:align|transform|decoration|shadow)|overflow(?:-(?:x|y))?|letter-spacing|box-(?:sizing|shadow))(?=\s*:)/,
-                        "keyword value":     /(inline-block|inline|block|absolute|relative|static|fixed|inherit|none|auto|hidden|visible|top|left|right|bottom|center|pre|wrap|nowrap|(?:upper|lower)case|capitalize|linear(?:-gradient)|ease(?:-in)?(?:-out)?|cubic-bezier|(?:no-)?repeat|repeat(?:-x|-y)|contain|cover)(?=\s*[,;}(])/,
+                        pseudo:      /(:(?:hover|active|focus|visited|before|after|(?:first|last|nth)-child))/,
+                        "selector keyword vendor":  /(@-(?:moz|o|webkit|ms)-(?=keyframes\s))/,
+                        "selector keyword":  /((?:@(?:import|media|font-face|keyframes)|screen|print|and)(?=[\s({])|keyframes|\s(?:ul|ol|li|table|div|pre|p|a|img|br|hr|h[1-6]|em|strong|span|html|body|iframe|video|audio|input|button|form|label|fieldset|small|abbr|i|dd|dt)\b)/,
+                        selector:    /((?:[.#-\w\*+ >:,~\n]|&gt;)+)(?=\s*\{)/,// Any part before '{'.
+                        "attribute keyword vendor": /(-(?:moz|o|webkit|ms)-(?=transform|transition|user-select|animation|background-size))/,
+                        "attribute keyword": /\b(content|float|display|position|top|left|right|bottom|(?:(?:max|min)-)?width|(?:(?:max|min|line)-)?height|font(?:-(?:family|style|size|weight|variant|stretch))?|vertical-align|color|opacity|visibility|z-index|transform|transition|animation|background(?:-(?:color|position|image|repeat|size))?|(?:padding|margin|border)(?:-(?:top|left|right|bottom))?|border(?:-radius)|white-space|text-(?:align|transform|decoration|shadow)|overflow(?:-(?:x|y))?|letter-spacing|box-(?:sizing|shadow)|stroke|outline|user-select)(?=\s*:)/,
+                        "value keyword vendor": /(-(?:moz|o|webkit|ms)-(?=linear-gradient))/,
+                        "value keyword":     /\b(inline-block|inline|block|absolute|relative|static|fixed|inherit|none|auto|hidden|visible|top|left|right|bottom|center|pre|wrap|nowrap|(?:upper|lower)case|capitalize|linear(?:-gradient)|ease(?:-in)?(?:-out)?|all|infinite|cubic-bezier|(?:no-)?repeat|repeat(?:-x|-y)|contain|cover|!important|url|inset)(?=\s*[,;}(]|\s+[\da-z])/,
                         number:      /(-?(?:\.\d+|\d+(?:\.\d+)?))/,
                         color:       /(transparent|#(?:[\da-f]{6}|[\da-f]{3})|rgba?\([\d., ]*\))/,
                         // ponctuation: /([:,;{}@#()]+)/,// @todo Why can't use this one if text contains '<' or '>' ??
                         htmlentity: /(&.*?;)/,
                         ponctuation: /([:,;{}@#()]+|&lt;|&gt;)/,
                         attribute:   /([a-zA-Z\-]+)(?=\s*:)/,
-                        unit:        /(px|%|r?em|m?s)(?=(?:\s*[;,}]|\s+[\-\d#]))/
+                        unit:        /(px|%|r?em|m?s|deg)(?=(?:\s*[;,{}}]|\s+[\-\da-z#]))/
                     },
                     js:
                     {
@@ -212,9 +216,10 @@ var codeEditor = function(editor, options)
                         // htmlTag:     regexBasics.htmlTag,
                         number:      /\b(\d+(?:\.\d+)?|null)\b/,
                         boolean:     /\b(true|false)\b/,
-                        keyword:     /\b(new|getElementsBy(?:Tag|Class|)Name|getElementById|arguments|if|else|do|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval))(?=\W)/,
-                        ponctuation: /(!==?|(?:[\[\](){}:;,+\-?=]|&lt;|&gt;)+|\.|\.+(?![a-zA-Z])|&&|\|\|)/,// Override default since '.' can be part of js variable.
+                        keyword:     /\b(new|getElementsBy(?:Tag|Class|)Name|getElementById|arguments|if|else|do|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval)|Math(?=\.))(?=\W)/,
+                        ponctuation: /(!==?|(?:[\[\](){}:;,+\-%*\/?=]|&lt;|&gt;)+|\.+(?![a-zA-Z])|&amp;&amp;|\|\|)/,// Override default since '.' can be part of js variable.
                         variable:    /(\.?[a-zA-Z]\w*)/,
+                        htmlentity: /(&.*?;)/,
                         dollar:      /(\$|jQuery)(?=\W|$)/,// jQuery or $.
                     },
                     php:

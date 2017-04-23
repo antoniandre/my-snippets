@@ -255,14 +255,19 @@ pre {
         .attribute {color: #f63;}
     }
     &[data-type="css"] {
-        .attribute {color: #70d;}
-        .value {color: #c11;}
+        .selector {color: #f0d;}
+        .selector.class-id {color: #f0d;}
+        .pseudo {color: #f35;}
+        .selector.keyword {color: #f5f;}
+        .selector.keyword.vendor {color: #0c8;}
         .keyword {color: #c06;}
-        .keyword.attribute {color: #e28;}
+        .attribute {color: #70d;}
+        .attribute.keyword {color: #e28;}
+        .attribute.keyword.vendor {color: #0c8;}
+        .value {color: #c11;}
+        .value.vendor {color: #0c8;}
         .color {background: #eee;padding: 1px 4px;}
         .unit {color: #0bc;}
-        .selector {color: #f0d;}
-        .keyword.selector {color: #f5f;}
     }
 }
 
