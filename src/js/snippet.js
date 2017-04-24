@@ -5,7 +5,8 @@
 //========================== READY ===========================//
 var onReady = function()
 {
-    if ($('pre').length) initCodeEditors();
+    if (!$('pre').length) $('.code-wrapper').append("<pre contenteditable='true' data-type='txt' data-label='Text' data-active/>");
+    initCodeEditors();
 };
 //============================================================//
 
@@ -422,7 +423,12 @@ var codeEditor = function(editor, options)
 
             $('pre').each(function(i)
             {
-                codes.push({label: $(this).attr('data-label'), language: $(this).attr('data-type'), code: this.innerHTML.stripTags()});
+                codes.push(
+                {
+                    label: $(this).attr('data-label'),
+                    language: $(this).attr('data-type'),
+                    code: this.innerHTML.stripTags().htmlize()
+                });
             });
             $.post(location, 'codes=' + JSON.stringify(codes));
 
