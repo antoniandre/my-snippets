@@ -9,7 +9,7 @@ $knownJs =
 
 
 //===================================== MAIN =====================================//
-$snippetName = ROUTE_PARTS[1];
+$snippetName = strtolower(ROUTE_PARTS[1]);
 $snippet     = ($h1 = getFromPost('newSnippet', null)) ? createSnippetJson($snippetName, $h1) : getSnippet($snippetName);
 
 if (checkPost('codes') && isAjax()) edit();
@@ -41,7 +41,7 @@ function render($snippet)
     }
     foreach ((array)$snippet->languages as $id => $language)
     {
-        $lang = $id === 'html' ? htmlentities($language->code) : $language->code;
+        $lang = str_replace(['<', '>'], ['&lt;', '&gt;'], $id === 'html' ? htmlentities($language->code) : $language->code);
 
         $active     = $id === $activeTab || (!$activeTab && !$languages) ? " data-active" : '';
         $dataLabel  = isset($language->label) ? " data-label='$language->label'" : '';
