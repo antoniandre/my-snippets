@@ -1,5 +1,5 @@
-// h1, .topbar, #all + .center, label[for="see-the-code"] {display: none !important;}
-// #all, button {background-image:none !important;background-color:transparent !important;}
+/*h1,*/ .topbar, #all + .center, label[for="see-the-code"] {display: none !important;}
+#all, button {background-image:none !important;background-color:transparent !important;}
 
 $primary-color: #999;
 $heading-color: #666;
@@ -167,6 +167,13 @@ li:hover .topbar-submenu {
 /*============================================================================*/
 
 
+/*=============================== DOCUMENTATION ==============================*/
+.param span {color: #f33;}
+.param em {color: #ccc;}
+.param code {font-weight: bold;}
+/*============================================================================*/
+
+
 /*==================================== GRID ==================================*/
 .thegrid .cell > div {
     border: 1px solid #8d5;
@@ -281,6 +288,7 @@ button {
 /*=============================== SNIPPET PAGE ===============================*/
 #snippet h1 {
     margin: 20px 0 50px;
+    display: inline-block;
 }
 /*============================================================================*/
 
@@ -289,8 +297,8 @@ button {
 /*============================== LOADING SPINNER =============================*/
 .loading:before, .loading:after, .loading {
    border-radius: 50%;
-    width: 1.5em;
-    height: 1.5em;
+   width: 1.5em;
+   height: 1.5em;
    animation-fill-mode: both;
    animation: load7 1.8s infinite ease-in-out;
 }
