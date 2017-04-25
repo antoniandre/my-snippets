@@ -1,4 +1,4 @@
-/*================================ CODE EDITOR ===============================*/
+//================================ CODE EDITOR ===============================//
 @font-face{
     font-family: 'fira';
     src: url('fonts/firacode-regular.eot');
@@ -10,6 +10,7 @@
     font-style: normal;
 }
 
+//------------------------------ Section Wrapper -----------------------------//
 #see-the-code + label {
     position: relative;
     margin: 0 auto;
@@ -72,8 +73,9 @@
     padding-top: 35px;
     padding-bottom: 15px;
 }
+//----------------------------------------------------------------------------//
 
-
+//------------------------------- Code Wrapper -------------------------------//
 .code-wrapper {
     position: relative;
     margin: 30px 0 10px;
@@ -89,36 +91,23 @@
     &.no-tabs {min-height: 0;}
     pre:before {display: none;}
 }
-.code-wrapper > label,
-.code-wrapper.no-tabs:after {
-    text-transform: capitalize;
+//----------------------------------------------------------------------------//
+
+//----------------------------------- Tabs -----------------------------------//
+.code-wrapper > input[type="radio"] {
     position: absolute;
+}
+.code-wrapper .label-wrapper, .code-wrapper .add {
+    display: inline-block;
+    text-transform: capitalize;
+    position: relative;
     right: 10px;
     bottom: 100%;
     padding: 3px 8px;
-    font-size: 140%;
-    background-color: #fbfbfb;
     border: 1px solid #eee;
     border-radius: 3px 3px 0 0;
     font: 100% roboto, sans-serif;
-    // z-index: 1;
     user-select: none;
-}
-.code-wrapper:after {
-    content: attr(data-type);
-    position: absolute;
-    right: 10px;
-    bottom: 100%;
-    color: #ccc;
-    border-bottom-color: #fbfbfb;
-}
-.code-wrapper[data-label]:after {
-    content: attr(data-label);
-}
-
-.code-wrapper > label {
-    position: relative;
-    display: inline-block;
     top: -30px;
     margin: 0 1px;
     color: #bbb;
@@ -129,15 +118,51 @@
         background-color: #fbfbfb;
     }
 }
-.code-wrapper > input:checked + label {
+.code-wrapper > input:checked + .label-wrapper {
     border-bottom-color: #fbfbfb;
     background-color: #fbfbfb;
     color: $heading-color;
 }
-.code-wrapper > label .code-label {
+// The label (with radio btn) is only here to automate the tab switch without use of js.
+.code-wrapper .label-wrapper label {
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
 }
+.code-wrapper > input:checked + .label-wrapper label {
+    z-index: -1;
+}
+.code-wrapper .label-wrapper .code-label {
+}
+.code-wrapper .label-wrapper .remove {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #999;
+    font-size: 80%;
+    border: 1px solid #fff;
+    color: #fff;
+    width: 1.4em;
+    height: 1.4em;
+    line-height: 1.4;
+    text-align: center;
+    transition: .3s 0s opacity, 0s 3s z-index;
+    border-radius: 1em;
+    z-index: 1;
+    opacity: 0;
+}
+.code-wrapper .label-wrapper:hover .remove {
+    opacity: 1;
+    transition: .3s 0s opacity, 0s 0s z-index;
+}
+//----------------------------------------------------------------------------//
 
-.code-wrapper > label .languages {
+//------------------------------ Languages menu ------------------------------//
+.code-wrapper .label-wrapper .languages {
     position: absolute;
     left: 50%;
     top: 100%;
@@ -207,14 +232,14 @@
         }
     }
 }
-.code-wrapper > label:hover .languages,
-.code-wrapper > label span:focus ~ .languages {
+.code-wrapper > input:checked + .label-wrapper:hover .languages,
+.code-wrapper .label-wrapper span:focus ~ .languages {
     display: block;
 }
-.code-wrapper > input {
-    position: absolute;
-}
-.code-wrapper > input:checked + label + pre {z-index: 2;}
+//----------------------------------------------------------------------------//
+
+//---------------------------- code editor content ---------------------------//
+.code-wrapper > input:checked + .label-wrapper + pre {z-index: 2;}
 
 .code-wrapper pre,
 .code-wrapper iframe {
@@ -233,9 +258,10 @@
     font-family: "fira";
 }
 .code-wrapper pre {padding: 10px;}
-.code-wrapper.no-tabs pre {position: static;height: auto;padding: 0;}
 .code-wrapper iframe {width: 100%;border: none;}
+//----------------------------------------------------------------------------//
 
+//--------------------------- Syntax Highlighting ----------------------------//
 pre {
     .txt {color: #333;}
     .comment {font-style: italic;color: #aaa;}
@@ -270,10 +296,8 @@ pre {
         .unit {color: #0bc;}
     }
 }
+//----------------------------------------------------------------------------//
 
-.param span {color: #f33;}
-.param em {color: #ccc;}
-.param code {font-weight: bold;}
 
 @media screen and (max-width: 560px) {
     .code-section {

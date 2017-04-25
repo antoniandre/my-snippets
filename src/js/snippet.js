@@ -107,27 +107,30 @@ var codeEditor = function(editor, options)
 
         $target.attr('data-uid', uid);
 
+        // List all the available languages in a dropdown menu.
         for (var l in languages)
         {
             i++;
             langHtml += '<input type="radio" name="language' + uid + '" id="language' + uid + i
-                    + '" class="hidden" value="' + l + '"' + (type === l || (!type && l === 'txt') ? ' checked' : '') + '>'
-                    + '<label for="language' + uid + i + '">' + languages[l] + '</label> ';
+                     + '" class="hidden" value="' + l + '"' + (type === l || (!type && l === 'txt') ? ' checked' : '') + '>'
+                     + '<label for="language' + uid + i + '">' + languages[l] + '</label> ';
         }
 
         $target
             .before(
                 '<input type="radio" data-type="' + type + '" id="' + targetTag + uid + '"' + checked
-                + ' name="codeWrapper' + wrapperIndex + '">' + '<label for="' + targetTag + uid
-                + '" data-uid="' + uid + '"><span contenteditable class="code-label">' + (label ? label : type) + '</span>'
+                + ' name="codeWrapper' + wrapperIndex + '">' + '<span class="label-wrapper" data-uid="' + uid + '">'
+                + '<label for="' + targetTag + uid + '"></label><span contenteditable class="code-label">'
+                + (label ? label : type) + '</span>'
                 + '<span class="languages"><strong>Languages:</strong>'
                 + langHtml
-                + '</span></label>');
+                + '</span><span class="remove">x</span></span>');
 
+        // Focus on the tab label if user just added it.
         if (edit)
         {
             $('#' + targetTag + uid).click()
-                .siblings('label').find('.code-label').focus().select();
+                .siblings('.label-wrapper').find('.code-label').focus().select();
         }
     };
 
@@ -199,9 +202,9 @@ var codeEditor = function(editor, options)
                         "selector keyword":  /((?:@(?:import|media|font-face|keyframes)|screen|print|and)(?=[\s({])|keyframes|\s(?:ul|ol|li|table|div|pre|p|a|img|br|hr|h[1-6]|em|strong|span|html|body|iframe|video|audio|input|button|form|label|fieldset|small|abbr|i|dd|dt)\b)/,
                         selector:    /((?:[.#-\w\*+ >:,~\n]|&gt;)+)(?=\s*\{)/,// Any part before '{'.
                         "attribute keyword vendor": /(-(?:moz|o|webkit|ms)-(?=transform|transition|user-select|animation|background-size))/,
-                        "attribute keyword": /\b(content|float|display|position|top|left|right|bottom|(?:(?:max|min)-)?width|(?:(?:max|min|line)-)?height|font(?:-(?:family|style|size|weight|variant|stretch))?|vertical-align|color|opacity|visibility|z-index|transform|transition|animation|background(?:-(?:color|position|image|repeat|size))?|(?:padding|margin|border)(?:-(?:top|left|right|bottom))?|border(?:-radius)|white-space|text-(?:align|transform|decoration|shadow)|overflow(?:-(?:x|y))?|letter-spacing|box-(?:sizing|shadow)|stroke|outline|user-select)(?=\s*:)/,
+                        "attribute keyword": /\b(content|float|display|position|top|left|right|bottom|(?:(?:max|min)-)?width|(?:(?:max|min|line)-)?height|font(?:-(?:family|style|size|weight|variant|stretch))?|vertical-align|color|opacity|visibility|z-index|transform(?:-(?:origin|style|delay|duration|property|timing-function))?|transition|animation(?:-(?:delay|duration|direction|fill-mode))?|background(?:-(?:color|position|image|repeat|size))?|(?:padding|margin|border)(?:-(?:top|left|right|bottom))?|border(?:-radius)|white-space|text-(?:align|transform|decoration|shadow|indent)|overflow(?:-(?:x|y))?|letter-spacing|box-(?:sizing|shadow)|stroke|fill|speak|outline|user-select)(?=\s*:)/,
                         "value keyword vendor": /(-(?:moz|o|webkit|ms)-(?=linear-gradient))/,
-                        "value keyword":     /\b(inline-block|inline|block|absolute|relative|static|fixed|inherit|none|auto|hidden|visible|top|left|right|bottom|center|pre|wrap|nowrap|(?:upper|lower)case|capitalize|linear(?:-gradient)|ease(?:-in)?(?:-out)?|all|infinite|cubic-bezier|(?:no-)?repeat|repeat(?:-x|-y)|contain|cover|!important|url|inset)(?=\s*[,;}(]|\s+[\da-z])/,
+                        "value keyword":     /\b(inline-block|inline|block|absolute|relative|static|fixed|inherit|none|auto|hidden|visible|top|left|right|bottom|center|pre|wrap|nowrap|(?:upper|lower)case|capitalize|linear(?:-gradient)|ease(?:-in)?(?:-out)?|all|infinite|cubic-bezier|(?:translate|rotate)(?:[X-Z]|3d)?|skew[XY]?|(?:no-)?repeat|repeat(?:-x|-y)|contain|cover|!important|url|inset)(?=\s*[,;}(]|\s+[\da-z])/,
                         number:      /(-?(?:\.\d+|\d+(?:\.\d+)?))/,
                         color:       /(transparent|#(?:[\da-f]{6}|[\da-f]{3})|rgba?\([\d., ]*\))/,
                         // ponctuation: /([:,;{}@#()]+)/,// @todo Why can't use this one if text contains '<' or '>' ??
@@ -217,7 +220,7 @@ var codeEditor = function(editor, options)
                         // htmlTag:     regexBasics.htmlTag,
                         number:      /\b(\d+(?:\.\d+)?|null)\b/,
                         boolean:     /\b(true|false)\b/,
-                        keyword:     /\b(new|getElementsBy(?:Tag|Class|)Name|getElementById|arguments|if|else|do|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval)|Math(?=\.))(?=\W)/,
+                        keyword:     /\b(new|getElementsBy(?:Tag|Class|)Name|getElementById|arguments|if|else|do|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval)|Math(?=\.)|Date)(?=\W)/,
                         ponctuation: /(!==?|(?:[\[\](){}:;,+\-%*\/?=]|&lt;|&gt;)+|\.+(?![a-zA-Z])|&amp;&amp;|\|\|)/,// Override default since '.' can be part of js variable.
                         variable:    /(\.?[a-zA-Z]\w*)/,
                         htmlentity: /(&.*?;)/,
@@ -404,16 +407,6 @@ var codeEditor = function(editor, options)
     {
         codeEditor.ready = true;
 
-        $('.code-wrapper .add').on('click', function()
-        {
-            var $newPre  = $('<pre class="i-code" contenteditable="true" data-type="txt" data-label="Label"/>');
-
-            $(this).siblings('pre:last').after($newPre);
-
-            // Init a new code editor on the new created tab.
-            new codeEditor($newPre, {new: true});
-        });
-
         // On saving edits.
         // For each pre get the code, label and type and send them to the php script for saving into JSON.
         $('.code-form').on('submit', function(e)
@@ -434,22 +427,42 @@ var codeEditor = function(editor, options)
 
             return false;
         })
+
+        .on('click', '.code-wrapper .add', function()
+        {
+            var $newPre  = $('<pre class="i-code" contenteditable="true" data-type="txt" data-label="Label"/>');
+
+            $(this).siblings('pre:last').after($newPre);
+
+            // Init a new code editor on the new created tab.
+            new codeEditor($newPre, {new: true});
+        })
+
         // On modify label of current editor.
         // Update matching <pre> data-label attribute.
         .on('input', '.code-label', function(e)
         {
-            var uid  = $(this).parents('label').data('uid');
+            var uid  = $(this).parents('.label-wrapper').data('uid');
 
             $('pre[data-uid=' + uid + ']').attr('data-label', this.innerHTML);
         })
+
         // On changing the language of current editor (select in dropdown list).
         .on('change', '.languages input', function(e)
         {
-            var uid  = $(this).parents('label').data('uid');
+            var uid  = $(this).parents('.label-wrapper').data('uid');
 
             $('pre[data-uid=' + uid + ']')
                 .attr('data-type', this.value)
                 .trigger('refresh');
+        })
+
+        .on('click', '.remove', function(e)
+        {
+            var labelWrapper = $(this).parents('.label-wrapper'),
+                uid          = labelWrapper.data('uid');
+
+            labelWrapper.add(labelWrapper.prev()).add(labelWrapper.siblings('pre[data-uid=' + uid + ']')).remove();
         });
     };
 
