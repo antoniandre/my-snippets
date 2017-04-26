@@ -179,6 +179,8 @@ var codeEditor = function(editor, options)
                     comment:     /(\/\/.*|\/\*[\s\S]*?\*\/)/,// Comments blocks (/* ... */) or trailing comments (// ...).
                     htmlTag:     /(<[^>]*>)/,
                     ponctuation: /(!==?|(?:[\[\](){}.:;,+\-?=]|&lt;|&gt;)+|&&|\|\|)/,// Ponctuation not in html tag.
+                    number:      /(-?(?:\.\d+|\d+(?:\.\d+)?))/,
+                    boolean:     /\b(true|false)\b/,
                 },
                 dictionnary =
                 {
@@ -205,25 +207,32 @@ var codeEditor = function(editor, options)
                         "attribute keyword": /\b(content|float|display|position|top|left|right|bottom|(?:(?:max|min)-)?width|(?:(?:max|min|line)-)?height|font(?:-(?:family|style|size|weight|variant|stretch))?|vertical-align|color|opacity|visibility|z-index|transform(?:-(?:origin|style|delay|duration|property|timing-function))?|transition|animation(?:-(?:delay|duration|direction|fill-mode))?|background(?:-(?:color|position|image|repeat|size))?|(?:padding|margin|border)(?:-(?:top|left|right|bottom))?|border(?:-radius)|white-space|text-(?:align|transform|decoration|shadow|indent)|overflow(?:-(?:x|y))?|letter-spacing|box-(?:sizing|shadow)|stroke|fill|speak|outline|user-select)(?=\s*:)/,
                         "value keyword vendor": /(-(?:moz|o|webkit|ms)-(?=linear-gradient))/,
                         "value keyword":     /\b(inline-block|inline|block|absolute|relative|static|fixed|inherit|none|auto|hidden|visible|top|left|right|bottom|center|pre|wrap|nowrap|(?:upper|lower)case|capitalize|linear(?:-gradient)|ease(?:-in)?(?:-out)?|all|infinite|cubic-bezier|(?:translate|rotate)(?:[X-Z]|3d)?|skew[XY]?|(?:no-)?repeat|repeat(?:-x|-y)|contain|cover|!important|url|inset)(?=\s*[,;}(]|\s+[\da-z])/,
-                        number:      /(-?(?:\.\d+|\d+(?:\.\d+)?))/,
+                        number:      regexBasics.number,
                         color:       /(transparent|#(?:[\da-f]{6}|[\da-f]{3})|rgba?\([\d., ]*\))/,
                         // ponctuation: /([:,;{}@#()]+)/,// @todo Why can't use this one if text contains '<' or '>' ??
                         htmlentity: /(&.*?;)/,
                         ponctuation: /([:,;{}@#()]+|&lt;|&gt;)/,
                         attribute:   /([a-zA-Z\-]+)(?=\s*:)/,
-                        unit:        /(px|%|r?em|m?s|deg)(?=(?:\s*[;,{}}]|\s+[\-\da-z#]))/
+                        unit:        /(px|pt|%|r?em|m?s|deg|vh|vw|vmin|vmax)(?=(?:\s*[;,{}}]|\s+[\-\da-z#]))/
+                    },
+                    json:
+                    {
+                        quote:       regexBasics.quote,
+                        comment:     regexBasics.comment,
+                        number:      regexBasics.number,
+                        boolean:     regexBasics.boolean,
+                        ponctuation: /([\[\](){}:;,\-]+)/,// Override default to simplify.
                     },
                     js:
                     {
                         quote:       regexBasics.quote,
                         comment:     regexBasics.comment,
-                        // htmlTag:     regexBasics.htmlTag,
                         number:      /\b(\d+(?:\.\d+)?|null)\b/,
-                        boolean:     /\b(true|false)\b/,
+                        boolean:     regexBasics.boolean,
                         keyword:     /\b(new|getElementsBy(?:Tag|Class|)Name|getElementById|arguments|if|else|do|return|case|default|function|typeof|undefined|instanceof|this|document|window|while|for|switch|in|break|continue|length|var|(?:clear|set)(?:Timeout|Interval)|Math(?=\.)|Date)(?=\W)/,
                         ponctuation: /(!==?|(?:[\[\](){}:;,+\-%*\/?=]|&lt;|&gt;)+|\.+(?![a-zA-Z])|&amp;&amp;|\|\|)/,// Override default since '.' can be part of js variable.
                         variable:    /(\.?[a-zA-Z]\w*)/,
-                        htmlentity: /(&.*?;)/,
+                        htmlentity:  /(&.*?;)/,
                         dollar:      /(\$|jQuery)(?=\W|$)/,// jQuery or $.
                     },
                     php:
@@ -231,8 +240,8 @@ var codeEditor = function(editor, options)
                         quote:       regexBasics.quote,
                         comment:     regexBasics.comment,
                         ponctuation: regexBasics.ponctuation,
-                        number:      /\b(\d+(?:\.\d+)?|null)\b/,
-                        boolean:     /\b(true|false)\b/,
+                        number:      regexBasics.number,
+                        boolean:     regexBasics.boolean,
                         keyword:     /\b(define|echo|die|print_r|var_dump|if|else|do|return|case|default|function|\$this|while|for|switch|in|break|continue)(?=\W|$)/,
                         variable:    /(?:(?=\W))(\$\w+)/
                     },
@@ -242,7 +251,7 @@ var codeEditor = function(editor, options)
                         comment:     regexBasics.comment,
                         ponctuation: regexBasics.ponctuation,
                         number:      /\b(\d+(?:\.\d+)?|null)\b/,
-                        boolean:     /\b(true|false)\b/,
+                        boolean:     regexBasics.boolean,
                         keyword:     /\b(\*|CREATE|ALL|DATABASE|TABLE|GRANT|PRIVILEGES|IDENTIFIED|FLUSH|SELECT|UPDATE|DELETE|INSERT|FROM|WHERE|(?:ORDER|GROUP) BY|LIMIT|(?:(?:LEFT|RIGHT|INNER|OUTER) |)JOIN|AS|ON|COUNT|CASE|TO|IF|WHEN|BETWEEN|AND|OR|CONCAT)(?=\W|$)/
                     }
                 },
@@ -392,7 +401,7 @@ var codeEditor = function(editor, options)
                 // Stop data actually being pasted into div.
                 // e.stopPropagation();
                 // e.preventDefault();
-                console.log(e)
+                // console.log(e)
 
                 // Get pasted data via clipboard API.
                 clipboardData = e.originalEvent.clipboardData || window.clipboardData;
@@ -423,7 +432,7 @@ var codeEditor = function(editor, options)
                     code: this.innerHTML.stripTags().htmlize()
                 });
             });
-            $.post(location, 'codes=' + JSON.stringify(codes));
+            $.post(location, 'codes=' + encodeURIComponent(JSON.stringify(codes)));
 
             return false;
         })
@@ -432,7 +441,7 @@ var codeEditor = function(editor, options)
         {
             var $newPre  = $('<pre class="i-code" contenteditable="true" data-type="txt" data-label="Label"/>');
 
-            $(this).siblings('pre:last').after($newPre);
+            $(this).before($newPre);
 
             // Init a new code editor on the new created tab.
             new codeEditor($newPre, {new: true});
