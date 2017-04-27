@@ -309,6 +309,7 @@ button {
     .snippet-icon {
         font-size: 2rem;
         position: relative;
+        text-align: center;
 
         .icon-selector {
             position: absolute;
@@ -325,15 +326,24 @@ button {
             display: none;
 
 
-            &:before {
+            &:before, &:after {
                 content: '';
                 position: absolute;
-                left: 0;
-                right: 0;
-                top: -20px;
-                height: 100%;
-                z-index: -1;
+                left: 50%;
+                height: 0;
+                width: 0;
                 display: block;
+                bottom: 100%;
+                border: 8px solid transparent;
+                margin-left: -4px;
+            }
+            &:before {
+                border-bottom-color: lighten($link-color, 20%);
+                border-width: 9px;
+                margin-left: -5px;
+            }
+            &:after {
+                border-bottom-color: #fbfbfb;
             }
 
             i {
