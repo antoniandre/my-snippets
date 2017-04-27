@@ -132,6 +132,7 @@
     right: 0;
     bottom: 0;
     z-index: 2;
+    padding-right: 2px;
 }
 .code-wrapper > input:checked + .label-wrapper label {
     z-index: -1;
@@ -141,24 +142,24 @@
 }
 .code-wrapper .label-wrapper .remove {
     position: absolute;
-    top: -5px;
-    right: -5px;
-    background-color: #999;
-    font-size: 80%;
-    border: 1px solid #fff;
-    color: #fff;
-    width: 1.4em;
-    height: 1.4em;
-    line-height: 1.4;
-    text-align: center;
-    transition: .3s 0s opacity, 0s 3s z-index;
-    border-radius: 1em;
+    top: -10px;
+    right: -10px;
+    color: #ccc;
+    font-size: 140%;
+    transition: .3s 0s all, 0s 3s z-index;
+    text-shadow: 0 0 0 #fff;
     z-index: 1;
     opacity: 0;
+    transform: scale(1);
+
+    &:hover {
+        color: #999;
+        transform: scale(1.2);
+    }
 }
 .code-wrapper .label-wrapper:hover .remove {
     opacity: 1;
-    transition: .3s 0s opacity, 0s 0s z-index;
+    transition: .3s 0s all, 0s 0s z-index;
 }
 //----------------------------------------------------------------------------//
 

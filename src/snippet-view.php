@@ -78,6 +78,7 @@ function render($snippet)
         'ROOT_URL'    => ROOT_URL,
         'h1'          => $snippet->h1,
         'snippetName' => $snippet->name,
+        'icon'        => $snippet->icon,
         'scripts'     => $scripts,
         'script'      => $script,
         'styles'      => $styles,

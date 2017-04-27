@@ -124,7 +124,7 @@ var codeEditor = function(editor, options)
                 + (label ? label : type) + '</span>'
                 + '<span class="languages"><strong>Languages:</strong>'
                 + langHtml
-                + '</span><span class="remove">x</span></span>');
+                + '</span><span class="remove i-cross-o-filled"></span></span>');
 
         // Focus on the tab label if user just added it.
         if (edit)

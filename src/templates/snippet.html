@@ -12,7 +12,19 @@
     <body>
         {{include top-bar}}
         <div id="all">
-            <div class="center"><h1 contenteditable>{{h1}}</h1></div>
+            <div class="h1-wrapper">
+                <div class="snippet-icon {{icon}}">
+                    <div class="icon-selector">
+                        <i class="i-plus"></i>
+                        <i class="i-star"></i>
+                        <i class="i-cocktail"></i>
+                        <i class="i-heart"></i>
+                        <i class="i-bulb"></i>
+                        <i class="i-edit"></i>
+                    </div>
+                </div>
+                <h1 contenteditable>{{h1}}</h1>
+            </div>
             <form class="code-form" action="{{SELF}}" method="post">
                 <input type="checkbox" class="toggle" id="see-the-code"{{checked}}>
                 <label for="see-the-code" class="i-plus">{{checkCode}}</label>
