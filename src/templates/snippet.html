@@ -13,14 +13,11 @@
         {{include top-bar}}
         <div id="all">
             <div class="h1-wrapper">
-                <div class="snippet-icon {{icon}}">
+                <div class="snippet-icon {{snippetIcon}}">
                     <div class="icon-selector">
-                        <i class="i-plus"></i>
-                        <i class="i-star"></i>
-                        <i class="i-cocktail"></i>
-                        <i class="i-heart"></i>
-                        <i class="i-bulb"></i>
-                        <i class="i-edit"></i>
+                        {{foreach iconSet as i => icon}}
+                            <i class="{{icon}}{{{icon} === {snippetIcon} ? ' active' : ''}}"></i>
+                        {{/foreach}}
                     </div>
                 </div>
                 <h1 contenteditable>{{h1}}</h1>

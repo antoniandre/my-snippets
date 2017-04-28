@@ -51,7 +51,7 @@ class Tpl
             foreach ($vars[$array] as $k => $v)
             {
                 $vars[$key] = $k;
-                $vars[$value] = (object)$v;
+                $vars[$value] = is_array($v) ? (object)$v : $v;
                 $repeatedBlock .= self::inc('foreach', $vars, $blockContent);
             }
             return $repeatedBlock;
@@ -125,6 +125,12 @@ class Tpl
     private function checkVar($expression, $vars)
     {
         $value = null;
+
+        // If complex expression
+        if (preg_match('~\{([^}]+)\}~', $expression, $matches))
+        {
+            $value = preg_replace('~\{([^}]+)\}~', '\$$1', $expression);
+        }
 
         // If string.
         if ($expression{0} === '"' || $expression{0} === "'")

@@ -5,6 +5,12 @@ $knownJs =
     'jquery'        => 'bower_components/jquery/dist/jquery.min.js',
     'jquery.easing' => 'bower_components/jquery.easing/js/jquery.easing.min.js',
 ];
+$iconSet = ['i-heart', 'i-cocktail', 'i-book', 'i-edit', 'i-sync', 'i-home', 'i-grid', 'i-coffee',
+            'i-chef', 'i-gear', 'i-link', 'i-comment', 'i-wand', 'i-pin', 'i-arr-r', 'i-arr-d', 'i-arr-u',
+            'i-arr-l', 'i-arr-ur', 'i-check', 'i-cross', 'i-cross-o', 'i-plane', 'i-asterisk', 'i-star',
+            'i-pointer', 'i-settings2', 'i-user', 'i-arr-resize', 'i-wand2', 'i-plus', 'i-terminal',
+            'i-code', 'i-trash', 'i-arr-dr', 'i-search', 'i-tools', 'i-hammer', 'i-wrench', 'i-images',
+            'i-keypad', 'i-sync2', 'i-pulse', 'i-github', 'i-bulb', 'i-cross-o-filled', 'i-pencil'];
 //================================================================================//
 
 
@@ -22,7 +28,7 @@ else die("No existing snippet. :)");
 //=================================== FUNCTIONS ==================================//
 function render($snippet)
 {
-    global $knownJs, $self;
+    global $knownJs, $iconSet, $self;
 
     $script    = '';
     $scripts   = '';
@@ -78,7 +84,8 @@ function render($snippet)
         'ROOT_URL'    => ROOT_URL,
         'h1'          => $snippet->h1,
         'snippetName' => $snippet->name,
-        'icon'        => $snippet->icon,
+        'iconSet'     => $iconSet,
+        'snippetIcon' => $snippet->icon,
         'scripts'     => $scripts,
         'script'      => $script,
         'styles'      => $styles,
