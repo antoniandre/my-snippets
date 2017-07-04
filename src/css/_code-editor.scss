@@ -91,6 +91,7 @@
     &.no-tabs {min-height: 0;}
     pre:before {display: none;}
 }
+.code-wrapper * {outline: none;}
 //----------------------------------------------------------------------------//
 
 //----------------------------------- Tabs -----------------------------------//
@@ -168,7 +169,7 @@
     position: absolute;
     left: 50%;
     top: 100%;
-    z-index: 3;
+    z-index: 4;
     width: 10em;
     margin: 15px 0 0 -5em;
     font-size: 110%;
@@ -240,6 +241,100 @@
 }
 //----------------------------------------------------------------------------//
 
+//------------------------------ wysiwyg buttons -----------------------------//
+.code-wrapper.wysiwyg pre {padding-top: 4em;}
+.wysiwyg-buttons {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2rem;
+    line-height: 2rem;
+    font-size: 1em;
+    border-bottom: 1px solid #ddd;
+    z-index: 3;
+    text-align: left;
+    background-color: #fff;
+}
+.wysiwyg-button {
+    position: relative;
+    color: #666;
+    display: inline-block;
+    height: 100%;
+    box-sizing: border-box;
+    width: 2rem;
+    text-align: center;
+    border-bottom: 2px solid transparent;
+    transition: all .2s ease-in-out, background-color .2s linear, border-color .4s linear;
+
+    &:hover, &.active {background-color: #eee;border-color: $link-color;}
+    a {display: block;color: inherit;}
+}
+.wysiwyg-button .menu {
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    z-index: 4;
+    width: 12em;
+    margin: 15px 0 0 -6em;
+    font-size: 110%;
+    background-color: #fbfbfb;
+    border: 1px solid #85e085;
+    border-radius: 3px;
+    display: none;
+
+    &:before {
+        content: '';
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: -15px;
+        height: 100%;
+        z-index: -1;
+        display: block;
+    }
+
+    li {
+        list-style-type: none;
+
+        a {
+            color: #bbb;
+            display: block;
+            padding: 0 25px 0 6px;
+            width: auto;
+            position: relative;
+            border-right: 0px solid #85e085;
+            border-bottom: none;
+            transition: .5s all, .2s border-width ease-in-out;
+            white-space: nowrap;
+            text-align: right;
+
+            &:hover {background-color: #eee;border-right-width: 3px;color: #13aa13;}
+            * {display: block;width: auto;text-align: right;margin: 0;}
+
+            .quote {display: inline-block;}
+        }
+    }
+}
+.wysiwyg-button:hover .menu {display: block;}
+.wysiwyg pre * {min-height: .5em;/*vertical-align: baseline;line-height: inherit;*/min-width: .5px;display: inline-block;}
+.wysiwyg p {margin-top: .3em;margin-bottom: .3em;}
+.wysiwyg pre iframe {width: 200px;height: 100px;position: static;}
+.wysiwyg figure {padding: 5px;border: 1px solid #eee;display: inline-block;vertical-align: middle}
+.wysiwyg figure img {color: #999;}
+.wysiwyg pre strong {color: #000;}
+.wysiwyg .quote {font-style: italic;padding: 4px 8px;color: #999;position: relative;display: inline-block;}
+.wysiwyg .quote .i-quote-l:before,
+.wysiwyg .quote .i-quote-r:before {display: block;position: absolute;color: #ddd;content: '"';font-size: 2em;}
+.wysiwyg .quote .i-quote-l:before {top: -.3em;left: 0;}
+.wysiwyg .quote .i-quote-r:before {bottom: -.3em;right: 0;}
+
+.wysiwyg .strikethrough {text-decoration: line-through;}
+.wysiwyg .underline {text-decoration: underline;}
+.wysiwyg hr {margin: 15px 0;border: none;border-top: 1px solid #ccc;}
+.wysiwyg ul, .wysiwyg ol {margin-left: 40px;}
+//----------------------------------------------------------------------------//
+
 //---------------------------- code editor content ---------------------------//
 .code-wrapper > input:checked + .label-wrapper + pre {z-index: 2;}
 
@@ -258,6 +353,7 @@
     overflow: auto;
     text-align: left;
     font-family: "fira";
+    pre {color: #555;}
 }
 .code-wrapper pre {padding: 10px;}
 .code-wrapper iframe {width: 100%;border: none;}
