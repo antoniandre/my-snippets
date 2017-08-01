@@ -22,10 +22,10 @@ switch (true)
     default:
         $snippets = checkPost('refresh') ? createSnippetsJson() : getSnippets();
         $vars = [
-            'ROOT_URL' => ROOT_URL,
-            'SELF' => SELF,
-            'snippets' => $snippets,
-            'defaultUrl' => ROOT_URL . 'snippet/yo',
+            'ROOT_URL'    => ROOT_URL,
+            'SELF'        => SELF,
+            'snippets'    => $snippets,
+            'defaultUrl'  => ROOT_URL . 'snippet/yo',
             'defaultIcon' => 'i-arr-star',
         ];
         echo Tpl::inc('snippets-list', $vars);

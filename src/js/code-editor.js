@@ -833,6 +833,9 @@ var codeEditor = function(editor, options)
     }();
 };
 
+/**
+ * An object of wysiwyg buttons to add to the editor.
+ */
 var wysiwygButtons =
 {
     bold:          {label: '<strong>b</strong>', title: 'Bold', tpl: '<strong>{text}</strong>'},
