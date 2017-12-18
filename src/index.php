@@ -1,10 +1,10 @@
 <?php
 //===================================== VARS =====================================//
 define('SELF', $_SERVER['PHP_SELF']);
-define('ROOT_DIR', realpath(__DIR__ ) . '/');
-define('ROOT_URL', dirname(SELF) . '/');
+define('ROOT_DIR', realpath(__DIR__) . '/');
+define('ROOT_URL', trim(dirname(SELF), '/') . '/');
 // The current root-relative url that was asked before landing on this script.
-define('ROUTE', str_replace(ROOT_URL, '', $_SERVER['REQUEST_URI']));
+define('ROUTE', trim(ROOT_URL !== '/' ? str_replace(ROOT_URL, '', $_SERVER['REQUEST_URI']) : $_SERVER['REQUEST_URI'], '/'));
 define('ROUTE_PARTS', explode('/', ROUTE));
 //================================================================================//
 
