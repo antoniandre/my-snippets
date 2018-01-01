@@ -378,6 +378,10 @@ pre {
         .tag-name {color: #11c;}
         .attribute {color: #f63;}
     }
+    &[data-type="xml"] {
+        .tag-name {color: #11c;}
+        .attribute {color: #f93;}
+    }
     &[data-type="css"] {
         .selector {color: #f0d;}
         .selector.class-id {color: #f0d;}
@@ -390,7 +394,7 @@ pre {
         .attribute.keyword.vendor {color: #0c8;}
         .value {color: #c11;}
         .value.vendor {color: #0c8;}
-        .color {background: #eee;padding: 1px 4px;}
+        .color {background: #eee;padding: 0px 3px;border: 1px solid rgba(0,0,0,.1);}
         .unit {color: #0bc;}
     }
 }

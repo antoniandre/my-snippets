@@ -74,7 +74,13 @@ function render($snippet)
 
         $script = isset($snippet->languages->js->code) ? "<script>\n        {$snippet->languages->js->code}\n    </script>" : '';
         $style  = isset($snippet->languages->css->code) ? "<style>\n        {$snippet->languages->css->code}\n    </style>" : '';
-        $html   = isset($snippet->languages->html->code) ? "<div class='content'>\n        {$snippet->languages->html->code}\n    </div>" : '';
+        $html   = '';
+
+        if (isset($snippet->languages->html->code) || isset($snippet->languages->xml->code))
+        {
+            $html = isset($snippet->languages->xml->code) ? $snippet->languages->xml->code : $snippet->languages->html->code;
+            $html = "<div class='content'>\n        $html\n    </div>";
+        }
     }
 
     $checked = !$html ? ' checked' : '';

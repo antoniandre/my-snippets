@@ -11,7 +11,7 @@
 var codeEditor = function(editor, options)
 {
     // Static vars.
-    codeEditor.codeLanguages     = codeEditor.codeLanguages || ['js', 'css', 'php', 'html', 'sql'];
+    codeEditor.codeLanguages     = codeEditor.codeLanguages || ['js', 'css', 'php', 'html', 'xml', 'sql'];
     codeEditor.ready             = codeEditor.ready || false;
     codeEditor.uid               = codeEditor.uid + 1 || 1;
 
@@ -57,7 +57,7 @@ var codeEditor = function(editor, options)
             $wrapper     = $wrapper || $target.parent(),
             wrapperIndex = $wrapper.data('index'),
             langHtml     = '',
-            languages    = {txt: 'rich text', js: 'javascript', css: 'css', html: 'html', php: 'php'},
+            languages    = {txt: 'rich text', js: 'javascript', css: 'css', html: 'html', xml: 'xml', php: 'php'},
             i            = 0;
 
         $target.attr('data-uid', uid);
@@ -139,6 +139,17 @@ var codeEditor = function(editor, options)
                 },
                 dictionnary =
                 {
+                    xml:
+                    {
+                        quote:       regexBasics.quote,
+                        comment:     /(&lt;!--[\s\S]*?--&gt;)/,
+                        tag:         /(&lt;\/?)([a-zA-Z\-\:]+)(.*?)(\/?&gt;)/,
+                        // Treated inside tag because javascript does not support lookbehind,
+                        // so be more specific inside tag first match:
+                        // ponctuation: /([=/]+|&lt;\/?|\/?&gt;)/,
+                        // tagName: /([a-z]\w+)\b/,
+                        // attribute:   /([a-zA-Z\-]+)(?=\s*(?:=|\/?&gt;))/,
+                    },
                     html:
                     {
                         quote:       regexBasics.quote,
@@ -158,17 +169,17 @@ var codeEditor = function(editor, options)
                         "selector keyword vendor":  /(@-(?:moz|o|webkit|ms)-(?=keyframes\s))/,
                         "selector keyword":  /((?:@(?:import|media|font-face|keyframes)|screen|print|and)(?=[\s({])|keyframes|\s(?:ul|ol|li|table|div|pre|p|a|img|br|hr|h[1-6]|em|strong|span|html|body|iframe|video|audio|input|button|form|label|fieldset|small|abbr|i|dd|dt)\b)/,
                         selector:    /((?:[.#-\w\*+ >:,~\n]|&gt;)+)(?=\s*\{)/,// Any part before '{'.
-                        "attribute keyword vendor": /(-(?:moz|o|webkit|ms)-(?=transform|transition|user-select|animation|background-size))/,
-                        "attribute keyword": /\b(content|float|display|position|top|left|right|bottom|(?:(?:max|min)-)?width|(?:(?:max|min|line)-)?height|font(?:-(?:family|style|size|weight|variant|stretch))?|vertical-align|color|opacity|visibility|z-index|transform(?:-(?:origin|style|delay|duration|property|timing-function))?|transition|animation(?:-(?:delay|duration|direction|fill-mode))?|background(?:-(?:color|position|image|repeat|size))?|(?:padding|margin|border)(?:-(?:top|left|right|bottom))?|border(?:-radius)|white-space|text-(?:align|transform|decoration|shadow|indent)|overflow(?:-(?:x|y))?|letter-spacing|box-(?:sizing|shadow)|stroke|fill|speak|outline|user-select)(?=\s*:)/,
+                        "attribute keyword vendor": /(-(?:moz|o|webkit|ms)-(?=transform|transition|user-select|animation|background-size|box-shadow))/,
+                        "attribute keyword": /\b(content|float|display|position|top|left|right|bottom|(?:(?:max|min)-)?width|(?:(?:max|min|line)-)?height|font(?:-(?:family|style|size|weight|variant|stretch))?|vertical-align|color|opacity|visibility|z-index|transform(?:-(?:origin|style|delay|duration|property|timing-function))?|transition(?:-(?:delay|duration))?|animation(?:-(?:name|delay|duration|direction|fill-mode))?|background(?:-(?:color|position|image|repeat|size))?|(?:padding|margin|border)(?:-(?:top|left|right|bottom))?|border(?:-radius)|white-space|text-(?:align|transform|decoration|shadow|indent)|overflow(?:-(?:x|y))?|letter-spacing|box-(?:sizing|shadow)|stroke(?:-(?:width|opacity|dasharray|dashoffset|linecap|linejoin))?|fill|speak|outline|user-select|cursor)(?=\s*:)/,
                         "value keyword vendor": /(-(?:moz|o|webkit|ms)-(?=linear-gradient))/,
-                        "value keyword":     /\b(inline-block|inline|block|absolute|relative|static|fixed|inherit|none|auto|hidden|visible|top|left|right|bottom|center|pre|wrap|nowrap|(?:upper|lower)case|capitalize|linear(?:-gradient)|ease(?:-in)?(?:-out)?|all|infinite|cubic-bezier|(?:translate|rotate)(?:[X-Z]|3d)?|skew[XY]?|(?:no-)?repeat|repeat(?:-x|-y)|contain|cover|!important|url|inset)(?=\s*[,;}(]|\s+[\da-z])/,
+                        "value keyword":     /\b(inline-block|inline|block|absolute|relative|static|fixed|inherit|initial|none|auto|hidden|visible|top|left|right|bottom|center|middle|baseline|pre|wrap|nowrap|(?:upper|lower)case|capitalize|linear(?:-gradient)?|ease(?:-in)?(?:-out)?|all|infinite|cubic-bezier|(?:translate|rotate)(?:[X-Z]|3d)?|skew[XY]?|scale|(?:no-)?repeat|repeat(?:-x|-y)|contain|cover|!important|url|inset|pointer|flex)(?=\s*[,;}(]|\s+[\da-z])/,
                         number:      regexBasics.number,
-                        color:       /(transparent|#(?:[\da-f]{6}|[\da-f]{3})|rgba?\([\d., ]*\))/,
+                        color:       /(transparent|#(?:[\da-fA-F]{6}|[\da-fA-F]{3})|rgba?\([\d., ]*\))/,
                         // ponctuation: /([:,;{}@#()]+)/,// @todo Why can't use this one if text contains '<' or '>' ??
                         htmlentity: /(&.*?;)/,
                         ponctuation: /([:,;{}@#()]+|&lt;|&gt;)/,
                         attribute:   /([a-zA-Z\-]+)(?=\s*:)/,
-                        unit:        /(px|pt|%|r?em|m?s|deg|vh|vw|vmin|vmax)(?=(?:\s*[;,{}}]|\s+[\-\da-z#]))/
+                        unit:        /(px|pt|%|r?em|m?s|deg|vh|vw|vmin|vmax)(?=(?:\s*[;,{}}\)]|\s+[\-\da-z#]))/
                     },
                     json:
                     {
@@ -218,7 +229,8 @@ var codeEditor = function(editor, options)
             {
                 classMap.push(Class);
                 if (Class === 'quote') classMap.push(Class);// Add twice cause 2 captures in quote regexp.
-                if (self.language === 'html' && Class === 'tag') classMap.push(Class, Class, Class);
+                if ((self.language === 'html' || self.language === 'xml') && Class === 'tag')
+                    classMap.push(Class, Class, Class);
 
                 regexPattern += (regexPattern ? '|' : '') + dictionnary[self.language][Class].source;
             }
@@ -243,17 +255,21 @@ var codeEditor = function(editor, options)
 
                 if (Class === 'quote')   match = (arguments[1] || arguments[2]).unhtmlize().stripTags();
                 if (Class === 'comment') match = match.unhtmlize().stripTags();
-                if (Class === 'tag' && self.language === 'html')
+                if (Class === 'tag' && (self.language === 'html' || self.language === 'xml'))
                 {
-                    var tagPieces = dictionnaryMatches.slice(3);
+                    var tagPieces            = dictionnaryMatches.slice(3),
+                        xmlAttributesRegex   = /\s*([a-zA-Z\-:]+)=("|')(.*?)\2/g,
+                        htmlAttributesRegex  = /\s*([a-zA-Z\-]+)=("|')(.*?)\2/g,
+                        renderAttributesList = function()
+                        {
+                            return ' <span class="attribute">' + arguments[1] + '</span><span class="ponctuation">=</span>'
+                                + '<span class="quote">' + arguments[2] + arguments[3] + arguments[2] + '</span>'
+                        };
 
                     return '<span class="ponctuation">' + tagPieces[0] + '</span>'
                             + '<span class="tag-name">' + tagPieces[1] + '</span>'
-                            + (tagPieces[2]||'').replace(/\s*([a-z]\w+)=("|')(.*?)\2/g, function()
-                            {
-                                return ' <span class="attribute">' + arguments[1] + '</span><span class="ponctuation">=</span>'
-                                        + '<span class="quote">' + arguments[2] + arguments[3] + arguments[2] + '</span>'
-                            })
+                            + (tagPieces[2]||'').replace(self.language === 'xml' ?
+                                                         xmlAttributesRegex : htmlAttributesRegex, renderAttributesList)
                             + '<span class="ponctuation">' + tagPieces[3] + '</span>';
                 }
                 if (Class === 'color' && self.language === 'css' && self.options.cssColors)
