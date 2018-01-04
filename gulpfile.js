@@ -125,6 +125,7 @@ var gulp    = require('gulp'),
                 })
             )
             .pipe(plugins.sass())
+            // @todo: fix autoprefixer triggering error.
             // .pipe(plugins.autoprefixer())
             .pipe(plugins.cssbeautify())
             .pipe(gulp.dest(config.dest + '/css/'))
@@ -146,7 +147,8 @@ var gulp    = require('gulp'),
                 })
             )
             .pipe(plugins.sass())
-            .pipe(plugins.autoprefixer())
+            // @todo: fix autoprefixer triggering error.
+            // .pipe(plugins.autoprefixer())
             .pipe(plugins.csso())
             .pipe(plugins.rename({suffix: '.min'}))
             .pipe(gulp.dest(config.dest + '/css/'));
@@ -248,6 +250,11 @@ var gulp    = require('gulp'),
 gulp.task('dev', gulp.series(doSetEnv, doSnippetsSymlink, gulp.parallel(doPhp, doTpl, doFonts, doCss, doJs), gulp.parallel(doSync, doWatch)));
 
 gulp.task('prod', gulp.series(doSetEnv, doSnippetsSymlink, gulp.parallel(doPhp, doTpl, doFonts, doCssMin, doJsMin), gulp.parallel(doSync, doWatch)));
+
+gulp.task('travis', gulp.series(doSetEnv, doSnippetsSymlink, gulp.parallel(doPhp, doTpl, doFonts, doCssMin, doJsMin), gulp.parallel(doSync, doWatch)), function()
+{
+    process.exit(0);
+});
 
 // Run when typing 'gulp' (only) in console.
 gulp.task('default', gulp.series('dev'));
