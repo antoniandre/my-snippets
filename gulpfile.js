@@ -228,6 +228,8 @@ var gulp    = require('gulp'),
             startPath: 'my-snippets/dist/index.php',
             // reloadDelay: 1000,
         }, done);
+
+        done();
     },
 
 
