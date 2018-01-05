@@ -3,13 +3,12 @@
   "version": "0.0.1",
   "description": "",
   "main": "",
-  "dependencies": {
-    "gulp-cli": "^1.2.2"
-  },
+  "dependencies": {},
   "devDependencies": {
     "autoprefixer": "latest",
     "browser-sync": "latest",
     "gulp-bower": "latest",
+    "gulp-cli": "^1.2.2",
     "gulp-cssbeautify": "latest",
     "gulp-csso": "latest",
     "gulp-include": "latest",
