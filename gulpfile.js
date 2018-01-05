@@ -60,7 +60,7 @@ var gulp    = require('gulp'),
     },
 
     // Php and html.
-    doTpl = function()
+    doTpl = function(done)
     {
         var tpl = gulp.src(config.src + '/templates/*.html')
             .pipe(plugins.replaceTask(
@@ -76,18 +76,22 @@ var gulp    = require('gulp'),
 
         console.log('OK - Template files copied.');
 
+        done();
+
         return tpl;
     },
-    doSnippetsSymlink = function()
+    doSnippetsSymlink = function(done)
     {
         var symlink = gulp.src(config.src + '/snippets')
             .pipe(gulp.symlink(config.dest));
 
         console.log('OK - snippets folder symlinked.');
 
+        done();
+
         return symlink;
     },
-    doPhp = function()
+    doPhp = function(done)
     {
         var php = gulp
             .src(
@@ -102,19 +106,23 @@ var gulp    = require('gulp'),
 
         console.log('OK - PHP / HTML files copied.');
 
+        done();
+
         return php;
     },
-    doFonts = function()
+    doFonts = function(done)
     {
         var symlink = gulp.src(config.src + '/css/fonts')
             .pipe(gulp.symlink(config.dest + '/css'));
 
         console.log('OK - fonts folder symlinked.');
 
+        done();
+
         return symlink;
     },
 
-    doCss = function()
+    doCss = function(done)
     {
         var css = gulp.src([config.src + '/css/*.+(scss|css)'])
             .pipe(
@@ -133,10 +141,12 @@ var gulp    = require('gulp'),
 
         console.log('OK - SCSS/CSS compiling task completed.');
 
+        done();
+
         return css;
     },
 
-    doCssMin = function()
+    doCssMin = function(done)
     {
         var css = gulp.src([config.src + '/css/*.+(scss|css)'])
             .pipe(
@@ -155,11 +165,13 @@ var gulp    = require('gulp'),
 
         console.log('OK - CSS minifying task completed.');
 
+        done();
+
         return css;
     },
 
     // Js.
-    doJs = function()
+    doJs = function(done)
     {
         var js = gulp.src([config.src + '/js/*.js', '!' + config.src + '/js/inc.*.js'])
         .pipe(
@@ -174,11 +186,13 @@ var gulp    = require('gulp'),
 
         console.log('OK - JS files copied.');
 
+        done();
+
         return js;
     },
 
     // Concatenates all the JS and the bower js libs.
-    doJsMin = function()
+    doJsMin = function(done)
     {
         var js = gulp.src([config.src + '/js/*.js', '!' + config.src + '/js/inc.*.js'])
         .pipe(
@@ -194,6 +208,8 @@ var gulp    = require('gulp'),
         .pipe(gulp.dest(config.dest + '/js'));
 
         console.log('OK - JS minifying task completed.');
+
+        done();
 
         return js;
     },
