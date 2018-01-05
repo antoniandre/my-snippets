@@ -2,5 +2,5 @@ language: node_js
 node_js:
   - "stable"
 
-before_script: npm install -g gulp
+before_script: npm install gulp
 script: gulp travis
