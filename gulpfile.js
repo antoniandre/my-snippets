@@ -267,9 +267,9 @@ var gulp    = require('gulp'),
 //=======================================================================================//
 gulp.task('dev', gulp.series(doSetEnv, doSnippetsSymlink, gulp.parallel(doPhp, doTpl, doFonts, doCss, doJs), gulp.parallel(doSync, doWatch)));
 
-gulp.task('prod', gulp.series(doSetEnv, doSnippetsSymlink, gulp.parallel(doPhp, doTpl, doFonts, doCssMin, doJsMin), gulp.parallel(doSync, doWatch)));
+gulp.task('prod', gulp.series(doSetEnv, doSnippetsSymlink, gulp.parallel(doPhp, doTpl, doFonts, doCssMin, doJsMin)));
 
-gulp.task('travis', gulp.series(doSetEnv, doSnippetsSymlink, gulp.parallel(doPhp, doTpl, doFonts, doCssMin, doJsMin), gulp.parallel(doSync, doWatch)), function()
+gulp.task('travis', gulp.series(doSetEnv, doSnippetsSymlink, gulp.parallel(doPhp, doTpl, doFonts, doCssMin, doJsMin)), function()
 {
     process.exit(0);
 });
