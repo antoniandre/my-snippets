@@ -60,7 +60,7 @@ var gulp    = require('gulp'),
     },
 
     // Php and html.
-    doTpl = function()
+    doTpl = function(done)
     {
         var tpl = gulp.src(config.src + '/templates/*.html')
             .pipe(plugins.replaceTask(
@@ -76,18 +76,22 @@ var gulp    = require('gulp'),
 
         console.log('OK - Template files copied.');
 
+        done();
+
         return tpl;
     },
-    doSnippetsSymlink = function()
+    doSnippetsSymlink = function(done)
     {
         var symlink = gulp.src(config.src + '/snippets')
             .pipe(gulp.symlink(config.dest));
 
         console.log('OK - snippets folder symlinked.');
 
+        done();
+
         return symlink;
     },
-    doPhp = function()
+    doPhp = function(done)
     {
         var php = gulp
             .src(
@@ -102,19 +106,23 @@ var gulp    = require('gulp'),
 
         console.log('OK - PHP / HTML files copied.');
 
+        done();
+
         return php;
     },
-    doFonts = function()
+    doFonts = function(done)
     {
         var symlink = gulp.src(config.src + '/css/fonts')
             .pipe(gulp.symlink(config.dest + '/css'));
 
         console.log('OK - fonts folder symlinked.');
 
+        done();
+
         return symlink;
     },
 
-    doCss = function()
+    doCss = function(done)
     {
         var css = gulp.src([config.src + '/css/*.+(scss|css)'])
             .pipe(
@@ -125,6 +133,7 @@ var gulp    = require('gulp'),
                 })
             )
             .pipe(plugins.sass())
+            // @todo: fix autoprefixer triggering error.
             // .pipe(plugins.autoprefixer())
             .pipe(plugins.cssbeautify())
             .pipe(gulp.dest(config.dest + '/css/'))
@@ -132,10 +141,12 @@ var gulp    = require('gulp'),
 
         console.log('OK - SCSS/CSS compiling task completed.');
 
+        done();
+
         return css;
     },
 
-    doCssMin = function()
+    doCssMin = function(done)
     {
         var css = gulp.src([config.src + '/css/*.+(scss|css)'])
             .pipe(
@@ -146,18 +157,21 @@ var gulp    = require('gulp'),
                 })
             )
             .pipe(plugins.sass())
-            .pipe(plugins.autoprefixer())
+            // @todo: fix autoprefixer triggering error.
+            // .pipe(plugins.autoprefixer())
             .pipe(plugins.csso())
             .pipe(plugins.rename({suffix: '.min'}))
             .pipe(gulp.dest(config.dest + '/css/'));
 
         console.log('OK - CSS minifying task completed.');
 
+        done();
+
         return css;
     },
 
     // Js.
-    doJs = function()
+    doJs = function(done)
     {
         var js = gulp.src([config.src + '/js/*.js', '!' + config.src + '/js/inc.*.js'])
         .pipe(
@@ -172,11 +186,13 @@ var gulp    = require('gulp'),
 
         console.log('OK - JS files copied.');
 
+        done();
+
         return js;
     },
 
     // Concatenates all the JS and the bower js libs.
-    doJsMin = function()
+    doJsMin = function(done)
     {
         var js = gulp.src([config.src + '/js/*.js', '!' + config.src + '/js/inc.*.js'])
         .pipe(
@@ -192,6 +208,8 @@ var gulp    = require('gulp'),
         .pipe(gulp.dest(config.dest + '/js'));
 
         console.log('OK - JS minifying task completed.');
+
+        done();
 
         return js;
     },
@@ -210,6 +228,8 @@ var gulp    = require('gulp'),
             startPath: 'my-snippets/dist/index.php',
             // reloadDelay: 1000,
         }, done);
+
+        done();
     },
 
 
@@ -247,7 +267,12 @@ var gulp    = require('gulp'),
 //=======================================================================================//
 gulp.task('dev', gulp.series(doSetEnv, doSnippetsSymlink, gulp.parallel(doPhp, doTpl, doFonts, doCss, doJs), gulp.parallel(doSync, doWatch)));
 
-gulp.task('prod', gulp.series(doSetEnv, doSnippetsSymlink, gulp.parallel(doPhp, doTpl, doFonts, doCssMin, doJsMin), gulp.parallel(doSync, doWatch)));
+gulp.task('prod', gulp.series(doSetEnv, doSnippetsSymlink, gulp.parallel(doPhp, doTpl, doFonts, doCssMin, doJsMin)));
+
+gulp.task('travis', gulp.series(doSetEnv, doSnippetsSymlink, gulp.parallel(doPhp, doTpl, doFonts, doCssMin, doJsMin)), function()
+{
+    process.exit(0);
+});
 
 // Run when typing 'gulp' (only) in console.
 gulp.task('default', gulp.series('dev'));
